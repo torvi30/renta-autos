@@ -58,10 +58,11 @@ export const App: React.FC = () => {
       />
 
       <main className="flex-grow">
-        {/* 1. Hero Principal con Protagonista Visual */}
+        {/* 1. Master Showroom Pavilion con la Flota Boutique de 8 Autos de Lujo */}
         <HeroSection
-          featuredVehicles={vehicles.filter((v) => v.isFeatured)}
+          vehicles={vehicles}
           onExploreFleet={() => scrollToSection('showroom')}
+          onSelectVehicleForModal={handleOpenVehicleModal}
           onSelectVehicleForBooking={(veh) => handleOpenBooking(veh)}
         />
 
