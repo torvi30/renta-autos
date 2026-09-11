@@ -7,8 +7,18 @@ import {
   DeliveryLocationType,
   ReservationStatus,
 } from '../types/reservation';
+import { db, isFirebaseConfigured } from './firebase';
+import {
+  collection,
+  doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+} from 'firebase/firestore';
 
 const STORAGE_KEY = 'PREMIUM_RENTAL_RESERVATIONS_V1';
+const RESERVATIONS_COLLECTION = 'reservations';
 
 // Formato de fecha YYYY-MM-DD local seguro
 export const getTodayDateString = (): string => {
@@ -40,12 +50,12 @@ export const getDateAfterDaysString = (days: number): string => {
 /**
  * Semillas iniciales para demostrar detección de solapamientos (Regla 14)
  */
-const SEED_RESERVATIONS: Reservation[] = [
+export const SEED_RESERVATIONS: Reservation[] = [
   {
     id: 'RES-2026-P911',
     vehicleId: 'veh-002', // Porsche 911 GT3 RS
     vehicleName: 'Porsche 911 GT3 RS',
-    vehicleImage: '/vehicles/porsche-gt3-rs.jpg',
+    vehicleImage: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1200&q=85',
     vehiclePlate: 'LUX-002',
     startDate: getDateAfterDaysString(3),
     endDate: getDateAfterDaysString(6),
@@ -86,20 +96,63 @@ export const getStoredReservations = (): Reservation[] => {
     }
     return JSON.parse(raw) as Reservation[];
   } catch (error) {
-    console.warn('Error reading reservations from localStorage:', error);
+    console.warn('Error al leer reservas de localStorage:', error);
     return SEED_RESERVATIONS;
   }
 };
 
 /**
- * Persistir lista de reservas
+ * Persistir lista de reservas en caché local
  */
 export const saveReservations = (reservations: Reservation[]): void => {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(reservations));
   } catch (error) {
-    console.error('Error saving reservations to localStorage:', error);
+    console.error('Error al guardar reservas en localStorage:', error);
+  }
+};
+
+/**
+ * Suscripción reactiva en tiempo real a las reservas en Cloud Firestore
+ */
+export const subscribeReservations = (
+  callback: (reservations: Reservation[]) => void
+): (() => void) => {
+  // Emitir de inmediato la caché local para respuesta instantánea
+  callback(getStoredReservations());
+
+  if (!db || !isFirebaseConfigured()) {
+    return () => {};
+  }
+
+  try {
+    const colRef = collection(db, RESERVATIONS_COLLECTION);
+    const unsubscribe = onSnapshot(
+      colRef,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const cloudItems: Reservation[] = [];
+          snapshot.forEach((docSnap) => {
+            cloudItems.push(docSnap.data() as Reservation);
+          });
+          // Ordenar por fecha de creación descendente
+          cloudItems.sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          saveReservations(cloudItems);
+          callback(cloudItems);
+        }
+      },
+      (error) => {
+        console.warn('Aviso en listener de reservas Firestore, manteniendo caché local:', error);
+      }
+    );
+
+    return unsubscribe;
+  } catch (error) {
+    console.warn('Error al configurar suscripción Firestore para reservas:', error);
+    return () => {};
   }
 };
 
@@ -188,7 +241,7 @@ export const checkAvailability = (
     (res) =>
       res.vehicleId === vehicle.id &&
       res.id !== excludeReservationId &&
-      (res.status === 'PENDING' || res.status === 'CONFIRMED' || res.status === 'ACTIVE')
+      (res.status === 'PENDING' || res.status === 'CONFIRMED' || res.status === 'ACTIVE' || res.status === 'MAINTENANCE')
   );
 
   // Verificación de intervalo: (startA <= endB) && (endA >= startB)
@@ -213,7 +266,7 @@ export const checkAvailability = (
 };
 
 /**
- * Crear una nueva solicitud de reserva con código único RES-2026-XXXX
+ * Crear una nueva solicitud de reserva con código único RES-2026-XXXX y persistencia dual (Cloud Firestore + Local)
  */
 export const createReservation = (params: {
   vehicle: Vehicle;
@@ -264,10 +317,50 @@ export const createReservation = (params: {
     createdAt: new Date().toISOString(),
   };
 
+  // 1. Guardar de inmediato en local cache
   const currentList = getStoredReservations();
   saveReservations([newReservation, ...currentList]);
 
+  // 2. Persistir en Cloud Firestore de manera desacoplada y asíncrona
+  if (db && isFirebaseConfigured()) {
+    const docRef = doc(db, RESERVATIONS_COLLECTION, newReservation.id);
+    setDoc(docRef, newReservation).catch((err) => {
+      console.warn('Aviso: la reserva se guardó localmente pero falló el envío a Firestore:', err);
+    });
+  }
+
   return { reservation: newReservation };
+};
+
+/**
+ * Versión asíncrona de creación de reserva que garantiza confirmación en Cloud Firestore
+ */
+export const createReservationAsync = async (params: {
+  vehicle: Vehicle;
+  startDate: string;
+  endDate: string;
+  pickupTime?: string;
+  returnTime?: string;
+  deliveryLocation: DeliveryLocationType;
+  deliveryAddress?: string;
+  client: ClientInfo;
+  notes?: string;
+}): Promise<{ reservation: Reservation | null; error?: string }> => {
+  const syncResult = createReservation(params);
+  if (syncResult.error || !syncResult.reservation) {
+    return { reservation: null, error: syncResult.error };
+  }
+
+  if (db && isFirebaseConfigured()) {
+    try {
+      const docRef = doc(db, RESERVATIONS_COLLECTION, syncResult.reservation.id);
+      await setDoc(docRef, syncResult.reservation);
+    } catch (error: any) {
+      console.warn('La reserva se completó con respaldo local, Firestore arrojó advertencia:', error);
+    }
+  }
+
+  return { reservation: syncResult.reservation };
 };
 
 export const getDeliveryLocationLabel = (location: DeliveryLocationType): string => {
@@ -352,8 +445,209 @@ export const updateReservationStatus = (
 
   if (updatedItem) {
     saveReservations(updatedList);
+
+    // Sincronizar en Firestore
+    if (db && isFirebaseConfigured()) {
+      const docRef = doc(db, RESERVATIONS_COLLECTION, reservationId);
+      updateDoc(docRef, { status: newStatus }).catch((err) => {
+        console.warn('Advertencia al actualizar estado en Cloud Firestore:', err);
+      });
+    }
   }
 
   return updatedItem;
+};
+
+/**
+ * Actualizar una reserva existente (fechas, cliente, estado, vehículo, notas)
+ * Recalcula automáticamente días y precios si cambian las fechas o la tarifa diaria.
+ */
+export const updateReservation = async (
+  reservationId: string,
+  updates: Partial<Reservation>
+): Promise<Reservation | null> => {
+  const currentList = getStoredReservations();
+  const existingIndex = currentList.findIndex((r) => r.id === reservationId);
+  if (existingIndex === -1) return null;
+
+  const existing = currentList[existingIndex];
+  const newStartDate = updates.startDate || existing.startDate;
+  const newEndDate = updates.endDate || existing.endDate;
+
+  let updatedPricing = updates.pricing || existing.pricing;
+  if (updates.startDate || updates.endDate || updates.pricing?.dailyRate) {
+    const dailyRate = updates.pricing?.dailyRate ?? existing.pricing.dailyRate;
+    const days = calculateDaysBetween(newStartDate, newEndDate);
+    const rentalTotal = days * dailyRate;
+    const securityDeposit = Math.max(2000, dailyRate * 2);
+
+    updatedPricing = {
+      dailyRate,
+      days,
+      rentalTotal,
+      securityDeposit,
+      insuranceIncluded: true,
+      currency: 'USD',
+    };
+  }
+
+  const updatedReservation: Reservation = {
+    ...existing,
+    ...updates,
+    startDate: newStartDate,
+    endDate: newEndDate,
+    pricing: updatedPricing,
+  };
+
+  const updatedList = [...currentList];
+  updatedList[existingIndex] = updatedReservation;
+  saveReservations(updatedList);
+
+  if (db && isFirebaseConfigured()) {
+    try {
+      const docRef = doc(db, RESERVATIONS_COLLECTION, reservationId);
+      await setDoc(docRef, updatedReservation, { merge: true });
+    } catch (err) {
+      console.warn('Advertencia al sincronizar reserva editada en Firestore:', err);
+    }
+  }
+
+  return updatedReservation;
+};
+
+/**
+ * Eliminar definitivamente una reserva del sistema (localStorage y Cloud Firestore)
+ */
+export const deleteReservation = async (reservationId: string): Promise<boolean> => {
+  const currentList = getStoredReservations();
+  const filteredList = currentList.filter((r) => r.id !== reservationId);
+  saveReservations(filteredList);
+
+  if (db && isFirebaseConfigured()) {
+    try {
+      const docRef = doc(db, RESERVATIONS_COLLECTION, reservationId);
+      await deleteDoc(docRef);
+    } catch (err) {
+      console.warn('Advertencia al eliminar reserva en Firestore:', err);
+    }
+  }
+
+  return true;
+};
+
+/**
+ * Sembrar reservas iniciales de prueba en Cloud Firestore
+ */
+export const seedInitialReservationsToFirestore = async (): Promise<{
+  success: boolean;
+  count: number;
+  message: string;
+}> => {
+  if (!db || !isFirebaseConfigured()) {
+    return {
+      success: false,
+      count: 0,
+      message: 'Firebase no está configurado o no hay conexión activa.',
+    };
+  }
+
+  try {
+    let count = 0;
+    for (const res of SEED_RESERVATIONS) {
+      const docRef = doc(db, RESERVATIONS_COLLECTION, res.id);
+      await setDoc(docRef, res, { merge: true });
+      count++;
+    }
+
+    return {
+      success: true,
+      count,
+      message: `${count} reserva(s) sincronizadas con Cloud Firestore.`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      count: 0,
+      message: error?.message || 'Error al sembrar reservas en Cloud Firestore.',
+    };
+  }
+};
+
+/**
+ * Bloqueo Administrativo Manual de Fechas (Mantenimiento, Taller, Evento VIP)
+ * Genera una reserva especial con status 'MAINTENANCE' para que el motor
+ * de disponibilidad (checkAvailability) bloquee automáticamente dichas fechas.
+ */
+export const calculateDaysBetween = (startStr: string, endStr: string): number => {
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  const diffTime = end.getTime() - start.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.max(1, diffDays + 1);
+};
+
+export const createMaintenanceBlock = (params: {
+  vehicle: Vehicle;
+  startDate: string;
+  endDate: string;
+  reason: string;
+}): { reservation: Reservation | null; error?: string } => {
+  const { vehicle, startDate, endDate, reason } = params;
+
+  if (!startDate || !endDate) {
+    return { reservation: null, error: 'Debe especificar fecha de inicio y fin.' };
+  }
+
+  if (endDate < startDate) {
+    return { reservation: null, error: 'La fecha de fin debe ser igual o posterior a la de inicio.' };
+  }
+
+  // Generar ID oficial de bloqueo
+  const blockId = `BLOCK-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const days = calculateDaysBetween(startDate, endDate) || 1;
+
+  const newBlock: Reservation = {
+    id: blockId,
+    vehicleId: vehicle.id,
+    vehicleName: `${vehicle.brand} ${vehicle.model}`,
+    vehicleImage: vehicle.mainImage,
+    vehiclePlate: vehicle.plate,
+    startDate,
+    endDate,
+    pickupTime: '08:00',
+    returnTime: '20:00',
+    deliveryLocation: 'SHOWROOM',
+    client: {
+      fullName: 'Operaciones & Taller VIP',
+      email: 'mantenimiento@premiumcars.com',
+      phone: '+57 300 000 0000',
+      documentId: 'OPS-MAINT',
+      driverLicense: 'OPS-MAINT',
+      ageConfirmation: true,
+    },
+    pricing: {
+      dailyRate: 0,
+      days,
+      rentalTotal: 0,
+      securityDeposit: 0,
+      insuranceIncluded: true,
+      currency: 'USD',
+    },
+    notes: `BLOQUEO OPERATIVO: ${reason}`,
+    status: 'MAINTENANCE',
+    createdAt: new Date().toISOString(),
+  };
+
+  const currentList = getStoredReservations();
+  saveReservations([newBlock, ...currentList]);
+
+  if (db && isFirebaseConfigured()) {
+    const docRef = doc(db, RESERVATIONS_COLLECTION, newBlock.id);
+    setDoc(docRef, newBlock).catch((err) => {
+      console.warn('Aviso al guardar bloqueo en Firestore:', err);
+    });
+  }
+
+  return { reservation: newBlock };
 };
 

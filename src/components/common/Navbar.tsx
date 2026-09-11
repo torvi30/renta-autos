@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Phone, Sparkles, Compass } from 'lucide-react';
+import { Menu, X, Phone, Sparkles, Compass, Lock } from 'lucide-react';
 import { Button } from './Button';
 import { generateWhatsAppLink } from '../../utils/formatters';
 
@@ -9,6 +9,7 @@ interface NavbarProps {
   onNavigateToCatalog?: () => void;
   onNavigateToFleet?: () => void;
   onNavigateToBooking?: () => void;
+  onNavigateToAdmin?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -17,6 +18,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateToCatalog,
   onNavigateToFleet,
   onNavigateToBooking,
+  onNavigateToAdmin,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -167,7 +169,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
 
           {/* Actions & WhatsApp Contact */}
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-3">
+            {onNavigateToAdmin && (
+              <button
+                onClick={onNavigateToAdmin}
+                className="flex items-center gap-1.5 text-xs font-semibold text-silver-300 hover:text-gold-400 px-3 py-2 rounded-lg border border-carbon-800 hover:border-gold-500/40 bg-carbon-900/60 hover:bg-carbon-850 transition-colors"
+                title="Acceso al Portal Administrativo"
+              >
+                <Lock className="w-3.5 h-3.5 text-gold-400" />
+                <span>Portal Admin</span>
+              </button>
+            )}
+
             <a
               href={whatsAppLink}
               target="_blank"
@@ -204,6 +217,23 @@ export const Navbar: React.FC<NavbarProps> = ({
       {isMobileMenuOpen && (
         <div className="md:hidden bg-carbon-950/98 border-b border-carbon-800 px-6 py-6 mt-3 space-y-4 shadow-2xl animate-fade-in backdrop-blur-2xl">
           <nav className="flex flex-col space-y-3 text-base font-medium text-silver-200">
+            {onNavigateToAdmin && (
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  onNavigateToAdmin();
+                }}
+                className="text-left py-2.5 px-3 rounded-xl bg-carbon-900 border border-gold-500/30 text-gold-400 font-semibold flex items-center justify-between text-sm mb-1"
+              >
+                <span className="flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-gold-400" />
+                  Portal Administrativo
+                </span>
+                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-gold-500/20 text-gold-300">
+                  Login
+                </span>
+              </button>
+            )}
             <button
               onClick={handleHomeClick}
               className={`text-left py-2 border-b border-carbon-900 flex items-center justify-between ${

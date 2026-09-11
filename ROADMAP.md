@@ -81,31 +81,46 @@ Principio rector: **Trabajar fase por fase, verificar completamente y detenerse 
 
 ---
 
-### [FASE 7] Conexión Firebase (Plan Gratuito Spark $0) ⚪ (PENDIENTE)
-- [ ] Configuración de variables de entorno `.env`.
-- [ ] Conexión a Cloud Firestore para vehículos y reservas.
-- [ ] Conexión a Firebase Storage para fotos (WebP) y videos optimizados.
-- [ ] Reglas de seguridad con principio de mínimo privilegio.
+### [FASE 7] Conexión Firebase (Plan Gratuito Spark $0) 🟢 (COMPLETADA)
+- [x] Configuración y validación de variables de entorno `.env` para Firebase Cloud Spark ($0).
+- [x] Servicio desacoplado `vehicleService.ts` con suscripción reactiva en tiempo real (`onSnapshot`), sincronización de estado y fallback local automático resiliente.
+- [x] Sincronización en tiempo real de `reservationService.ts` con Cloud Firestore (`reservations`) y persistencia dual sin latencia.
+- [x] Servicio `storageService.ts` para carga de fotografías (límite estricto de 12 fotos WebP/JPG/PNG, máx 5MB) y video de showroom (máx 25MB, loop silencioso) con URLs públicas optimizadas.
+- [x] Reglas de seguridad `firestore.rules` y `storage.rules` implementadas bajo el principio de mínimo privilegio (lectura pública, creación controlada y escritura exclusiva para administradores).
+- [x] Indicador de estado de conexión en vivo a Cloud Firestore y botón de sincronización/sembrado inicial en el Panel de Administración.
+- [x] Verificación de compilación TypeScript con cero errores y respuesta HTTP 200 en servidor local.
 
 ---
 
-### [FASE 8] Administración de Vehículos (CRUD Completo) ⚪ (PENDIENTE)
-- [ ] Crear y editar vehículos con límite estricto de 12 fotos y 1 video.
-- [ ] Contador visual de recursos (`Fotos: 8/12`, `Video: ✓ Cargado`).
-- [ ] Activación, desactivación y cambio de estado.
+### [FASE 8] Administración de Vehículos (CRUD Completo) 🟢 (COMPLETADA)
+- [x] Modal ejecutivo Showroom Dark `AdminVehicleModal.tsx` para Crear y Editar vehículos con validación estricta.
+- [x] Gestor multimedia con cumplimiento estricto de las Reglas 7, 8 y 9 (límite de 12 fotos y 1 video de showroom máx 15s).
+- [x] Contador dinámico de recursos en vivo (`Fotos: X/12`, `Video: [✓ Configurado / ✕ Sin Video]`).
+- [x] Métodos de mutación en `vehicleService.ts` (`createVehicle`, `updateVehicle`, `deleteVehicle`) con sincronización en Firestore y local cache.
+- [x] Botones de acción en `AdminFleetView.tsx` ("Nuevo Vehículo", "Editar Ficha", "Eliminar" con modal de confirmación y selector de estado).
+- [x] Verificación de compilación TypeScript con cero errores y respuesta HTTP 200 en servidor local.
 
 ---
 
-### [FASE 9] Gestión de Reservas y Clientes ⚪ (PENDIENTE)
-- [ ] Listado y detalle de reservas.
-- [ ] Cambio de estado: `PENDING` ➔ `CONFIRMED` ➔ `ACTIVE` ➔ `COMPLETED` ➔ `CANCELLED`.
-- [ ] Directorio básico de clientes y licencias.
+### [FASE 9] Gestión de Reservas y Clientes 🟢 (COMPLETADA)
+- [x] Listado y detalle exhaustivo de reservas en `AdminReservationsView.tsx`.
+- [x] Ciclo de vida completo: `PENDING` ➔ `CONFIRMED` ➔ `ACTIVE` ➔ `COMPLETED` ➔ `CANCELLED`.
+- [x] Sincronización bidireccional en tiempo real con Cloud Firestore.
+- [x] Directorio KYC de clientes y verificación de licencias en `AdminClientsView.tsx` con cálculo de LTV.
+- [x] Integración de WhatsApp Concierge con plantillas dinámicas por reserva.
 
 ---
 
-### [FASE 10] Calendario Administrativo ⚪ (PENDIENTE)
-- [ ] Visualización mensual, semanal y diaria de reservas por vehículo.
-- [ ] Detección visual de solapamientos e intervalos de ocupación.
+### [FASE 10] Calendario Administrativo & Cronograma de Ocupación 🟢 (COMPLETADA)
+- [x] Pestaña `Cronograma & Ocupación` integrada en `AdminSidebar` y `AdminDashboardPage`.
+- [x] Cronograma Gantt interactivo (`AdminCalendarView.tsx`) con vehículos en filas y días del mes en columnas.
+- [x] Vista dual conmutador: Timeline Gantt vs. Cuadrícula Mensual Tradicional (7 columnas).
+- [x] KPIs ejecutivos: % Ocupación Mensual de Flota, Días Contratados, Despachos Inminentes (<48h) y Detector de Conflictos.
+- [x] Detector automático de solapamientos con alerta visual prominente.
+- [x] Modal de Bloqueo Manual de Fechas (`AdminDateBlockModal.tsx`) para Taller, Mantenimiento preventivo y Eventos VIP.
+- [x] Modal de Inspección Rápida de Reserva con enlace a WhatsApp Concierge y cambio de estado directo.
+- [x] Motor de disponibilidad (`checkAvailability`) actualizado para respetar bloqueos de tipo `MAINTENANCE`.
+- [x] Verificación de compilación TypeScript con cero errores y bundle Vite de producción exitoso.
 
 ---
 

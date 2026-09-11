@@ -25,8 +25,8 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
 }) => {
   const { login, isAuthenticated } = useAuth();
 
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
+  const [email, setEmail] = useState<string>('victortamayopine@gmail.com');
+  const [password, setPassword] = useState<string>('123456');
   const [rememberMe, setRememberMe] = useState<boolean>(true);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -63,11 +63,28 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     }
   };
 
-  const handleFillDemoAdmin = () => {
+  const handleDirectDemoLogin = async () => {
     const creds = getDemoCredentials();
     setEmail(creds.email);
     setPassword(creds.password);
     setErrorMessage(null);
+    setIsSubmitting(true);
+    try {
+      const response = await login({
+        email: creds.email,
+        password: creds.password,
+        rememberMe: true,
+      });
+      if (!response.success) {
+        setErrorMessage(response.error || 'Error al iniciar sesión.');
+      } else {
+        onLoginSuccess();
+      }
+    } catch {
+      setErrorMessage('Ocurrió un error inesperado al conectar.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -213,18 +230,19 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
 
         </form>
 
-        {/* Acceso Rápido Demo para Evaluación Inmediata */}
-        <div className="mt-6 pt-5 border-t border-carbon-800 text-center">
-          <span className="text-[11px] text-silver-500 block mb-2">
-            Entorno de demostración y pruebas:
+        {/* Acceso Rápido Directo para Víctor Tamayo */}
+        <div className="mt-6 pt-5 border-t border-carbon-800 text-center space-y-2">
+          <span className="text-[11px] text-silver-500 block">
+            Acceso Rápido de Dirección:
           </span>
           <button
             type="button"
-            onClick={handleFillDemoAdmin}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-carbon-850 hover:bg-carbon-800 border border-carbon-750 text-xs text-gold-400 hover:text-gold-300 transition-colors"
+            onClick={handleDirectDemoLogin}
+            disabled={isSubmitting}
+            className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-gold-500/20 to-gold-400/20 hover:from-gold-500/30 hover:to-gold-400/30 border border-gold-500/40 text-xs font-semibold text-gold-300 hover:text-gold-200 transition-colors shadow-sm cursor-pointer disabled:opacity-50"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Cargar Acceso Administrador Demo</span>
+            <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+            <span>⚡ Entrar Directo como Víctor Tamayo (Director)</span>
           </button>
         </div>
 

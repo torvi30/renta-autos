@@ -5,7 +5,8 @@ export type ReservationStatus =
   | 'CONFIRMED' 
   | 'ACTIVE' 
   | 'COMPLETED' 
-  | 'CANCELLED';
+  | 'CANCELLED'
+  | 'MAINTENANCE';
 
 export interface ClientInfo {
   fullName: string;

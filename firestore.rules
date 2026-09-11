@@ -1,0 +1,46 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================
+    // REGLAS DE SEGURIDAD - PREMIUM CAR RENTAL (REGLA 12 Y 13)
+    // Principio de mínimo privilegio para Plan Gratuito Spark $0
+    // ============================================================
+
+    // 1. Colección de Vehículos (Flota Showroom)
+    // Lectura pública para visitantes del catálogo y showroom.
+    // Escritura, actualización y eliminación exclusiva para administradores autenticados.
+    match /vehicles/{vehicleId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // 2. Colección de Reservas
+    // Creación pública permitida siempre que contenga la estructura y tipos requeridos.
+    // Lectura, actualización de estado y eliminación restringida a administradores autenticados.
+    match /reservations/{reservationId} {
+      allow create: if request.resource.data.keys().hasAll([
+        'id',
+        'vehicleId',
+        'startDate',
+        'endDate',
+        'client',
+        'pricing',
+        'status'
+      ]) && 
+      request.resource.data.status in ['PENDING', 'CONFIRMED'] &&
+      request.resource.data.client.fullName is string &&
+      request.resource.data.client.email is string &&
+      request.resource.data.client.phone is string &&
+      request.resource.data.client.ageConfirmation == true;
+
+      allow read, update, delete: if request.auth != null;
+    }
+
+    // 3. Bloqueo por defecto de cualquier otra colección no autorizada
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

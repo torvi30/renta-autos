@@ -1,0 +1,31 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // ============================================================
+    // REGLAS DE FIREBASE STORAGE - PREMIUM CAR RENTAL (REGLA 12)
+    // ============================================================
+
+    // Recursos multimedia de vehículos (Fotos WebP/JPG/PNG y Videos de Showroom máx 15s)
+    // Lectura pública para visualización en el showroom y landing.
+    // Subida y modificación exclusiva para administradores autenticados.
+    match /vehicles/{vehicleId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && (
+          // Imágenes (WebP, JPG, PNG) máx 5MB
+          (request.resource.contentType.matches('image/.*') && request.resource.size < 5 * 1024 * 1024)
+          ||
+          // Videos (MP4, WebM) máx 25MB
+          (request.resource.contentType.matches('video/.*') && request.resource.size < 25 * 1024 * 1024)
+        );
+      allow delete: if request.auth != null;
+    }
+
+    // Bloqueo por defecto de cualquier otra ruta
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

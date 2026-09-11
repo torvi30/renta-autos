@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { MOCK_VEHICLES } from './data/mockVehicles';
 import { Vehicle, VehicleStatus } from './types/vehicle';
+import {
+  subscribeVehicles,
+  getLocalVehicles,
+  updateVehicleStatusInCloud,
+} from './services/vehicleService';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
 import { HeroSection } from './components/landing/HeroSection';
@@ -53,17 +57,23 @@ const parseRouteFromLocation = (): RouteState => {
 };
 
 const AppContent: React.FC = () => {
-  const [vehicles, setVehicles] = useState<Vehicle[]>(MOCK_VEHICLES);
+  const [vehicles, setVehicles] = useState<Vehicle[]>(getLocalVehicles);
   const [routeState, setRouteState] = useState<RouteState>(parseRouteFromLocation);
   const [selectedVehicleForModal, setSelectedVehicleForModal] = useState<Vehicle | null>(null);
   const [selectedVehicleForBooking, setSelectedVehicleForBooking] = useState<Vehicle | null>(null);
   const [bookingDates, setBookingDates] = useState<{ startDate?: string; endDate?: string }>({});
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
+  // Suscripción reactiva en tiempo real a Cloud Firestore (con fallback a local)
+  useEffect(() => {
+    const unsubscribe = subscribeVehicles((updatedList) => {
+      setVehicles(updatedList);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const handleUpdateVehicleStatus = useCallback((vehicleId: string, newStatus: VehicleStatus) => {
-    setVehicles((prev) =>
-      prev.map((v) => (v.id === vehicleId ? { ...v, status: newStatus } : v))
-    );
+    updateVehicleStatusInCloud(vehicleId, newStatus);
   }, []);
 
   const currentRoute = routeState.route;
@@ -200,6 +210,7 @@ const AppContent: React.FC = () => {
         onNavigateToCatalog={navigateToCatalog}
         onNavigateToFleet={() => scrollToSection('showroom')}
         onNavigateToBooking={() => handleOpenBooking()}
+        onNavigateToAdmin={navigateToAdminLogin}
       />
 
       <main className="flex-grow">
