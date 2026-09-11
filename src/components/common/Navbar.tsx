@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Phone, Sparkles } from 'lucide-react';
+import { Menu, X, Phone, Sparkles, Compass } from 'lucide-react';
 import { Button } from './Button';
 import { generateWhatsAppLink } from '../../utils/formatters';
 
 interface NavbarProps {
+  currentRoute?: 'home' | 'catalog';
+  onNavigateHome?: () => void;
+  onNavigateToCatalog?: () => void;
   onNavigateToFleet?: () => void;
   onNavigateToBooking?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
+  currentRoute = 'home',
+  onNavigateHome,
+  onNavigateToCatalog,
   onNavigateToFleet,
   onNavigateToBooking,
 }) => {
@@ -25,13 +31,51 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const scrollToSection = (id: string) => {
     setIsMobileMenuOpen(false);
+    if (currentRoute !== 'home' && onNavigateHome) {
+      onNavigateHome();
+      // Pequeño retardo para dar tiempo a renderizar la vista home si no estaba activa
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+      return;
+    }
+
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
+  const handleHomeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsMobileMenuOpen(false);
+    if (onNavigateHome) {
+      onNavigateHome();
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleCatalogClick = () => {
+    setIsMobileMenuOpen(false);
+    if (onNavigateToCatalog) {
+      onNavigateToCatalog();
+    }
+  };
+
   const handleFleetClick = () => {
+    setIsMobileMenuOpen(false);
+    if (currentRoute !== 'home' && onNavigateHome) {
+      onNavigateHome();
+      setTimeout(() => {
+        const element = document.getElementById('showroom');
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      return;
+    }
     if (onNavigateToFleet) {
       onNavigateToFleet();
     } else {
@@ -52,9 +96,9 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           {/* Logo & Brand Identity */}
-          <a
-            href="#"
-            className="flex items-center gap-3 group focus:outline-none"
+          <button
+            onClick={handleHomeClick}
+            className="flex items-center gap-3 group focus:outline-none text-left"
             aria-label="Premium Car Rental - Inicio"
           >
             <div className="w-10 h-10 rounded-lg bg-carbon-850 border border-gold-500/30 flex items-center justify-center group-hover:border-gold-500/70 transition-colors shadow-lg shadow-gold-500/5">
@@ -68,17 +112,35 @@ export const Navbar: React.FC<NavbarProps> = ({
                 CAR RENTAL
               </span>
             </div>
-          </a>
+          </button>
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-silver-300">
             <button
               onClick={handleFleetClick}
-              className="hover:text-gold-400 transition-colors py-1 relative group"
+              className={`transition-colors py-1 relative group ${
+                currentRoute === 'home' ? 'text-gold-400 font-semibold' : 'hover:text-gold-400'
+              }`}
             >
-              Showroom
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gold-400 transition-all group-hover:w-full" />
+              Showroom 360
+              <span className={`absolute bottom-0 left-0 h-0.5 bg-gold-400 transition-all ${
+                currentRoute === 'home' ? 'w-full' : 'w-0 group-hover:w-full'
+              }`} />
             </button>
+
+            <button
+              onClick={handleCatalogClick}
+              className={`transition-colors py-1 relative group flex items-center gap-1.5 ${
+                currentRoute === 'catalog' ? 'text-gold-400 font-semibold' : 'hover:text-gold-400'
+              }`}
+            >
+              <Compass className="w-3.5 h-3.5 text-gold-400" />
+              <span>Catálogo Flota</span>
+              <span className={`absolute bottom-0 left-0 h-0.5 bg-gold-400 transition-all ${
+                currentRoute === 'catalog' ? 'w-full' : 'w-0 group-hover:w-full'
+              }`} />
+            </button>
+
             <button
               onClick={() => scrollToSection('experience')}
               className="hover:text-gold-400 transition-colors py-1 relative group"
@@ -86,6 +148,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               Experiencia VIP
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gold-400 transition-all group-hover:w-full" />
             </button>
+
             <button
               onClick={() => scrollToSection('how-it-works')}
               className="hover:text-gold-400 transition-colors py-1 relative group"
@@ -93,6 +156,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               Cómo Funciona
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gold-400 transition-all group-hover:w-full" />
             </button>
+
             <button
               onClick={() => scrollToSection('faq')}
               className="hover:text-gold-400 transition-colors py-1 relative group"
@@ -108,7 +172,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               href={whatsAppLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-xs font-medium text-silver-400 hover:text-gold-400 px-3 py-2 rounded-lg border border-carbon-800 hover:border-carbon-700 bg-carbon-900/60 transition-colors"
+              className="flex items-center gap-2 text-xs font-medium text-silver-400 hover:text-gold-400 px-3 py-2 rounded-lg border border-carbon-800 hover:border-carbon-750 bg-carbon-900/60 transition-colors"
               aria-label="Atención Concierge por WhatsApp"
             >
               <Phone className="w-3.5 h-3.5 text-emerald-400" />
@@ -141,11 +205,28 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="md:hidden bg-carbon-950/98 border-b border-carbon-800 px-6 py-6 mt-3 space-y-4 shadow-2xl animate-fade-in backdrop-blur-2xl">
           <nav className="flex flex-col space-y-3 text-base font-medium text-silver-200">
             <button
-              onClick={() => scrollToSection('showroom')}
-              className="text-left py-2 border-b border-carbon-900 hover:text-gold-400"
+              onClick={handleHomeClick}
+              className={`text-left py-2 border-b border-carbon-900 flex items-center justify-between ${
+                currentRoute === 'home' ? 'text-gold-400 font-bold' : 'hover:text-gold-400'
+              }`}
             >
-              Showroom Digital
+              <span>Showroom 360</span>
+              {currentRoute === 'home' && <span className="w-2 h-2 rounded-full bg-gold-400" />}
             </button>
+
+            <button
+              onClick={handleCatalogClick}
+              className={`text-left py-2 border-b border-carbon-900 flex items-center justify-between ${
+                currentRoute === 'catalog' ? 'text-gold-400 font-bold' : 'hover:text-gold-400'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <Compass className="w-4 h-4 text-gold-400" />
+                Catálogo Completo
+              </span>
+              {currentRoute === 'catalog' && <span className="w-2 h-2 rounded-full bg-gold-400" />}
+            </button>
+
             <button
               onClick={() => scrollToSection('experience')}
               className="text-left py-2 border-b border-carbon-900 hover:text-gold-400"
@@ -171,9 +252,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               variant="primary"
               size="lg"
               fullWidth
-              onClick={onNavigateToBooking || (() => scrollToSection('showroom'))}
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                if (onNavigateToBooking) onNavigateToBooking();
+              }}
             >
-              Explorar Colección
+              Reservar Ahora
             </Button>
 
             <a

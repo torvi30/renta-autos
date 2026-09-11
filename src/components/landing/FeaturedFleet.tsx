@@ -7,12 +7,14 @@ interface FeaturedFleetProps {
   vehicles: Vehicle[];
   onSelectVehicle: (vehicle: Vehicle) => void;
   onQuickBook?: (vehicle: Vehicle) => void;
+  onNavigateToCatalog?: () => void;
 }
 
 export const FeaturedFleet: React.FC<FeaturedFleetProps> = ({
   vehicles,
   onSelectVehicle,
   onQuickBook,
+  onNavigateToCatalog,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
@@ -89,6 +91,26 @@ export const FeaturedFleet: React.FC<FeaturedFleetProps> = ({
               className="mt-4 px-4 py-2 text-xs font-semibold text-gold-400 border border-gold-500/30 rounded-lg hover:bg-gold-500/10 transition-colors"
             >
               Ver todos los vehículos
+            </button>
+          </div>
+        )}
+
+        {/* Banner / CTA hacia el Catálogo Completo */}
+        {onNavigateToCatalog && (
+          <div className="mt-14 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-carbon-900 via-carbon-850 to-carbon-900 border border-carbon-800 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
+            <div className="text-center sm:text-left">
+              <h3 className="text-lg font-bold text-silver-100 font-display uppercase tracking-wider">
+                ¿Buscas un modelo o configuración específica?
+              </h3>
+              <p className="text-xs text-silver-400 mt-1">
+                Accede a nuestro catálogo extendido con filtros por transmisión, tipo de combustible, plazas y rango de presupuesto.
+              </p>
+            </div>
+            <button
+              onClick={onNavigateToCatalog}
+              className="px-6 py-3 rounded-xl bg-gold-500 hover:bg-gold-400 text-carbon-950 font-bold text-xs tracking-wider uppercase transition-all shadow-md shadow-gold-500/10 hover:shadow-gold-500/20 whitespace-nowrap"
+            >
+              Explorar Catálogo Completo ({vehicles.length} Autos)
             </button>
           </div>
         )}

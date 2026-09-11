@@ -1,7 +1,11 @@
 import React from 'react';
 import { Sparkles, Shield, Clock, Phone, Mail, Award } from 'lucide-react';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onNavigateToAdmin?: () => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
   return (
     <footer className="bg-carbon-950 border-t border-carbon-800/80 pt-16 pb-12 text-silver-400">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -95,6 +99,14 @@ export const Footer: React.FC = () => {
             <a href="#" className="hover:text-silver-300 transition-colors">Términos del Servicio</a>
             <a href="#" className="hover:text-silver-300 transition-colors">Política de Privacidad</a>
             <a href="#" className="hover:text-silver-300 transition-colors">Requisitos de Alquiler</a>
+            {onNavigateToAdmin && (
+              <button
+                onClick={onNavigateToAdmin}
+                className="hover:text-gold-400 transition-colors text-[11px] underline underline-offset-4 decoration-carbon-700"
+              >
+                Portal Corporativo
+              </button>
+            )}
           </div>
         </div>
       </div>

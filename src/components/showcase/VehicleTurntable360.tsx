@@ -1,25 +1,20 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Compass, Play, Pause, Hand, Sparkles, Sliders } from 'lucide-react';
+import { Compass, Play, Pause, Hand, Sliders, ExternalLink, Sparkles } from 'lucide-react';
 import { Vehicle } from '../../types/vehicle';
 
 interface VehicleTurntable360Props {
   vehicle: Vehicle;
   className?: string;
-}
-
-interface AngleFrame {
-  angle: number; // 0 a 360
-  name: string;
-  image: string;
-  isFlipped?: boolean; // Para simular el lateral opuesto si no hay foto espejo
+  onOpenDetail?: (vehicle: Vehicle) => void;
 }
 
 export const VehicleTurntable360: React.FC<VehicleTurntable360Props> = ({
   vehicle,
   className = '',
+  onOpenDetail,
 }) => {
   const [isAutoSpinning, setIsAutoSpinning] = useState(true);
-  const [rotationAngle, setRotationAngle] = useState(0); // 0 a 359.9 grados continuos
+  const [rotationAngle, setRotationAngle] = useState(0); // 0 a 359.9 grados
   const [isHovered, setIsHovered] = useState(false);
   const [speed, setSpeed] = useState<'slow' | 'normal' | 'fast'>('normal');
 
@@ -28,47 +23,18 @@ export const VehicleTurntable360: React.FC<VehicleTurntable360Props> = ({
   const lastTimeRef = useRef<number>();
   const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
+  // Variables para distinguir clic de arrastre
+  const dragStartXRef = useRef<number | null>(null);
+  const isDraggingRef = useRef(false);
+
   // Velocidad de rotación en segundos por vuelta de 360°
   const secondsPerRotation = useMemo(() => {
     switch (speed) {
-      case 'slow': return 16;   // Rotación súper suave y majestuosa
+      case 'slow': return 18;   // Rotación majestuosa lenta
       case 'normal': return 10; // Rotación de showroom estándar
       case 'fast': return 6;    // Rotación dinámica
     }
   }, [speed]);
-
-  // Construir la órbita de 360° a partir de las fotografías exteriores del vehículo (Regla 8)
-  const angleFrames: AngleFrame[] = useMemo(() => {
-    const ext = vehicle.gallery?.exteriorImages || [];
-    const main = vehicle.mainImage;
-
-    const fFront = ext[0] || main;
-    const fFrontQuarter = ext[1] || ext[0] || main;
-    const fSide = ext[2] || ext[1] || main;
-    const fRearQuarter = ext[3] || ext[2] || main;
-    const fRear = ext[4] || ext[3] || ext[0] || main;
-
-    // 8 perspectivas que completan los 360 grados de giro continuo
-    return [
-      { angle: 0,   name: 'Frente Frontal',               image: fFront },
-      { angle: 45,  name: 'Tres Cuartos Frontal Derecho', image: fFrontQuarter },
-      { angle: 90,  name: 'Perfil Lateral Derecho',       image: fSide },
-      { angle: 135, name: 'Tres Cuartos Trasero Derecho', image: fRearQuarter },
-      { angle: 180, name: 'Parte Trasera & Difusor',      image: fRear },
-      { angle: 225, name: 'Tres Cuartos Trasero Izquierdo', image: fRearQuarter, isFlipped: true },
-      { angle: 270, name: 'Perfil Lateral Izquierdo',     image: fSide, isFlipped: true },
-      { angle: 315, name: 'Tres Cuartos Frontal Izquierdo', image: fFrontQuarter, isFlipped: true },
-    ];
-  }, [vehicle]);
-
-  // Calcular el fotograma actual nítido según el ángulo de giro
-  const currentFrame = useMemo(() => {
-    const totalFrames = angleFrames.length;
-    const normalizedAngle = ((rotationAngle % 360) + 360) % 360;
-    const step = 360 / totalFrames; // 45 grados por fotograma
-    const currentIndex = Math.floor(normalizedAngle / step) % totalFrames;
-    return angleFrames[currentIndex];
-  }, [rotationAngle, angleFrames]);
 
   // Bucle continuo de rotación a 60 FPS con requestAnimationFrame
   const animateRotation = useCallback((timestamp: number) => {
@@ -88,15 +54,7 @@ export const VehicleTurntable360: React.FC<VehicleTurntable360Props> = ({
     };
   }, [animateRotation]);
 
-  // Pre-cargar todas las imágenes de la órbita para giro continuo sin parpadeos
-  useEffect(() => {
-    angleFrames.forEach((frame) => {
-      const img = new Image();
-      img.src = frame.image;
-    });
-  }, [angleFrames]);
-
-  // Control interactivo con mouse o touch (Scrubbing de ángulo)
+  // Control interactivo con mouse o touch (Scrubbing / Rotación 360)
   const handleScrub = (clientX: number) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -106,22 +64,63 @@ export const VehicleTurntable360: React.FC<VehicleTurntable360Props> = ({
     setRotationAngle(targetAngle);
     setIsHovered(true);
 
-    // Reanudar el giro suave después de 1.8 segundos sin interacción
+    // Reanudar el giro suave después de 2.5 segundos sin interacción
     if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
     resumeTimeoutRef.current = setTimeout(() => {
       setIsHovered(false);
       setIsAutoSpinning(true);
-    }, 1800);
+    }, 2500);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    dragStartXRef.current = e.clientX;
+    isDraggingRef.current = false;
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    handleScrub(e.clientX);
+    if (dragStartXRef.current !== null) {
+      const diff = Math.abs(e.clientX - dragStartXRef.current);
+      if (diff > 6) {
+        isDraggingRef.current = true;
+      }
+    }
+    if (isDraggingRef.current) {
+      handleScrub(e.clientX);
+    }
+  };
+
+  const handleMouseUp = () => {
+    if (!isDraggingRef.current && onOpenDetail) {
+      // Si no hubo arrastre significativo, es un clic limpio para abrir detalles
+      onOpenDetail(vehicle);
+    }
+    dragStartXRef.current = null;
+    isDraggingRef.current = false;
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length > 0) {
+      dragStartXRef.current = e.touches[0].clientX;
+      isDraggingRef.current = false;
+    }
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (e.touches.length > 0) {
+    if (e.touches.length > 0 && dragStartXRef.current !== null) {
+      const diff = Math.abs(e.touches[0].clientX - dragStartXRef.current);
+      if (diff > 8) {
+        isDraggingRef.current = true;
+      }
       handleScrub(e.touches[0].clientX);
     }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDraggingRef.current && onOpenDetail) {
+      onOpenDetail(vehicle);
+    }
+    dragStartXRef.current = null;
+    isDraggingRef.current = false;
   };
 
   const handleSnapTo = (angle: number) => {
@@ -131,7 +130,7 @@ export const VehicleTurntable360: React.FC<VehicleTurntable360Props> = ({
     resumeTimeoutRef.current = setTimeout(() => {
       setIsHovered(false);
       setIsAutoSpinning(true);
-    }, 2500);
+    }, 3000);
   };
 
   const toggleAutoSpin = () => {
@@ -139,60 +138,119 @@ export const VehicleTurntable360: React.FC<VehicleTurntable360Props> = ({
     setIsHovered(false);
   };
 
+  // Cálculo de inclinación 3D y brillo de estudio cinemático según el ángulo
+  const angleRad = (rotationAngle * Math.PI) / 180;
+  const yawDegrees = Math.sin(angleRad) * 11; // Giro 3D suave de ±11 grados
+  const pitchDegrees = Math.cos(angleRad) * 2; // Inclinación sutil de ±2 grados
+  const lightPositionPercent = ((rotationAngle % 360) / 360) * 100;
+
+  // Perspectiva visual según el ángulo
+  const perspectiveLabel = useMemo(() => {
+    const deg = Math.round(((rotationAngle % 360) + 360) % 360);
+    if (deg >= 335 || deg < 25) return 'Frente Frontal';
+    if (deg >= 25 && deg < 70) return '3/4 Frontal Derecho';
+    if (deg >= 70 && deg < 115) return 'Perfil Lateral Derecho';
+    if (deg >= 115 && deg < 160) return '3/4 Trasero Derecho';
+    if (deg >= 160 && deg < 205) return 'Vista Trasera & Difusor';
+    if (deg >= 205 && deg < 250) return '3/4 Trasero Izquierdo';
+    if (deg >= 250 && deg < 295) return 'Perfil Lateral Izquierdo';
+    return '3/4 Frontal Izquierdo';
+  }, [rotationAngle]);
+
   return (
     <div
       ref={containerRef}
+      onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => {
         setIsHovered(false);
-        setIsAutoSpinning(true);
+        dragStartXRef.current = null;
+        isDraggingRef.current = false;
       }}
-      className={`relative w-full overflow-hidden rounded-2xl bg-carbon-950 border border-carbon-800 shadow-2xl select-none group cursor-ew-resize ${className}`}
+      className={`relative w-full overflow-hidden rounded-3xl bg-carbon-950 border border-carbon-800 shadow-2xl select-none group cursor-pointer ${className}`}
+      title="Clic para ver detalles y galería completa · Desliza para girar 360°"
     >
       {/* 1. ILUMINACIÓN CENITAL DE ESTUDIO SHOWROOM */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[380px] bg-gradient-to-b from-gold-500/20 via-gold-500/5 to-transparent rounded-full blur-3xl pointer-events-none z-10" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[850px] h-[400px] bg-gradient-to-b from-gold-500/20 via-gold-500/5 to-transparent rounded-full blur-3xl pointer-events-none z-10" />
 
       {/* 2. PLATAFORMA GIRATORIA 3D ILUMINADA EN EL SUELO */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] sm:w-[75%] h-36 pointer-events-none z-10">
+      <div className="absolute bottom-5 sm:bottom-8 left-1/2 -translate-x-1/2 w-[92%] sm:w-[78%] h-40 pointer-events-none z-10">
         <div
           className="w-full h-full rounded-[100%] border-2 border-gold-500/40 shadow-showroom-glow transition-all duration-300"
           style={{
-            background: 'radial-gradient(ellipse at center, rgba(212, 175, 55, 0.18) 0%, rgba(20, 23, 31, 0.7) 65%, transparent 100%)',
-            transform: 'rotateX(72deg)',
-            boxShadow: '0 0 60px rgba(212, 175, 55, 0.3), inset 0 0 35px rgba(212, 175, 55, 0.2)',
+            background: 'radial-gradient(ellipse at center, rgba(212, 175, 55, 0.22) 0%, rgba(20, 23, 31, 0.8) 60%, transparent 100%)',
+            transform: 'rotateX(74deg)',
+            boxShadow: '0 0 70px rgba(212, 175, 55, 0.35), inset 0 0 40px rgba(212, 175, 55, 0.25)',
           }}
         >
-          {/* Marcadores circulares que rotan en tiempo real con el carro */}
+          {/* Marcadores radiales que giran en tiempo real con el ángulo exacto */}
           <div
-            className="w-full h-full rounded-full border border-dashed border-gold-400/40"
+            className="w-full h-full rounded-full border border-dashed border-gold-400/50"
             style={{ transform: `rotate(${rotationAngle}deg)` }}
+          />
+
+          {/* Anillo interior concéntrico */}
+          <div
+            className="absolute inset-4 rounded-full border border-gold-400/20"
+            style={{ transform: `rotate(${-rotationAngle * 0.5}deg)` }}
           />
         </div>
       </div>
 
-      {/* 3. PROTAGONISTA: FOTOGRAMA NÍTIDO EN GIRO CONTINUO 360 */}
+      {/* 3. FOTO PRINCIPAL DEL AUTO EN GIRO 3D PRO */}
       <div className="relative aspect-[16/9] sm:aspect-[21/9] w-full flex items-center justify-center overflow-hidden z-20">
         
-        {/* Imagen del vehículo sólida, nítida y en rotación */}
-        <img
-          key={`frame-${currentFrame.angle}-${currentFrame.isFlipped ? 'flip' : 'normal'}`}
-          src={currentFrame.image}
-          alt={`${vehicle.brand} ${vehicle.model} - ${currentFrame.name}`}
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-150"
+        {/* Contenedor del vehículo con perspectiva 3D realista y reflejo de estudio */}
+        <div
+          className="relative w-full h-full flex items-center justify-center transition-transform duration-100 ease-out"
           style={{
-            transform: `scale(1.02) ${currentFrame.isFlipped ? 'scaleX(-1)' : ''}`,
+            perspective: '1200px',
+            transform: `perspective(1200px) rotateY(${yawDegrees}deg) rotateX(${pitchDegrees}deg) scale(1.02)`,
           }}
-        />
+        >
+          {/* FOTO PRINCIPAL DEL VEHÍCULO (Nítida, fiel al modelo, sin deformaciones) */}
+          <img
+            src={vehicle.mainImage}
+            alt={`${vehicle.brand} ${vehicle.model} - Foto Oficial`}
+            className="w-full h-full object-cover object-center select-none filter contrast-[1.03] brightness-[0.98] group-hover:brightness-105 transition-all duration-500"
+            draggable={false}
+          />
+
+          {/* Destello de luz especular dinámica que barre la carrocería al girar el plato */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-40 mix-blend-overlay transition-all duration-75"
+            style={{
+              background: `linear-gradient(105deg, transparent ${lightPositionPercent - 25}%, rgba(255,255,255,0.45) ${lightPositionPercent}%, rgba(212,175,55,0.3) ${lightPositionPercent + 10}%, transparent ${lightPositionPercent + 25}%)`,
+            }}
+          />
+
+          {/* Sombra de contacto suave en las ruedas */}
+          <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 w-[85%] h-14 bg-black/60 blur-xl rounded-full pointer-events-none" />
+        </div>
 
         {/* Reflejo difuso en el suelo de cristal negro */}
-        <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-carbon-950 via-carbon-950/60 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-carbon-950 via-carbon-950/70 to-transparent pointer-events-none" />
+
+        {/* Overlay CTA interactivo flotante en Hover */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none bg-black/30 backdrop-blur-[2px]">
+          <div className="flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-carbon-950/90 border border-gold-500/60 shadow-2xl text-gold-300 text-xs sm:text-sm font-bold tracking-wider uppercase backdrop-blur-xl animate-bounce-gentle">
+            <Sparkles className="w-4 h-4 text-gold-400" />
+            <span>Clic para ver Ficha Técnica y Galería Completa</span>
+            <ExternalLink className="w-4 h-4 text-gold-400 ml-1" />
+          </div>
+        </div>
+
       </div>
 
       {/* 4. HUD SUPERIOR: ESTADO DEL GIRO Y BRÚJULA */}
       <div className="absolute top-4 left-4 right-4 z-30 flex items-center justify-between pointer-events-none">
         
-        {/* Badge 360° activo con dial de grados */}
+        {/* Dial 360° interactivo con grados */}
         <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-carbon-950/90 border border-gold-500/40 backdrop-blur-md shadow-xl pointer-events-auto">
           <div className="relative w-4 h-4 flex items-center justify-center">
             <Compass
@@ -203,40 +261,40 @@ export const VehicleTurntable360: React.FC<VehicleTurntable360Props> = ({
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] font-bold text-gold-400 uppercase tracking-widest font-mono">
-                {Math.round(rotationAngle)}° 360° TURNTABLE
+                {Math.round(rotationAngle)}° 360° SHOWROOM
               </span>
               <span className={`w-2 h-2 rounded-full ${isAutoSpinning && !isHovered ? 'bg-emerald-400 animate-ping' : 'bg-gold-400'}`} />
             </div>
             <span className="text-[11px] font-semibold text-silver-100">
-              {currentFrame.name}
+              {perspectiveLabel}
             </span>
           </div>
         </div>
 
-        {/* Indicador de estado de rotación suave */}
+        {/* Indicador de ayuda al usuario */}
         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-carbon-950/80 border border-white/10 text-xs text-silver-300 backdrop-blur-md">
           {isHovered ? (
             <>
               <Hand className="w-3.5 h-3.5 text-gold-400 animate-pulse" />
-              <span className="text-gold-300">Control Manual Activo (Desliza el cursor)</span>
+              <span className="text-gold-300">Arrastra para girar · Clic para explorar</span>
             </>
           ) : (
             <>
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400 animate-spin" />
-              <span>Giro suave continuo automático</span>
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Giro automático continuo de showroom</span>
             </>
           )}
         </div>
 
         {/* Controles de Velocidad y Pausa */}
-        <div className="flex items-center gap-1.5 pointer-events-auto">
+        <div className="flex items-center gap-1.5 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
           {/* Selector de velocidad */}
           <div className="hidden md:flex items-center p-1 rounded-xl bg-carbon-950/80 border border-white/10 backdrop-blur-md">
             <Sliders className="w-3 h-3 text-silver-400 ml-1 mr-1.5" />
             <button
               onClick={() => setSpeed('slow')}
               className={`px-2 py-0.5 text-[10px] rounded font-semibold transition-colors ${speed === 'slow' ? 'bg-gold-500 text-carbon-950' : 'text-silver-400 hover:text-silver-200'}`}
-              title="Giro lento majestuoso (16s)"
+              title="Giro lento majestuoso (18s)"
             >
               Lento
             </button>
@@ -260,7 +318,7 @@ export const VehicleTurntable360: React.FC<VehicleTurntable360Props> = ({
           <button
             onClick={toggleAutoSpin}
             className="p-2 rounded-xl bg-carbon-950/90 hover:bg-carbon-900 border border-white/10 text-silver-300 hover:text-gold-400 backdrop-blur-md transition-all active:scale-95 shadow-lg"
-            title={isAutoSpinning ? 'Pausar auto-giro' : 'Reanudar auto-giro suave'}
+            title={isAutoSpinning ? 'Pausar auto-giro' : 'Reanudar auto-giro'}
             aria-label="Alternar giro automático"
           >
             {isAutoSpinning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 text-emerald-400" />}
@@ -269,11 +327,11 @@ export const VehicleTurntable360: React.FC<VehicleTurntable360Props> = ({
 
       </div>
 
-      {/* 5. BARRA INFERIOR DE PERSPECTIVAS RÁPIDAS */}
+      {/* 5. BARRA INFERIOR DE PERSPECTIVAS RÁPIDAS Y ENLACE DIRECTO */}
       <div className="absolute bottom-4 inset-x-4 z-30 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
         
         {/* Botones de Ángulos Clave */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-carbon-950/90 border border-white/10 backdrop-blur-md pointer-events-auto shadow-xl">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-carbon-950/90 border border-white/10 backdrop-blur-md pointer-events-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
           {[
             { label: 'Frente', deg: 0 },
             { label: '3/4 Frontal', deg: 45 },
@@ -291,10 +349,22 @@ export const VehicleTurntable360: React.FC<VehicleTurntable360Props> = ({
           ))}
         </div>
 
-        {/* Indicador de Giro Activo */}
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-carbon-900/90 border border-gold-500/30 text-[10px] text-gold-400 font-semibold tracking-widest uppercase shadow-md">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-          <span>GIRANDO AUTOMÁTICAMENTE</span>
+        {/* Indicador de Acción y Giro Activo */}
+        <div className="flex items-center gap-2 pointer-events-auto">
+          {onOpenDetail && (
+            <button
+              onClick={() => onOpenDetail(vehicle)}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-500 hover:bg-gold-400 text-carbon-950 text-[10px] font-bold tracking-widest uppercase shadow-lg transition-colors"
+            >
+              <span>Ver Ficha & Galería</span>
+              <ExternalLink className="w-3 h-3" />
+            </button>
+          )}
+
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-carbon-900/90 border border-gold-500/30 text-[10px] text-gold-400 font-semibold tracking-widest uppercase shadow-md">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+            <span>360° PRO SHOWROOM</span>
+          </div>
         </div>
 
       </div>
