@@ -162,7 +162,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
   });
 
   return (
-    <div className="min-h-screen bg-carbon-950 text-silver-100 pt-24 pb-20">
+    <div className="min-h-screen bg-carbon-950 text-silver-100 pt-28 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Breadcrumb Navigation (Regla 17: SEO y navegación) */}
