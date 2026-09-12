@@ -4,7 +4,9 @@ import { Vehicle } from '../../types/vehicle';
 import { VehicleShowcase } from '../showcase/VehicleShowcase';
 import { StatusBadge } from './Badge';
 import { Button } from './Button';
-import { formatCurrency, getCategoryLabel } from '../../utils/formatters';
+import { getCategoryLabel } from '../../utils/formatters';
+import { useCurrency } from '../../context/CurrencyContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -19,6 +21,9 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
   onQuickBook,
   layoutMode = 'grid',
 }) => {
+  const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
+
   const isAvailable = vehicle.status === 'AVAILABLE';
   const isRented = vehicle.status === 'RENTED';
   const isMaintenance = vehicle.status === 'MAINTENANCE';
@@ -125,10 +130,11 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
           <div>
             <div className="text-[11px] text-silver-400">Tarifa diaria</div>
             <div className="text-lg font-bold text-silver-100 font-mono">
-              {formatCurrency(vehicle.pricePerDay)}
-              <span className="text-xs font-normal text-silver-400"> / día</span>
+              {formatPrice(vehicle.pricePerDay)}
+              <span className="text-xs font-normal text-silver-400"> {t.specs.perDay}</span>
             </div>
           </div>
+
 
           <div className="flex items-center gap-2">
             {isAvailable ? (

@@ -1,0 +1,116 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+export type CurrencyCode = 'USD' | 'EUR' | 'COP';
+
+export interface CurrencyConfig {
+  code: CurrencyCode;
+  symbol: string;
+  label: string;
+  flag: string;
+  rateAgainstUSD: number; // 1 USD = X Currency
+  decimals: number;
+}
+
+export const CURRENCY_CONFIGS: Record<CurrencyCode, CurrencyConfig> = {
+  USD: {
+    code: 'USD',
+    symbol: '$',
+    label: 'USD ($)',
+    flag: '🇺🇸',
+    rateAgainstUSD: 1,
+    decimals: 0,
+  },
+  EUR: {
+    code: 'EUR',
+    symbol: '€',
+    label: 'EUR (€)',
+    flag: '🇪🇺',
+    rateAgainstUSD: 0.92,
+    decimals: 0,
+  },
+  COP: {
+    code: 'COP',
+    symbol: '$',
+    label: 'COP ($)',
+    flag: '🇨🇴',
+    rateAgainstUSD: 4150,
+    decimals: 0,
+  },
+};
+
+interface CurrencyContextType {
+  currency: CurrencyCode;
+  setCurrency: (currency: CurrencyCode) => void;
+  config: CurrencyConfig;
+  convertPrice: (amountInUSD: number) => number;
+  formatPrice: (amountInUSD: number) => string;
+}
+
+const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
+
+const LOCAL_STORAGE_KEY = 'elite_wheels_selected_currency';
+
+export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [currency, setCurrencyState] = useState<CurrencyCode>('USD');
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY) as CurrencyCode;
+      if (saved && CURRENCY_CONFIGS[saved]) {
+        setCurrencyState(saved);
+      }
+    } catch (e) {
+      console.warn('Error al leer divisa guardada:', e);
+    }
+  }, []);
+
+  const setCurrency = (newCurrency: CurrencyCode) => {
+    setCurrencyState(newCurrency);
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, newCurrency);
+    } catch (e) {
+      console.warn('Error al guardar divisa:', e);
+    }
+  };
+
+  const config = CURRENCY_CONFIGS[currency];
+
+  const convertPrice = (amountInUSD: number): number => {
+    return Math.round(amountInUSD * config.rateAgainstUSD);
+  };
+
+  const formatPrice = (amountInUSD: number): string => {
+    const converted = convertPrice(amountInUSD);
+    const locale = currency === 'COP' ? 'es-CO' : currency === 'EUR' ? 'de-DE' : 'en-US';
+
+    const formatted = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: config.code,
+      maximumFractionDigits: config.decimals,
+    }).format(converted);
+
+    return formatted;
+  };
+
+  return (
+    <CurrencyContext.Provider
+      value={{
+        currency,
+        setCurrency,
+        config,
+        convertPrice,
+        formatPrice,
+      }}
+    >
+      {children}
+    </CurrencyContext.Provider>
+  );
+};
+
+export const useCurrency = (): CurrencyContextType => {
+  const context = useContext(CurrencyContext);
+  if (!context) {
+    throw new Error('useCurrency debe ser utilizado dentro de un CurrencyProvider');
+  }
+  return context;
+};

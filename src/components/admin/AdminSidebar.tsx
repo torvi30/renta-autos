@@ -10,10 +10,11 @@ import {
   X,
   Sparkles,
   CalendarDays,
+  TrendingUp,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
-export type AdminTab = 'dashboard' | 'fleet' | 'reservations' | 'clients' | 'calendar';
+export type AdminTab = 'dashboard' | 'fleet' | 'reservations' | 'clients' | 'calendar' | 'analytics';
 
 interface AdminSidebarProps {
   currentTab: AdminTab;
@@ -65,7 +66,14 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       icon: Users,
       badge: null,
     },
+    {
+      id: 'analytics' as AdminTab,
+      label: 'Analítica & Finanzas',
+      icon: TrendingUp,
+      badge: null,
+    },
   ];
+
 
   return (
     <>

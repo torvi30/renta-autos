@@ -17,6 +17,9 @@ import { VehicleModal } from './components/showcase/VehicleModal';
 import { QuickReservationModal } from './components/landing/QuickReservationModal';
 import { ProtectedRoute } from './components/admin/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
+import { CurrencyProvider } from './context/CurrencyContext';
+import { LanguageProvider } from './context/LanguageContext';
+
 
 // Code-Splitting dinámico para máxima velocidad de carga (Fase 11)
 const CatalogPage = React.lazy(() =>
@@ -325,10 +328,15 @@ const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <CurrencyProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </LanguageProvider>
+    </CurrencyProvider>
   );
 };
+
 
 export default App;

@@ -25,7 +25,9 @@ import { AdminReservationsView } from '../../components/admin/AdminReservationsV
 import { AdminFleetView } from '../../components/admin/AdminFleetView';
 import { AdminClientsView } from '../../components/admin/AdminClientsView';
 import { AdminCalendarView } from '../../components/admin/AdminCalendarView';
+import { AdminAnalyticsView } from '../../components/admin/AdminAnalyticsView';
 import { AdminVehicleModal } from '../../components/admin/AdminVehicleModal';
+
 import {
   Menu,
   Clock,
@@ -826,7 +828,20 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
             </div>
           )}
 
+          {/* ============================================================ */}
+          {/* PESTAÑA 6: ANALÍTICA FINANCIERA & BI                         */}
+          {/* ============================================================ */}
+          {currentTab === 'analytics' && (
+            <div className="animate-fade-in">
+              <AdminAnalyticsView
+                vehicles={vehicles}
+                reservations={reservations}
+              />
+            </div>
+          )}
+
         </main>
+
 
       </div>
 
