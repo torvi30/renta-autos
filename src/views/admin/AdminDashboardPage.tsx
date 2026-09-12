@@ -26,6 +26,7 @@ import { AdminFleetView } from '../../components/admin/AdminFleetView';
 import { AdminClientsView } from '../../components/admin/AdminClientsView';
 import { AdminCalendarView } from '../../components/admin/AdminCalendarView';
 import { AdminAnalyticsView } from '../../components/admin/AdminAnalyticsView';
+import { AdminSettingsView } from '../../components/admin/AdminSettingsView';
 import { AdminVehicleModal } from '../../components/admin/AdminVehicleModal';
 
 import {
@@ -837,6 +838,15 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
                 vehicles={vehicles}
                 reservations={reservations}
               />
+            </div>
+          )}
+
+          {/* ============================================================ */}
+          {/* PESTAÑA 7: AJUSTES & EMPRESA (CONFIGURACIÓN SHOWROOM)        */}
+          {/* ============================================================ */}
+          {currentTab === 'settings' && (
+            <div className="animate-fade-in">
+              <AdminSettingsView />
             </div>
           )}
 

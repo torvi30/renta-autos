@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Phone, Sparkles, Compass, Lock, Globe } from 'lucide-react';
 import { Button } from './Button';
-import { generateWhatsAppLink } from '../../utils/formatters';
 import { useCurrency, CurrencyCode } from '../../context/CurrencyContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useSettings } from '../../context/SettingsContext';
 
 interface NavbarProps {
   currentRoute?: 'home' | 'catalog';
@@ -27,6 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const { currency, setCurrency } = useCurrency();
   const { language, setLanguage, t } = useLanguage();
+  const { settings, getWhatsAppLink } = useSettings();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -89,7 +90,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
-  const whatsAppLink = generateWhatsAppLink({});
+  const whatsAppLink = getWhatsAppLink();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
@@ -110,7 +111,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                 </span>
                 <span className="font-semibold text-silver-300">
-                  {language === 'ES' ? 'Showroom Medellín' : 'Medellín Showroom'}
+                  {settings.city.includes('Medellín')
+                    ? (language === 'ES' ? 'Showroom Medellín' : 'Medellín Showroom')
+                    : settings.city}
                 </span>
               </div>
               <span className="hidden sm:inline text-carbon-700">•</span>
@@ -210,7 +213,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </span>
                 </div>
                 <span className="text-base sm:text-lg tracking-[0.14em] font-black text-silver-100 uppercase leading-tight font-display">
-                  CAR RENTAL
+                  {settings.companyName ? settings.companyName.replace(/Premium\s*/i, '') : 'CAR RENTAL'}
                 </span>
               </div>
             </button>

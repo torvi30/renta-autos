@@ -1,0 +1,520 @@
+import React, { useState } from 'react';
+import {
+  Building2,
+  Phone,
+  Mail,
+  Clock,
+  MapPin,
+  ShieldCheck,
+  Save,
+  CheckCircle2,
+  ExternalLink,
+  Sparkles,
+  MessageSquare,
+  Globe,
+  Award,
+  RefreshCw,
+  Plus,
+  Trash2,
+} from 'lucide-react';
+import { useSettings } from '../../context/SettingsContext';
+import { CompanySettings } from '../../types/settings';
+
+export const AdminSettingsView: React.FC = () => {
+  const { settings, updateSettings, isSaving, getWhatsAppLink } = useSettings();
+  const [formData, setFormData] = useState<CompanySettings>({ ...settings });
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [newLocation, setNewLocation] = useState('');
+
+  const handleChange = (field: keyof CompanySettings, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handlePolicyChange = (field: keyof CompanySettings['policies'], value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      policies: {
+        ...prev.policies,
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleAddLocation = () => {
+    if (!newLocation.trim()) return;
+    setFormData((prev) => ({
+      ...prev,
+      pickupLocations: [...prev.pickupLocations, newLocation.trim()],
+    }));
+    setNewLocation('');
+  };
+
+  const handleRemoveLocation = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      pickupLocations: prev.pickupLocations.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await updateSettings(formData);
+    setShowSuccessToast(true);
+    setTimeout(() => {
+      setShowSuccessToast(false);
+    }, 4000);
+  };
+
+  const testWhatsAppUrl = getWhatsAppLink({
+    vehicleName: 'Porsche 911 GT3 RS',
+    clientName: 'Víctor Tamayo (Prueba Staff)',
+  });
+
+  return (
+    <div className="space-y-8 animate-fade-in pb-16">
+      
+      {/* ========================================================================= */}
+      {/* CABECERA EJECUTIVA DE AJUSTES                                             */}
+      {/* ========================================================================= */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-carbon-900/90 border border-carbon-800 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 shadow-inner">
+            <Building2 className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider font-display">
+                Configuración de Empresa & Showroom
+              </h1>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-gold-500/20 text-gold-300 border border-gold-500/30">
+                EN VIVO
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-silver-400 mt-1">
+              Personaliza el número de WhatsApp oficial, correos, horarios y textos que se proyectan en el Footer y en toda la plataforma.
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={handleSubmit}
+          disabled={isSaving}
+          className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black text-sm uppercase tracking-wider transition-all shadow-lg shadow-gold-500/20 hover:shadow-gold-500/40 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+        >
+          {isSaving ? (
+            <>
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              <span>Guardando...</span>
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" />
+              <span>Guardar Cambios</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Alerta de Éxito Flotante */}
+      {showSuccessToast && (
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-sm animate-fade-in shadow-xl backdrop-blur-md">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+          <div>
+            <span className="font-bold">¡Configuración actualizada con éxito!</span> Los cambios ya están activos en el Footer, Navbar y enlaces de WhatsApp de toda la plataforma.
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* ========================================================================= */}
+        {/* COLUMNA IZQUIERDA: FORMULARIO DE AJUSTES (7 Columnas)                     */}
+        {/* ========================================================================= */}
+        <div className="lg:col-span-7 space-y-6">
+          
+          {/* Bloque 1: Canales Concierge & WhatsApp (MÁS IMPORTANTE) */}
+          <div className="bg-carbon-900/80 border border-carbon-800 p-6 rounded-2xl space-y-5 shadow-lg">
+            <div className="flex items-center justify-between border-b border-carbon-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Phone className="w-5 h-5 text-emerald-400" />
+                <h3 className="text-base font-bold text-white uppercase tracking-wider font-display">
+                  Canales Concierge & WhatsApp Oficial
+                </h3>
+              </div>
+              <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                Recepción de Reservas
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+              {/* WhatsApp Oficial */}
+              <div className="sm:col-span-2 space-y-1.5 bg-carbon-950/60 p-4 rounded-xl border border-carbon-800">
+                <label className="block text-xs font-bold text-silver-200 uppercase tracking-wider flex items-center justify-between">
+                  <span>Número de WhatsApp para Enlace Directo (wa.me) *</span>
+                  <span className="text-[10px] text-emerald-400 font-mono">Código país + número</span>
+                </label>
+                <div className="flex items-center gap-2">
+                  <div className="px-3 py-2.5 rounded-xl bg-carbon-900 border border-carbon-750 text-silver-300 font-mono text-sm">
+                    wa.me/
+                  </div>
+                  <input
+                    type="text"
+                    value={formData.whatsappPhone}
+                    onChange={(e) => handleChange('whatsappPhone', e.target.value.replace(/[^0-9]/g, ''))}
+                    placeholder="573009115898"
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-carbon-900 border border-carbon-750 text-white font-mono text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                    required
+                  />
+                </div>
+                <p className="text-[11px] text-silver-400">
+                  Ingresa solo números con código de país (ej. para Colombia: <code className="text-gold-400">573001234567</code>). Todos los botones "WhatsApp Concierge" enviarán a este número.
+                </p>
+              </div>
+
+              {/* Teléfono de Llamadas / Línea Directa */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
+                  Teléfono Visible en Footer / PBX
+                </label>
+                <input
+                  type="text"
+                  value={formData.phone}
+                  onChange={(e) => handleChange('phone', e.target.value)}
+                  placeholder="+57 (300) 911-5898"
+                  className="w-full px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white font-mono text-sm focus:outline-none focus:border-gold-500 transition-colors"
+                  required
+                />
+              </div>
+
+              {/* Correo Electrónico Concierge */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
+                  Correo Concierge Oficial
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  placeholder="concierge@premiumcarrental.com"
+                  className="w-full px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm focus:outline-none focus:border-gold-500 transition-colors"
+                  required
+                />
+              </div>
+
+              {/* Horario de Atención */}
+              <div className="sm:col-span-2 space-y-1.5">
+                <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
+                  Horario de Atención Oficial
+                </label>
+                <div className="relative">
+                  <Clock className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3" />
+                  <input
+                    type="text"
+                    value={formData.businessHours}
+                    onChange={(e) => handleChange('businessHours', e.target.value)}
+                    placeholder="Atención 24/7 / 365 días"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm focus:outline-none focus:border-gold-500 transition-colors"
+                    required
+                  />
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Bloque 2: Identidad de Marca & Filosofía */}
+          <div className="bg-carbon-900/80 border border-carbon-800 p-6 rounded-2xl space-y-4 shadow-lg">
+            <div className="flex items-center gap-2 border-b border-carbon-800 pb-3">
+              <Sparkles className="w-5 h-5 text-gold-400" />
+              <h3 className="text-base font-bold text-white uppercase tracking-wider font-display">
+                Identidad de Marca & Reseña
+              </h3>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
+                  Nombre Comercial de la Empresa
+                </label>
+                <input
+                  type="text"
+                  value={formData.companyName}
+                  onChange={(e) => handleChange('companyName', e.target.value)}
+                  placeholder="Premium Car Rental"
+                  className="w-full px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm font-semibold focus:outline-none focus:border-gold-500 transition-colors"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
+                  Reseña / Eslogan de Filosofía (Texto del Footer)
+                </label>
+                <textarea
+                  rows={3}
+                  value={formData.tagline}
+                  onChange={(e) => handleChange('tagline', e.target.value)}
+                  placeholder="La experiencia definitiva en alquiler de vehículos de alta gama y superdeportivos..."
+                  className="w-full px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm focus:outline-none focus:border-gold-500 transition-colors resize-none"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Bloque 3: Ubicación y Puntos de Entrega VIP */}
+          <div className="bg-carbon-900/80 border border-carbon-800 p-6 rounded-2xl space-y-4 shadow-lg">
+            <div className="flex items-center gap-2 border-b border-carbon-800 pb-3">
+              <MapPin className="w-5 h-5 text-gold-400" />
+              <h3 className="text-base font-bold text-white uppercase tracking-wider font-display">
+                Sede Central & Logística
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
+                  Dirección del Showroom
+                </label>
+                <input
+                  type="text"
+                  value={formData.address}
+                  onChange={(e) => handleChange('address', e.target.value)}
+                  placeholder="Showroom Central: Cra 43A #1-50, El Poblado"
+                  className="w-full px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm focus:outline-none focus:border-gold-500 transition-colors"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
+                  Ciudad / Región
+                </label>
+                <input
+                  type="text"
+                  value={formData.city}
+                  onChange={(e) => handleChange('city', e.target.value)}
+                  placeholder="Medellín, Colombia"
+                  className="w-full px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm focus:outline-none focus:border-gold-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Puntos de Entrega */}
+            <div className="space-y-2 pt-2">
+              <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
+                Bases de Entrega VIP Oficiales
+              </label>
+              
+              <div className="space-y-2">
+                {formData.pickupLocations.map((loc, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-xs text-silver-200">
+                    <span className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gold-400" />
+                      {loc}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveLocation(idx)}
+                      className="text-silver-500 hover:text-red-400 transition-colors"
+                      title="Eliminar punto"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <input
+                  type="text"
+                  value={newLocation}
+                  onChange={(e) => setNewLocation(e.target.value)}
+                  placeholder="Agregar nuevo punto (ej: Hotel The Charlee)"
+                  className="flex-1 px-3 py-2 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-xs focus:outline-none focus:border-gold-500"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddLocation();
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddLocation}
+                  className="px-3 py-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-gold-400 border border-carbon-700 text-xs font-bold flex items-center gap-1 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Añadir</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bloque 4: Textos de Póliza & Certificación */}
+          <div className="bg-carbon-900/80 border border-carbon-800 p-6 rounded-2xl space-y-4 shadow-lg">
+            <div className="flex items-center gap-2 border-b border-carbon-800 pb-3">
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+              <h3 className="text-base font-bold text-white uppercase tracking-wider font-display">
+                Garantías & Distintivos VIP
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
+                  Etiqueta de Cobertura
+                </label>
+                <input
+                  type="text"
+                  value={formData.policies.coverageText}
+                  onChange={(e) => handlePolicyChange('coverageText', e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-xs focus:outline-none focus:border-gold-500"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
+                  Etiqueta de Certificación
+                </label>
+                <input
+                  type="text"
+                  value={formData.policies.certificationText}
+                  onChange={(e) => handlePolicyChange('certificationText', e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-xs focus:outline-none focus:border-gold-500"
+                />
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* ========================================================================= */}
+        {/* COLUMNA DERECHA: VISTA PREVIA EN VIVO & TEST WHATSAPP (5 Columnas)        */}
+        {/* ========================================================================= */}
+        <div className="lg:col-span-5 space-y-6">
+          
+          {/* Card de Prueba Inmediata de WhatsApp */}
+          <div className="bg-gradient-to-br from-emerald-950/40 via-carbon-900 to-carbon-950 border border-emerald-500/30 p-5 rounded-2xl space-y-3 shadow-xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
+                <MessageSquare className="w-4 h-4" />
+                <span>Test en Vivo de WhatsApp</span>
+              </div>
+              <span className="text-[10px] font-mono text-silver-400 bg-carbon-900 px-2 py-0.5 rounded border border-carbon-800">
+                +wa.me
+              </span>
+            </div>
+
+            <p className="text-xs text-silver-300 leading-relaxed">
+              Haz clic abajo para simular el mensaje de cotización de un cliente y corroborar que se abra tu WhatsApp correctamente:
+            </p>
+
+            <a
+              href={testWhatsAppUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-carbon-950 font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20"
+            >
+              <Phone className="w-4 h-4 text-carbon-950 fill-carbon-950" />
+              <span>Probar Enlace WhatsApp Ahora</span>
+              <ExternalLink className="w-3.5 h-3.5 ml-1" />
+            </a>
+          </div>
+
+          {/* SIMULADOR EN VIVO DEL FOOTER */}
+          <div className="bg-carbon-900/90 border border-carbon-800 p-6 rounded-2xl space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-carbon-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-gold-400" />
+                <h3 className="text-xs font-bold text-white uppercase tracking-wider font-display">
+                  Simulador de Footer en Vivo
+                </h3>
+              </div>
+              <span className="text-[10px] font-mono text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded border border-gold-500/20">
+                Reactivo
+              </span>
+            </div>
+
+            {/* Réplica a escala reducida del Footer */}
+            <div className="bg-carbon-950 p-5 rounded-xl border border-carbon-850 space-y-4 text-silver-400 font-sans shadow-inner">
+              
+              {/* Identidad */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-carbon-900 border border-gold-500/30 flex items-center justify-center">
+                    <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+                  </div>
+                  <span className="text-xs font-black tracking-wider text-white uppercase font-display">
+                    {formData.companyName || 'PREMIUM CAR RENTAL'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-silver-400 leading-relaxed italic line-clamp-3">
+                  "{formData.tagline}"
+                </p>
+                
+                <div className="flex flex-col gap-1 text-[10px] text-silver-300 pt-1">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                    <span className="truncate">{formData.policies.coverageText}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Award className="w-3 h-3 text-gold-400 flex-shrink-0" />
+                    <span className="truncate">{formData.policies.certificationText}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-px bg-carbon-850" />
+
+              {/* Contacto directo simulado */}
+              <div className="space-y-2 text-xs">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-silver-300">
+                  Contacto Concierge
+                </span>
+                <div className="space-y-1.5 text-[11px]">
+                  <div className="flex items-center gap-2 text-silver-200">
+                    <Phone className="w-3 h-3 text-gold-400" />
+                    <span className="font-mono">{formData.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-silver-200 truncate">
+                    <Mail className="w-3 h-3 text-gold-400" />
+                    <span>{formData.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-emerald-400">
+                    <Clock className="w-3 h-3" />
+                    <span>{formData.businessHours}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-silver-400 text-[10px]">
+                    <MapPin className="w-3 h-3 text-gold-400" />
+                    <span>{formData.address}, {formData.city}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-px bg-carbon-850" />
+
+              {/* Copyright */}
+              <div className="text-[10px] text-silver-500 flex justify-between items-center">
+                <span>© {new Date().getFullYear()} {formData.companyName}.</span>
+                <span className="text-gold-400/80">Portal Corporativo</span>
+              </div>
+
+            </div>
+
+            <p className="text-[11px] text-silver-500 text-center">
+              Esta simulación se actualiza en tiempo real según los campos que escribas a la izquierda.
+            </p>
+          </div>
+
+        </div>
+
+      </form>
+
+    </div>
+  );
+};

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { MessageSquare, Send, X, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MessageSquare, X, Send, ShieldCheck } from 'lucide-react';
 import { Vehicle } from '../../types/vehicle';
 import { Button } from '../common/Button';
-import { generateWhatsAppLink } from '../../utils/formatters';
+import { useSettings } from '../../context/SettingsContext';
 
 interface WhatsAppConciergeProps {
   vehicles: Vehicle[];
@@ -14,12 +14,13 @@ interface WhatsAppConciergeProps {
 export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
   vehicles,
   selectedVehicle: initialVehicle,
-  isOpen: controlledIsOpen,
-  onClose: controlledOnClose,
+  isOpen: externalIsOpen,
+  onClose: externalOnClose,
 }) => {
+  const { getWhatsAppLink } = useSettings();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
-  const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
-  const handleClose = controlledOnClose || (() => setInternalIsOpen(false));
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const handleClose = externalOnClose || (() => setInternalIsOpen(false));
 
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>(
     initialVehicle?.id || vehicles[0]?.id || ''
@@ -28,12 +29,18 @@ export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
   const [endDate, setEndDate] = useState('');
   const [clientName, setClientName] = useState('');
 
+  useEffect(() => {
+    if (initialVehicle) {
+      setSelectedVehicleId(initialVehicle.id);
+    }
+  }, [initialVehicle]);
+
   const currentVehicle = vehicles.find((v) => v.id === selectedVehicleId) || initialVehicle || vehicles[0];
 
   const handleOpenWhatsApp = (e: React.FormEvent) => {
     e.preventDefault();
     // Generar enlace seguro según la Regla 30
-    const url = generateWhatsAppLink({
+    const url = getWhatsAppLink({
       vehicleName: currentVehicle ? `${currentVehicle.brand} ${currentVehicle.model} (${currentVehicle.year})` : undefined,
       startDate: startDate || undefined,
       endDate: endDate || undefined,

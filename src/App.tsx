@@ -19,6 +19,7 @@ import { ProtectedRoute } from './components/admin/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { SettingsProvider } from './context/SettingsContext';
 
 
 // Code-Splitting dinámico para máxima velocidad de carga (Fase 11)
@@ -328,13 +329,15 @@ const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <CurrencyProvider>
-      <LanguageProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
-      </LanguageProvider>
-    </CurrencyProvider>
+    <SettingsProvider>
+      <CurrencyProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </LanguageProvider>
+      </CurrencyProvider>
+    </SettingsProvider>
   );
 };
 

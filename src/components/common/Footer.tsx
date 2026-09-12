@@ -1,11 +1,15 @@
 import React from 'react';
-import { Sparkles, Shield, Clock, Phone, Mail, Award } from 'lucide-react';
+import { Sparkles, Shield, Clock, Phone, Mail, Award, MapPin, MessageSquare } from 'lucide-react';
+import { useSettings } from '../../context/SettingsContext';
 
 interface FooterProps {
   onNavigateToAdmin?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
+  const { settings, getWhatsAppLink } = useSettings();
+  const whatsAppUrl = getWhatsAppLink();
+
   return (
     <footer className="bg-carbon-950 border-t border-carbon-800/80 pt-16 pb-12 text-silver-400">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,7 +18,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
           {/* Col 1 & 2: Identidad & Filosofía */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-carbon-850 border border-gold-500/30 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-lg bg-carbon-850 border border-gold-500/30 flex items-center justify-center shadow-md shadow-gold-500/5">
                 <Sparkles className="w-5 h-5 text-gold-400" />
               </div>
               <div className="flex flex-col">
@@ -22,25 +26,32 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
                   PREMIUM
                 </span>
                 <span className="text-sm tracking-wider font-bold text-silver-100 uppercase font-display">
-                  CAR RENTAL
+                  {settings.companyName ? settings.companyName.toUpperCase() : 'CAR RENTAL'}
                 </span>
               </div>
             </div>
             
             <p className="text-sm text-silver-400 max-w-sm leading-relaxed">
-              La experiencia definitiva en alquiler de vehículos de alta gama y superdeportivos. Flota seleccionada, entrega personalizada y atención concierge 24/7.
+              {settings.tagline}
             </p>
 
-            <div className="flex items-center gap-6 pt-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-2">
               <div className="flex items-center gap-2 text-xs text-silver-300">
-                <Shield className="w-4 h-4 text-emerald-400" />
-                <span>Póliza de Cobertura Total</span>
+                <Shield className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                <span>{settings.policies.coverageText}</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-silver-300">
-                <Award className="w-4 h-4 text-gold-400" />
-                <span>Flota Certificada</span>
+                <Award className="w-4 h-4 text-gold-400 flex-shrink-0" />
+                <span>{settings.policies.certificationText}</span>
               </div>
             </div>
+
+            {settings.address && (
+              <div className="flex items-center gap-2 text-xs text-silver-400 pt-1">
+                <MapPin className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
+                <span>{settings.address} • {settings.city}</span>
+              </div>
+            )}
           </div>
 
           {/* Col 3: Navegación Rápida */}
@@ -69,24 +80,54 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
             </ul>
           </div>
 
-          {/* Col 5: Contacto Directo */}
+          {/* Col 5: Contacto Concierge Dinámico */}
           <div>
             <h4 className="text-xs font-semibold uppercase tracking-wider text-silver-200 mb-4">
               Contacto Concierge
             </h4>
             <ul className="space-y-3 text-sm">
-              <li className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-gold-400 flex-shrink-0" />
-                <span>+1 (800) 773-6486</span>
+              
+              {/* WhatsApp Directo */}
+              <li>
+                <a
+                  href={whatsAppUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2.5 text-silver-300 hover:text-emerald-400 transition-colors group"
+                >
+                  <MessageSquare className="w-4 h-4 text-emerald-400 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                  <span className="font-mono text-xs text-emerald-400 font-semibold">WhatsApp Concierge</span>
+                </a>
               </li>
-              <li className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-gold-400 flex-shrink-0" />
-                <span>concierge@premiumcarrental.com</span>
+
+              {/* Teléfono de Llamadas */}
+              <li>
+                <a
+                  href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`}
+                  className="flex items-center gap-2.5 text-silver-300 hover:text-gold-400 transition-colors"
+                >
+                  <Phone className="w-4 h-4 text-gold-400 flex-shrink-0" />
+                  <span className="font-mono">{settings.phone}</span>
+                </a>
               </li>
-              <li className="flex items-center gap-2.5">
+
+              {/* Correo Electrónico */}
+              <li>
+                <a
+                  href={`mailto:${settings.email}`}
+                  className="flex items-center gap-2.5 text-silver-300 hover:text-gold-400 transition-colors truncate"
+                >
+                  <Mail className="w-4 h-4 text-gold-400 flex-shrink-0" />
+                  <span className="truncate">{settings.email}</span>
+                </a>
+              </li>
+
+              {/* Horario de Atención */}
+              <li className="flex items-center gap-2.5 text-silver-300">
                 <Clock className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                <span>Atención 24/7 / 365 días</span>
+                <span>{settings.businessHours}</span>
               </li>
+
             </ul>
           </div>
 
@@ -94,7 +135,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
 
         {/* Legal & Copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-silver-500">
-          <p>© {new Date().getFullYear()} Premium Car Rental. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} {settings.companyName}. Todos los derechos reservados.</p>
           <div className="flex items-center gap-6">
             <a href="#" className="hover:text-silver-300 transition-colors">Términos del Servicio</a>
             <a href="#" className="hover:text-silver-300 transition-colors">Política de Privacidad</a>
