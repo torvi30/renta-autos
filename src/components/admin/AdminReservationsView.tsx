@@ -20,12 +20,17 @@ import {
   DollarSign,
   TrendingUp,
   Wrench,
+  Pencil,
+  Trash2,
+  FileCheck,
+  ClipboardCheck,
 } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
 import { getDeliveryLocationLabel, generateWhatsAppReservationLink } from '../../services/reservationService';
 import { Vehicle } from '../../types/vehicle';
 import { AdminReservationEditModal } from './AdminReservationEditModal';
-import { Pencil, Trash2 } from 'lucide-react';
+import { AdminContractModal } from './AdminContractModal';
+import { AdminInspectionModal } from './AdminInspectionModal';
 
 interface AdminReservationsViewProps {
   vehicles: Vehicle[];
@@ -48,6 +53,9 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
+  const [contractReservation, setContractReservation] = useState<Reservation | null>(null);
+  const [inspectionReservation, setInspectionReservation] = useState<Reservation | null>(null);
+
 
   const filteredReservations = useMemo(() => {
     return reservations.filter((r) => {
@@ -413,7 +421,21 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
 
                     {/* Acciones */}
                     <td className="py-4 px-6 text-center" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                        <button
+                          onClick={() => setContractReservation(res)}
+                          title="Ver Contrato y Voucher Oficial (PDF / Imprimir)"
+                          className="p-2 rounded-xl bg-carbon-800 hover:bg-gold-500/20 border border-gold-500/40 text-gold-400 transition-all shadow-sm cursor-pointer hover:scale-105"
+                        >
+                          <FileCheck className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setInspectionReservation(res)}
+                          title="Acta de Inspección Check-in / Check-out"
+                          className="p-2 rounded-xl bg-carbon-800 hover:bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 transition-all shadow-sm cursor-pointer hover:scale-105"
+                        >
+                          <ClipboardCheck className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => handleOpenClientWhatsApp(res)}
                           title="Enviar WhatsApp Concierge"
@@ -448,6 +470,7 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
                         </button>
                       </div>
                     </td>
+
                   </tr>
                 ))}
               </tbody>
@@ -563,8 +586,26 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
 
                 <div className="flex items-center gap-2 flex-wrap">
                   <button
+                    onClick={() => setContractReservation(res)}
+                    className="px-3 py-2 rounded-xl bg-carbon-800 hover:bg-gold-500/20 text-gold-400 border border-gold-500/40 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                    title="Ver Contrato y Voucher Oficial (PDF)"
+                  >
+                    <FileCheck className="w-4 h-4" />
+                    <span className="hidden sm:inline">Contrato</span>
+                  </button>
+
+                  <button
+                    onClick={() => setInspectionReservation(res)}
+                    className="px-3 py-2 rounded-xl bg-carbon-800 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                    title="Acta de Inspección Check-in / Check-out"
+                  >
+                    <ClipboardCheck className="w-4 h-4" />
+                    <span className="hidden sm:inline">Inspección</span>
+                  </button>
+
+                  <button
                     onClick={() => setEditingReservation(res)}
-                    className="px-3.5 py-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-gold-400 border border-gold-500/30 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="px-3 py-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-gold-400 border border-gold-500/30 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Pencil className="w-3.5 h-3.5" />
                     <span>Editar</span>
@@ -581,6 +622,7 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
+
 
                   {res.status === 'PENDING' && (
                     <>
@@ -743,13 +785,39 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
               </div>
 
               {/* Botones de Acción */}
-              <div className="pt-3 flex flex-col sm:flex-row gap-3">
+              <div className="pt-3 flex flex-wrap gap-2.5">
                 <button
                   onClick={() => handleOpenClientWhatsApp(selectedReservation)}
-                  className="flex-1 py-3 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-carbon-950 font-black text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 cursor-pointer"
+                  className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-carbon-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 cursor-pointer"
                 >
-                  <Send className="w-5 h-5" />
-                  <span>Enviar WhatsApp Oficial</span>
+                  <Send className="w-4 h-4" />
+                  <span>WhatsApp Oficial</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    const target = selectedReservation;
+                    setSelectedReservation(null);
+                    setContractReservation(target);
+                  }}
+                  className="py-3 px-4 rounded-xl bg-carbon-800 hover:bg-gold-500/20 border border-gold-500/40 text-gold-400 font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Generar e Imprimir Contrato Oficial"
+                >
+                  <FileCheck className="w-4 h-4" />
+                  <span>Contrato PDF</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    const target = selectedReservation;
+                    setSelectedReservation(null);
+                    setInspectionReservation(target);
+                  }}
+                  className="py-3 px-4 rounded-xl bg-carbon-800 hover:bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Acta de Inspección Check-in / Check-out"
+                >
+                  <ClipboardCheck className="w-4 h-4" />
+                  <span>Inspección</span>
                 </button>
 
                 <button
@@ -758,10 +826,10 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
                     setSelectedReservation(null);
                     setEditingReservation(target);
                   }}
-                  className="py-3 px-5 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-gold-500/40 text-gold-400 hover:text-gold-300 font-black text-sm uppercase transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                  className="py-3 px-4 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-silver-200 hover:text-white font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  <Pencil className="w-4 h-4" />
-                  <span>Editar Ficha</span>
+                  <Pencil className="w-4 h-4 text-gold-400" />
+                  <span>Editar</span>
                 </button>
 
                 <button
@@ -771,7 +839,7 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
                       setSelectedReservation(null);
                     }
                   }}
-                  className="py-3 px-5 rounded-xl bg-carbon-850 hover:bg-rose-950/80 border border-rose-500/40 text-rose-400 hover:text-rose-300 font-black text-sm uppercase transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                  className="py-3 px-4 rounded-xl bg-carbon-850 hover:bg-rose-950/80 border border-rose-500/40 text-rose-400 hover:text-rose-300 font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>Eliminar</span>
@@ -783,7 +851,7 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
                       onUpdateStatus(selectedReservation.id, 'CONFIRMED');
                       setSelectedReservation(null);
                     }}
-                    className="py-3 px-6 rounded-xl bg-gold-500 hover:bg-gold-400 text-carbon-950 font-black text-sm uppercase transition-all shadow-md active:scale-95 cursor-pointer"
+                    className="py-3 px-5 rounded-xl bg-gold-500 hover:bg-gold-400 text-carbon-950 font-black text-xs uppercase transition-all shadow-md active:scale-95 cursor-pointer ml-auto"
                   >
                     Aprobar Ahora
                   </button>
@@ -806,6 +874,23 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
         onDelete={onDeleteReservation}
       />
 
+      {/* 6. Modal de Contrato Oficial & Voucher PDF */}
+      <AdminContractModal
+        isOpen={!!contractReservation}
+        onClose={() => setContractReservation(null)}
+        reservation={contractReservation}
+        vehicle={vehicles.find((v) => v.id === contractReservation?.vehicleId)}
+      />
+
+      {/* 7. Modal de Inspección Check-in / Check-out */}
+      <AdminInspectionModal
+        isOpen={!!inspectionReservation}
+        onClose={() => setInspectionReservation(null)}
+        reservation={inspectionReservation}
+        vehicle={vehicles.find((v) => v.id === inspectionReservation?.vehicleId)}
+      />
+
     </div>
   );
 };
+
