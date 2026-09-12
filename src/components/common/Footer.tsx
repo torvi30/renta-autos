@@ -1,5 +1,17 @@
 import React from 'react';
-import { Sparkles, Shield, Clock, Phone, Mail, Award, MapPin, MessageSquare } from 'lucide-react';
+import {
+  Sparkles,
+  Shield,
+  Clock,
+  Phone,
+  Mail,
+  Award,
+  MapPin,
+  MessageSquare,
+  Instagram,
+  Facebook,
+  Youtube,
+} from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 
 interface FooterProps {
@@ -18,9 +30,17 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
           {/* Col 1 & 2: Identidad & Filosofía */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-carbon-850 border border-gold-500/30 flex items-center justify-center shadow-md shadow-gold-500/5">
-                <Sparkles className="w-5 h-5 text-gold-400" />
-              </div>
+              {settings.logoUrl ? (
+                <img
+                  src={settings.logoUrl}
+                  alt={settings.companyName}
+                  className="h-10 w-auto max-w-[150px] object-contain"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-lg bg-carbon-850 border border-gold-500/30 flex items-center justify-center shadow-md shadow-gold-500/5">
+                  <Sparkles className="w-5 h-5 text-gold-400" />
+                </div>
+              )}
               <div className="flex flex-col">
                 <span className="text-xs tracking-widest text-gold-400 font-semibold uppercase">
                   PREMIUM
@@ -38,11 +58,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-2">
               <div className="flex items-center gap-2 text-xs text-silver-300">
                 <Shield className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                <span>{settings.policies.coverageText}</span>
+                <span>{settings.policies?.coverageText}</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-silver-300">
                 <Award className="w-4 h-4 text-gold-400 flex-shrink-0" />
-                <span>{settings.policies.certificationText}</span>
+                <span>{settings.policies?.certificationText}</span>
               </div>
             </div>
 
@@ -52,6 +72,54 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
                 <span>{settings.address} • {settings.city}</span>
               </div>
             )}
+
+            {/* Redes Sociales Oficiales */}
+            <div className="flex items-center gap-2.5 pt-2">
+              {settings.socialLinks?.instagram && (
+                <a
+                  href={settings.socialLinks.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-lg bg-carbon-900 border border-carbon-800 flex items-center justify-center text-silver-400 hover:text-gold-400 hover:border-gold-500/40 transition-colors shadow-sm"
+                  aria-label="Instagram Oficial"
+                >
+                  <Instagram className="w-4 h-4" />
+                </a>
+              )}
+              {settings.socialLinks?.tiktok && (
+                <a
+                  href={settings.socialLinks.tiktok}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-lg bg-carbon-900 border border-carbon-800 flex items-center justify-center text-silver-400 hover:text-gold-400 hover:border-gold-500/40 transition-colors shadow-sm font-mono text-[10px] font-bold"
+                  aria-label="TikTok Oficial"
+                >
+                  TK
+                </a>
+              )}
+              {settings.socialLinks?.facebook && (
+                <a
+                  href={settings.socialLinks.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-lg bg-carbon-900 border border-carbon-800 flex items-center justify-center text-silver-400 hover:text-gold-400 hover:border-gold-500/40 transition-colors shadow-sm"
+                  aria-label="Facebook Oficial"
+                >
+                  <Facebook className="w-4 h-4" />
+                </a>
+              )}
+              {settings.socialLinks?.youtube && (
+                <a
+                  href={settings.socialLinks.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-lg bg-carbon-900 border border-carbon-800 flex items-center justify-center text-silver-400 hover:text-gold-400 hover:border-gold-500/40 transition-colors shadow-sm"
+                  aria-label="YouTube Oficial"
+                >
+                  <Youtube className="w-4 h-4" />
+                </a>
+              )}
+            </div>
           </div>
 
           {/* Col 3: Navegación Rápida */}

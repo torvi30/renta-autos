@@ -197,11 +197,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={handleHomeClick}
               className="flex items-center gap-3.5 group focus:outline-none text-left"
-              aria-label="Premium Car Rental - Inicio"
+              aria-label={`${settings.companyName} - Inicio`}
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-carbon-800 to-carbon-900 border border-gold-500/40 flex items-center justify-center group-hover:border-gold-400 transition-all shadow-lg shadow-gold-500/10 group-hover:shadow-gold-500/20">
-                <Sparkles className="w-5 h-5 text-gold-400 group-hover:scale-110 transition-transform" />
-              </div>
+              {settings.logoUrl ? (
+                <div className="h-10 flex items-center">
+                  <img
+                    src={settings.logoUrl}
+                    alt={settings.companyName}
+                    className="h-9 w-auto max-w-[140px] object-contain group-hover:scale-105 transition-transform"
+                  />
+                </div>
+              ) : (
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-carbon-800 to-carbon-900 border border-gold-500/40 flex items-center justify-center group-hover:border-gold-400 transition-all shadow-lg shadow-gold-500/10 group-hover:shadow-gold-500/20">
+                  <Sparkles className="w-5 h-5 text-gold-400 group-hover:scale-110 transition-transform" />
+                </div>
+              )}
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] tracking-[0.28em] text-gold-400 font-bold uppercase leading-none">

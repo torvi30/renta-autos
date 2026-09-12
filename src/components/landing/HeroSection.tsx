@@ -16,7 +16,8 @@ import { Vehicle } from '../../types/vehicle';
 import { VehicleTurntable360 } from '../showcase/VehicleTurntable360';
 import { Button } from '../common/Button';
 import { StatusBadge } from '../common/Badge';
-import { formatCurrency, generateWhatsAppLink } from '../../utils/formatters';
+import { formatCurrency } from '../../utils/formatters';
+import { useSettings } from '../../context/SettingsContext';
 
 interface HeroSectionProps {
   vehicles: Vehicle[];
@@ -34,6 +35,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   currentVehicleId,
   onVehicleChange,
 }) => {
+  const { settings, getWhatsAppLink } = useSettings();
   // Los 8 vehículos boutique principales para el Showroom Turntable Pavilion
   const showroomVehicles = useMemo(() => vehicles.slice(0, 8), [vehicles]);
 
@@ -104,7 +106,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     setTouchStartX(null);
   };
 
-  const whatsAppLink = generateWhatsAppLink({
+  const whatsAppLink = getWhatsAppLink({
     vehicleName: `${activeVehicle.brand} ${activeVehicle.model} (${activeVehicle.year})`,
   });
 
@@ -125,18 +127,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         <div className="text-center max-w-3xl mx-auto mb-6 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-carbon-850/90 border border-gold-500/40 text-xs font-semibold tracking-widest text-gold-400 uppercase mb-4 shadow-lg shadow-gold-500/5 backdrop-blur-md">
             <Sparkles className="w-3.5 h-3.5 text-gold-400 animate-pulse" />
-            <span>CONCESIONARIO SHOWROOM VIP 360° • FLOTA 2026</span>
+            <span>{settings.hero?.badge || 'CONCESIONARIO SHOWROOM VIP 360° • FLOTA 2026'}</span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white uppercase font-display leading-[1.05]">
-            TU VIAJE. <br />
+            {settings.hero?.titleLine1 || 'TU VIAJE.'} <br />
             <span className="bg-gradient-to-r from-gold-300 via-gold-400 to-amber-500 bg-clip-text text-transparent">
-              TU VEHÍCULO.
+              {settings.hero?.titleLine2 || 'TU VEHÍCULO.'}
             </span>
           </h1>
 
           <p className="mt-3 text-sm sm:text-base text-silver-300 font-light max-w-2xl mx-auto">
-            Gira cada vehículo en 360° sobre nuestro plato giratorio de exhibición. Usa las flechas o la barra inferior para pasar de un auto a otro, y haz clic para ver su ficha técnica y galería completa.
+            {settings.hero?.description || 'Gira cada vehículo en 360° sobre nuestro plato giratorio de exhibición. Usa las flechas o la barra inferior para pasar de un auto a otro, y haz clic para ver su ficha técnica y galería completa.'}
           </p>
         </div>
 

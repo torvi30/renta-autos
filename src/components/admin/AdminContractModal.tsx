@@ -12,6 +12,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
+import { useSettings } from '../../context/SettingsContext';
 
 interface AdminContractModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export const AdminContractModal: React.FC<AdminContractModalProps> = ({
   reservation,
   vehicle: _vehicle,
 }) => {
+  const { settings } = useSettings();
 
   if (!isOpen || !reservation) return null;
 
@@ -93,17 +95,25 @@ export const AdminContractModal: React.FC<AdminContractModalProps> = ({
           {/* Membrete Corporativo */}
           <div className="border-b-2 border-gold-500/60 pb-6 print:border-black print:pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Car className="w-6 h-6 text-gold-400 print:text-black" />
+              <div className="flex items-center gap-3 mb-1">
+                {settings.logoUrl ? (
+                  <img
+                    src={settings.logoUrl}
+                    alt={settings.companyName}
+                    className="h-10 w-auto max-w-[160px] object-contain print:max-h-12"
+                  />
+                ) : (
+                  <Car className="w-6 h-6 text-gold-400 print:text-black" />
+                )}
                 <span className="text-xl sm:text-2xl font-black text-white print:text-black font-display tracking-tight">
-                  ELITE WHEELS SHOWROOM
+                  {settings.companyName || 'PREMIUM CAR RENTAL'}
                 </span>
               </div>
               <p className="text-xs text-silver-400 print:text-gray-600 font-medium">
-                Alquiler de Superdeportivos & Flota de Ultra-Lujo • Medellín VIP Concierge
+                Alquiler de Superdeportivos & Flota de Ultra-Lujo • {settings.city}
               </p>
               <p className="text-[11px] text-silver-500 print:text-gray-500 font-mono">
-                Carrera 43A #1-50, El Poblado • NIT: 901.884.210-9 • concierge@elitewheels.com
+                {settings.address}, {settings.city} • NIT: 901.884.210-9 • {settings.email} • Tel: {settings.phone}
               </p>
             </div>
 

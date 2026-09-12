@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { ChevronDown, HelpCircle, FileCheck, CreditCard, UserCheck, ShieldAlert } from 'lucide-react';
+import { useSettings } from '../../context/SettingsContext';
 
 export const FaqSection: React.FC = () => {
+  const { settings } = useSettings();
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const minAge = settings.policies?.minAge || 25;
 
   const faqs = [
     {
@@ -48,8 +51,8 @@ export const FaqSection: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12">
           <div className="p-4 rounded-xl bg-carbon-900 border border-carbon-800 text-center">
             <UserCheck className="w-5 h-5 mx-auto text-gold-400 mb-2" />
-            <div className="text-xs font-bold text-silver-200">Edad 23+</div>
-            <div className="text-[10px] text-silver-400 mt-0.5">25+ en superdeportivos</div>
+            <div className="text-xs font-bold text-silver-200">Edad {minAge}+</div>
+            <div className="text-[10px] text-silver-400 mt-0.5">{minAge}+ en superdeportivos</div>
           </div>
 
           <div className="p-4 rounded-xl bg-carbon-900 border border-carbon-800 text-center">
