@@ -121,7 +121,12 @@ export const VehicleShowcase: React.FC<VehicleShowcaseProps> = ({
     'auto': '',
   }[aspectRatio];
 
-  const hasValidVideo = Boolean(videoUrl && !videoError);
+  // Detección adaptativa de modo ahorro de datos en conexiones móviles lentas
+  const isDataSaver = typeof navigator !== 'undefined' &&
+    'connection' in navigator &&
+    Boolean((navigator as any).connection?.saveData || (navigator as any).connection?.effectiveType === '2g');
+
+  const hasValidVideo = Boolean(videoUrl && !videoError && !isDataSaver);
   const hasValidImage = Boolean(imageUrl && !imageError);
 
   return (
@@ -157,6 +162,7 @@ export const VehicleShowcase: React.FC<VehicleShowcaseProps> = ({
           src={imageUrl}
           alt={altText}
           loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
           onError={() => setImageError(true)}
           className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03] ${
             hasValidVideo && isLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'

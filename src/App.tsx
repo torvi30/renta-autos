@@ -15,12 +15,36 @@ import { FaqSection } from './components/landing/FaqSection';
 import { WhatsAppConcierge } from './components/landing/WhatsAppConcierge';
 import { VehicleModal } from './components/showcase/VehicleModal';
 import { QuickReservationModal } from './components/landing/QuickReservationModal';
-import { CatalogPage } from './views/CatalogPage';
-import { VehicleDetailPage } from './views/VehicleDetailPage';
-import { AdminLoginPage } from './views/admin/AdminLoginPage';
-import { AdminDashboardPage } from './views/admin/AdminDashboardPage';
 import { ProtectedRoute } from './components/admin/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
+
+// Code-Splitting dinámico para máxima velocidad de carga (Fase 11)
+const CatalogPage = React.lazy(() =>
+  import('./views/CatalogPage').then((m) => ({ default: m.CatalogPage }))
+);
+const VehicleDetailPage = React.lazy(() =>
+  import('./views/VehicleDetailPage').then((m) => ({ default: m.VehicleDetailPage }))
+);
+const AdminLoginPage = React.lazy(() =>
+  import('./views/admin/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage }))
+);
+const AdminDashboardPage = React.lazy(() =>
+  import('./views/admin/AdminDashboardPage').then((m) => ({ default: m.AdminDashboardPage }))
+);
+
+const ShowroomLoadingFallback: React.FC = () => (
+  <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center animate-fade-in">
+    <div className="relative mb-4">
+      <div className="w-12 h-12 rounded-full border-2 border-gold-500/20 border-t-gold-400 animate-spin" />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-2.5 h-2.5 rounded-full bg-gold-400 animate-ping" />
+      </div>
+    </div>
+    <span className="text-xs font-mono font-bold uppercase tracking-widest text-gold-400">
+      Cargando Showroom VIP...
+    </span>
+  </div>
+);
 
 type AppRoute = 'home' | 'catalog' | 'vehicle_detail' | 'admin_login' | 'admin';
 
@@ -177,10 +201,12 @@ const AppContent: React.FC = () => {
   // 1. Ruta de Acceso Administrativo (/admin/login) - Fase 5
   if (currentRoute === 'admin_login') {
     return (
-      <AdminLoginPage
-        onNavigateHome={navigateToHome}
-        onLoginSuccess={navigateToAdminDashboard}
-      />
+      <React.Suspense fallback={<ShowroomLoadingFallback />}>
+        <AdminLoginPage
+          onNavigateHome={navigateToHome}
+          onLoginSuccess={navigateToAdminDashboard}
+        />
+      </React.Suspense>
     );
   }
 
@@ -188,13 +214,15 @@ const AppContent: React.FC = () => {
   if (currentRoute === 'admin') {
     return (
       <ProtectedRoute onNavigateToLogin={navigateToAdminLogin}>
-        <AdminDashboardPage
-          vehicles={vehicles}
-          onUpdateVehicleStatus={handleUpdateVehicleStatus}
-          onNavigateHome={navigateToHome}
-          onNavigateToCatalog={navigateToCatalog}
-          onNavigateToVehicleDetail={navigateToVehicle}
-        />
+        <React.Suspense fallback={<ShowroomLoadingFallback />}>
+          <AdminDashboardPage
+            vehicles={vehicles}
+            onUpdateVehicleStatus={handleUpdateVehicleStatus}
+            onNavigateHome={navigateToHome}
+            onNavigateToCatalog={navigateToCatalog}
+            onNavigateToVehicleDetail={navigateToVehicle}
+          />
+        </React.Suspense>
       </ProtectedRoute>
     );
   }
@@ -214,53 +242,55 @@ const AppContent: React.FC = () => {
       />
 
       <main className="flex-grow">
-        {currentRoute === 'vehicle_detail' ? (
-          /* Vista de Detalle de Vehículo (/vehicles/:slug) - Fase 3 */
-          <VehicleDetailPage
-            vehicle={currentVehicleForDetail}
-            allVehicles={vehicles}
-            onNavigateHome={navigateToHome}
-            onNavigateToCatalog={navigateToCatalog}
-            onSelectVehicle={(veh) => navigateToVehicle(veh.slug)}
-            onOpenBooking={handleOpenBooking}
-          />
-        ) : currentRoute === 'catalog' ? (
-          /* Vista del Catálogo Completo (/vehicles) - Fase 2 */
-          <CatalogPage
-            vehicles={vehicles}
-            onSelectVehicle={handleOpenVehicleModal}
-            onQuickBook={handleOpenBooking}
-            onNavigateHome={navigateToHome}
-          />
-        ) : (
-          /* Vista Principal / Showroom Landing - Fase 1 */
-          <>
-            {/* 1. Master Showroom Pavilion con la Flota Boutique de Autos de Lujo */}
-            <HeroSection
-              vehicles={vehicles}
-              onExploreFleet={() => scrollToSection('showroom')}
-              onSelectVehicleForModal={handleOpenVehicleModal}
-              onSelectVehicleForBooking={(veh) => handleOpenBooking(veh)}
+        <React.Suspense fallback={<ShowroomLoadingFallback />}>
+          {currentRoute === 'vehicle_detail' ? (
+            /* Vista de Detalle de Vehículo (/vehicles/:slug) - Fase 3 */
+            <VehicleDetailPage
+              vehicle={currentVehicleForDetail}
+              allVehicles={vehicles}
+              onNavigateHome={navigateToHome}
+              onNavigateToCatalog={navigateToCatalog}
+              onSelectVehicle={(veh) => navigateToVehicle(veh.slug)}
+              onOpenBooking={handleOpenBooking}
             />
-
-            {/* 2. Catálogo Showroom / Flota Destacada */}
-            <FeaturedFleet
+          ) : currentRoute === 'catalog' ? (
+            /* Vista del Catálogo Completo (/vehicles) - Fase 2 */
+            <CatalogPage
               vehicles={vehicles}
               onSelectVehicle={handleOpenVehicleModal}
               onQuickBook={handleOpenBooking}
-              onNavigateToCatalog={navigateToCatalog}
+              onNavigateHome={navigateToHome}
             />
+          ) : (
+            /* Vista Principal / Showroom Landing - Fase 1 */
+            <>
+              {/* 1. Master Showroom Pavilion con la Flota Boutique de Autos de Lujo */}
+              <HeroSection
+                vehicles={vehicles}
+                onExploreFleet={() => scrollToSection('showroom')}
+                onSelectVehicleForModal={handleOpenVehicleModal}
+                onSelectVehicleForBooking={(veh) => handleOpenBooking(veh)}
+              />
 
-            {/* 3. Pilares de la Experiencia Showroom */}
-            <ExperiencePillars />
+              {/* 2. Catálogo Showroom / Flota Destacada */}
+              <FeaturedFleet
+                vehicles={vehicles}
+                onSelectVehicle={handleOpenVehicleModal}
+                onQuickBook={handleOpenBooking}
+                onNavigateToCatalog={navigateToCatalog}
+              />
 
-            {/* 4. Cómo Funciona la Reserva (3 Pasos) */}
-            <BookingSteps />
+              {/* 3. Pilares de la Experiencia Showroom */}
+              <ExperiencePillars />
 
-            {/* 5. Preguntas Frecuentes y Requisitos */}
-            <FaqSection />
-          </>
-        )}
+              {/* 4. Cómo Funciona la Reserva (3 Pasos) */}
+              <BookingSteps />
+
+              {/* 5. Preguntas Frecuentes y Requisitos */}
+              <FaqSection />
+            </>
+          )}
+        </React.Suspense>
       </main>
 
       {/* Pie de Página con acceso a Portal Corporativo */}
