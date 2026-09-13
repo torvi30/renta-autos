@@ -11,7 +11,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 
-const LOCAL_CACHE_KEY = 'PREMIUM_RENTAL_VEHICLES_CACHE_V1';
+const LOCAL_CACHE_KEY = 'PREMIUM_RENTAL_VEHICLES_CACHE_V2';
 const VEHICLES_COLLECTION = 'vehicles';
 
 type VehicleChangeListener = (vehicles: Vehicle[]) => void;

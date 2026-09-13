@@ -57,7 +57,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     }
   }, [currentVehicleId, showroomVehicles]);
 
-  // Auto-desplazar la tarjeta activa al centro de forma suave y precisa sin rebotes
+  // Auto-desplazar la tarjeta activa al centro con límites estrictos para evitar bucles continuos
   useEffect(() => {
     if (mobileDockRef.current) {
       const container = mobileDockRef.current;
@@ -66,11 +66,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         const cardLeft = activeCard.offsetLeft;
         const cardWidth = activeCard.offsetWidth;
         const containerWidth = container.offsetWidth;
-        const targetLeft = cardLeft - (containerWidth - cardWidth) / 2;
-        container.scrollTo({
-          left: Math.max(0, targetLeft),
-          behavior: 'smooth',
-        });
+        const maxScroll = Math.max(0, container.scrollWidth - containerWidth);
+        const targetLeft = Math.min(Math.max(0, cardLeft - (containerWidth - cardWidth) / 2), maxScroll);
+
+        // Solo desplazamos si la diferencia es superior a 15px para evitar cualquier ciclo de rebote
+        if (Math.abs(container.scrollLeft - targetLeft) > 15) {
+          container.scrollTo({
+            left: targetLeft,
+            behavior: 'smooth',
+          });
+        }
       }
     }
   }, [currentIndex]);
