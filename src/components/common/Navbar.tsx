@@ -237,16 +237,16 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* ========================================================================= */}
       <div className="bg-carbon-950/90 backdrop-blur-md border-b border-carbon-800/40 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-2 sm:py-2.5 min-h-[38px] text-xs font-medium text-silver-400 tracking-wider">
+          <div className="flex items-center justify-between py-1.5 sm:py-2.5 min-h-[38px] text-xs font-medium text-silver-400 tracking-wider">
             
             {/* Lado Izquierdo: Telemetría de Ubicación & Servicio VIP */}
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                <span className="relative flex h-2 w-2 flex-shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                 </span>
-                <span className="font-bold text-silver-200 uppercase tracking-widest text-xs sm:text-[12.5px]">
+                <span className="font-bold text-silver-200 uppercase tracking-widest text-[11px] sm:text-[12.5px] truncate max-w-[120px] xs:max-w-[170px] sm:max-w-none">
                   {settings.city.includes('Medellín')
                     ? (language === 'ES' ? 'Showroom Medellín' : 'Medellín Showroom')
                     : settings.city}
@@ -263,15 +263,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
 
             {/* Lado Derecho: Utilidades Operativas (Moneda, Idioma) */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
               
               {/* Selector de Moneda Satinado */}
-              <div className="flex items-center bg-carbon-900/90 border border-carbon-800/90 rounded-full p-1 text-xs font-mono font-bold shadow-inner">
+              <div className="flex items-center bg-carbon-900/90 border border-carbon-800/90 rounded-full p-0.5 sm:p-1 text-[10px] sm:text-xs font-mono font-bold shadow-inner">
                 {(['USD', 'EUR', 'COP'] as CurrencyCode[]).map((c) => (
                   <button
                     key={c}
                     onClick={() => setCurrency(c)}
-                    className={`px-2.5 py-0.5 sm:px-3 sm:py-0.5 rounded-full text-xs font-bold transition-all ${
+                    className={`px-2 py-0.5 sm:px-3 sm:py-0.5 rounded-full text-[10px] sm:text-xs font-bold transition-all ${
                       currency === c
                         ? 'bg-gradient-to-r from-gold-400 to-gold-300 text-carbon-950 font-black shadow-sm'
                         : 'text-silver-400 hover:text-white'
@@ -283,15 +283,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 ))}
               </div>
 
-              <div className="h-3.5 w-px bg-carbon-800" />
+              <div className="h-3 sm:h-3.5 w-px bg-carbon-800" />
 
               {/* Selector de Idioma */}
               <button
                 onClick={() => setLanguage(language === 'ES' ? 'EN' : 'ES')}
-                className="flex items-center gap-1.5 text-xs font-mono font-bold text-silver-300 hover:text-gold-300 transition-colors px-2 py-0.5 rounded hover:bg-carbon-900/80"
+                className="flex items-center gap-1 text-[10.5px] sm:text-xs font-mono font-bold text-silver-300 hover:text-gold-300 transition-colors px-1 sm:px-2 py-0.5 rounded hover:bg-carbon-900/80"
                 title="Cambiar idioma / Switch language"
               >
-                <Globe className="w-3.5 h-3.5 text-gold-400" />
+                <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gold-400 flex-shrink-0" />
                 <span className="font-bold">{language === 'ES' ? 'ES' : 'EN'}</span>
               </button>
             </div>

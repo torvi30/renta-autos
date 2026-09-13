@@ -823,7 +823,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                   variant="outline"
                   size="md"
                   onClick={() => setCurrentStep(1)}
-                  className="sm:w-1/3"
+                  className="w-full sm:w-1/3 min-h-[44px]"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1" />
                   {language === 'ES' ? 'VOLVER' : 'BACK'}
@@ -832,7 +832,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                   type="submit"
                   variant="primary"
                   size="md"
-                  className="sm:w-2/3"
+                  className="w-full sm:w-2/3 min-h-[44px]"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -1013,17 +1013,17 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                 <button
                   type="button"
                   onClick={handleOpenWhatsApp}
-                  className="w-full group relative flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#20ba5a] hover:to-[#0f776a] text-carbon-950 font-bold shadow-xl shadow-[#25D366]/20 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                  className="w-full group relative flex items-center justify-center gap-2.5 sm:gap-3 px-4 sm:px-6 py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#20ba5a] hover:to-[#0f776a] text-carbon-950 font-bold shadow-xl shadow-[#25D366]/20 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-black/10 flex items-center justify-center text-carbon-950 flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <WhatsAppIcon className="w-6 h-6" />
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-black/10 flex items-center justify-center text-carbon-950 flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <WhatsAppIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
-                  <div className="text-left">
-                    <div className="text-sm sm:text-base font-extrabold uppercase tracking-wide text-carbon-950 flex items-center gap-2">
-                      <span>{language === 'ES' ? 'CONTINUAR A WHATSAPP CON MI RESERVA' : 'CONTINUE TO WHATSAPP CONCIERGE'}</span>
-                      <Send className="w-4 h-4 opacity-80 group-hover:translate-x-1 transition-transform" />
+                  <div className="text-left min-w-0 flex-1">
+                    <div className="text-xs sm:text-sm md:text-base font-extrabold uppercase tracking-wide text-carbon-950 flex items-center gap-1.5 sm:gap-2">
+                      <span className="truncate">{language === 'ES' ? 'CONTINUAR A WHATSAPP CON MI RESERVA' : 'CONTINUE TO WHATSAPP CONCIERGE'}</span>
+                      <Send className="w-4 h-4 opacity-80 group-hover:translate-x-1 transition-transform flex-shrink-0" />
                     </div>
-                    <div className="text-[11px] font-medium text-carbon-900/90">
+                    <div className="text-[10.5px] sm:text-[11px] font-medium text-carbon-900/90 truncate">
                       {language === 'ES'
                         ? 'Coordinar entrega y validar documentos inmediatamente'
                         : 'Coordinate handover & review credentials now'}

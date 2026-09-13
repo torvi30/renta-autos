@@ -74,15 +74,18 @@ export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
   return (
     <>
       {/* Botón flotante discreto en esquina inferior derecha */}
-      <div className="fixed bottom-6 right-6 z-40">
+      <div className="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-40">
         <button
           onClick={() => setInternalIsOpen(true)}
-          className="flex items-center gap-2.5 px-4 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs tracking-wider uppercase shadow-2xl shadow-emerald-950/80 transition-all duration-300 hover:scale-105 active:scale-95 border border-emerald-400/30"
+          className="flex items-center justify-center gap-2.5 w-12 h-12 sm:w-auto sm:h-auto sm:px-4.5 sm:py-3 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-xs tracking-wider uppercase shadow-[0_8px_30px_rgba(16,185,129,0.35)] transition-all duration-300 hover:scale-105 active:scale-95 border border-emerald-300/40 cursor-pointer"
           aria-label={language === 'ES' ? 'Abrir asistente de reserva por WhatsApp' : 'Open WhatsApp booking concierge'}
         >
-          <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping" />
-          <MessageSquare className="w-4 h-4" />
-          <span className="hidden sm:inline">
+          <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-80" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white" />
+          </span>
+          <MessageSquare className="w-5 h-5 sm:w-4 sm:h-4 flex-shrink-0" />
+          <span className="hidden sm:inline whitespace-nowrap">
             {language === 'ES' ? 'RESERVAR POR WHATSAPP' : 'BOOK VIA WHATSAPP'}
           </span>
         </button>

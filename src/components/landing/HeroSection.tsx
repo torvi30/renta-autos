@@ -179,23 +179,25 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         >
           
           {/* Tarjeta flotante de información del auto activo */}
-          <div className="absolute top-4 left-4 z-40 hidden sm:flex items-center gap-3 p-3 rounded-2xl bg-carbon-950/90 border border-white/10 backdrop-blur-md shadow-2xl">
+          <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-30 flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-carbon-950/90 border border-white/10 backdrop-blur-md shadow-2xl">
             <div className="flex flex-col">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-gold-400">
+              <span className="text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider text-gold-400">
                 {activeVehicle.brand}
               </span>
-              <span className="text-base font-bold text-silver-100 font-display">
-                {activeVehicle.model} ({activeVehicle.year})
+              <span className="text-xs sm:text-base font-bold text-silver-100 font-display truncate max-w-[120px] sm:max-w-none">
+                {activeVehicle.model} <span className="hidden sm:inline">({activeVehicle.year})</span>
               </span>
             </div>
-            <div className="h-6 w-px bg-carbon-750" />
+            <div className="h-4 sm:h-6 w-px bg-carbon-750" />
             <div className="flex flex-col">
-              <span className="text-[10px] text-silver-400">{t.hero.dailyRate}</span>
-              <span className="text-sm font-bold text-silver-100 font-mono">
-                {formatPrice(activeVehicle.pricePerDay)} <span className="text-[10px] text-silver-400 font-normal">{t.hero.perDaySuffix}</span>
+              <span className="text-[8px] sm:text-[10px] text-silver-400">{t.hero.dailyRate}</span>
+              <span className="text-xs sm:text-sm font-bold text-silver-100 font-mono">
+                {formatPrice(activeVehicle.pricePerDay)} <span className="text-[9px] sm:text-[10px] text-silver-400 font-normal">{t.hero.perDaySuffix}</span>
               </span>
             </div>
-            <StatusBadge status={activeVehicle.status} />
+            <div className="hidden xs:block">
+              <StatusBadge status={activeVehicle.status} />
+            </div>
           </div>
 
           {/* Flecha Flotante Anterior (Izquierda) - Estilo Concesionario VIP */}
@@ -203,9 +205,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             onClick={handlePrev}
             aria-label={`Vehículo anterior: ${prevVehicle.brand} ${prevVehicle.model}`}
             title={`Anterior: ${prevVehicle.brand} ${prevVehicle.model}`}
-            className="absolute left-2 sm:-left-7 top-1/2 -translate-y-1/2 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-carbon-950/90 hover:bg-gold-500 hover:text-carbon-950 border border-gold-500/40 hover:border-gold-400 text-silver-200 backdrop-blur-xl shadow-2xl transition-all duration-300 flex items-center justify-center group active:scale-95"
+            className="absolute left-1 sm:-left-7 top-1/2 -translate-y-1/2 z-40 w-9 h-9 sm:w-14 sm:h-14 rounded-full bg-carbon-950/80 hover:bg-gold-500 hover:text-carbon-950 border border-gold-500/30 hover:border-gold-400 text-silver-200 backdrop-blur-md shadow-xl transition-all duration-300 flex items-center justify-center group active:scale-90"
           >
-            <ChevronLeft className="w-7 h-7 group-hover:-translate-x-1 transition-transform" />
+            <ChevronLeft className="w-5 h-5 sm:w-7 sm:h-7 group-hover:-translate-x-1 transition-transform" />
             
             {/* Tooltip de previsualización */}
             <span className="hidden lg:group-hover:block absolute left-full ml-3 px-3 py-1.5 rounded-xl bg-carbon-900/95 border border-carbon-750 text-[11px] text-silver-200 whitespace-nowrap shadow-xl font-medium">
@@ -218,9 +220,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             onClick={handleNext}
             aria-label={`Siguiente vehículo: ${nextVehicle.brand} ${nextVehicle.model}`}
             title={`Siguiente: ${nextVehicle.brand} ${nextVehicle.model}`}
-            className="absolute right-2 sm:-right-7 top-1/2 -translate-y-1/2 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-carbon-950/90 hover:bg-gold-500 hover:text-carbon-950 border border-gold-500/40 hover:border-gold-400 text-silver-200 backdrop-blur-xl shadow-2xl transition-all duration-300 flex items-center justify-center group active:scale-95"
+            className="absolute right-1 sm:-right-7 top-1/2 -translate-y-1/2 z-40 w-9 h-9 sm:w-14 sm:h-14 rounded-full bg-carbon-950/80 hover:bg-gold-500 hover:text-carbon-950 border border-gold-500/30 hover:border-gold-400 text-silver-200 backdrop-blur-md shadow-xl transition-all duration-300 flex items-center justify-center group active:scale-90"
           >
-            <ChevronRight className="w-7 h-7 group-hover:translate-x-1 transition-transform" />
+            <ChevronRight className="w-5 h-5 sm:w-7 sm:h-7 group-hover:translate-x-1 transition-transform" />
 
             {/* Tooltip de previsualización */}
             <span className="hidden lg:group-hover:block absolute right-full mr-3 px-3 py-1.5 rounded-xl bg-carbon-900/95 border border-carbon-750 text-[11px] text-silver-200 whitespace-nowrap shadow-xl font-medium">
@@ -272,54 +274,55 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
           {/* Especificaciones clave de telemetría debajo del showcase */}
           {activeVehicle.specs && (
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 bg-carbon-900/80 p-3.5 rounded-2xl border border-carbon-800/80 backdrop-blur-md shadow-lg">
-              <div className="flex items-center gap-2.5 px-3">
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 bg-carbon-900/80 p-3 sm:p-3.5 rounded-2xl border border-carbon-800/80 backdrop-blur-md shadow-lg">
+              <div className="flex items-center gap-2.5 px-2 sm:px-3">
                 <Zap className="w-4 h-4 text-gold-400 flex-shrink-0" />
                 <div>
                   <div className="text-[10px] text-silver-400 uppercase tracking-wider">{t.specs.acceleration}</div>
-                  <div className="text-sm font-bold text-silver-100 font-mono transition-all">
+                  <div className="text-xs sm:text-sm font-bold text-silver-100 font-mono transition-all">
                     {activeVehicle.specs.acceleration0to100 || '3.2 s'}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 px-3 border-l border-carbon-800">
+              <div className="flex items-center gap-2.5 px-2 sm:px-3 border-l border-carbon-800">
                 <Flame className="w-4 h-4 text-gold-400 flex-shrink-0" />
                 <div>
                   <div className="text-[10px] text-silver-400 uppercase tracking-wider">{t.specs.horsepower}</div>
-                  <div className="text-sm font-bold text-silver-100 font-mono transition-all">
+                  <div className="text-xs sm:text-sm font-bold text-silver-100 font-mono transition-all">
                     {activeVehicle.specs.horsepower} HP
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 px-3 border-l border-carbon-800">
+              <div className="flex items-center gap-2.5 px-2 sm:px-3 border-t sm:border-t-0 pt-2 sm:pt-0 sm:border-l border-carbon-800">
                 <Gauge className="w-4 h-4 text-gold-400 flex-shrink-0" />
                 <div>
                   <div className="text-[10px] text-silver-400 uppercase tracking-wider">{t.specs.topSpeed}</div>
-                  <div className="text-sm font-bold text-silver-100 font-mono transition-all">
+                  <div className="text-xs sm:text-sm font-bold text-silver-100 font-mono transition-all">
                     {activeVehicle.specs.topSpeed} km/h
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 px-3 border-l border-carbon-800">
+              <div className="flex items-center gap-2.5 px-2 sm:px-3 border-t sm:border-t-0 pt-2 sm:pt-0 border-l border-carbon-800">
                 <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                 <div>
                   <div className="text-[10px] text-silver-400 uppercase tracking-wider">{t.hero.warranty}</div>
-                  <div className="text-sm font-bold text-silver-100">{t.hero.insurance}</div>
+                  <div className="text-xs sm:text-sm font-bold text-silver-100">{t.hero.insurance}</div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Botones de acción directa para el auto actual */}
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+          {/* Botones de acción directa para el auto actual - Responsive Touch Friendly */}
+          <div className="mt-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 w-full max-w-md sm:max-w-none mx-auto">
             <Button
               variant="primary"
               size="md"
               onClick={() => onSelectVehicleForBooking(activeVehicle)}
               icon={<ArrowUpRight className="w-4 h-4" />}
+              className="w-full sm:w-auto font-bold shadow-lg shadow-gold-500/15 justify-center py-3 sm:py-2.5"
             >
               {t.hero.bookThisVehicle} ({formatPrice(activeVehicle.pricePerDay)}/{t.detail.day})
             </Button>
@@ -329,6 +332,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               size="md"
               onClick={() => onSelectVehicleForModal(activeVehicle)}
               icon={<Eye className="w-4 h-4" />}
+              className="w-full sm:w-auto justify-center py-3 sm:py-2.5"
             >
               {t.hero.viewSpecsAndGallery}
             </Button>
@@ -337,7 +341,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               href={whatsAppLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-950/80 hover:bg-emerald-900/90 text-emerald-400 border border-emerald-500/40 text-xs font-semibold tracking-wider transition-colors"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 rounded-lg bg-emerald-950/90 hover:bg-emerald-900 text-emerald-400 border border-emerald-500/40 text-xs sm:text-sm font-semibold tracking-wider transition-colors active:scale-98 shadow-md text-center"
             >
               <MessageSquare className="w-4 h-4" />
               <span>{t.hero.vipWhatsApp}</span>

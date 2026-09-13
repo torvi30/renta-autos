@@ -22,7 +22,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
   layoutMode = 'grid',
 }) => {
   const { formatPrice } = useCurrency();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const isAvailable = vehicle.status === 'AVAILABLE';
   const isRented = vehicle.status === 'RENTED';
@@ -125,28 +125,27 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
           </div>
         </div>
 
-        {/* Precio y Botón de Acción */}
-        <div className="mt-6 pt-4 border-t border-carbon-800 flex items-center justify-between gap-4">
-          <div>
-            <div className="text-[11px] text-silver-400">Tarifa diaria</div>
-            <div className="text-lg font-bold text-silver-100 font-mono">
+        {/* Precio y Botón de Acción Responsive */}
+        <div className="mt-5 pt-4 border-t border-carbon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+          <div className="flex-shrink-0">
+            <div className="text-[10px] text-silver-400 uppercase tracking-wider">{t.hero.dailyRate}</div>
+            <div className="text-base sm:text-lg font-bold text-silver-100 font-mono leading-tight">
               {formatPrice(vehicle.pricePerDay)}
               <span className="text-xs font-normal text-silver-400"> {t.specs.perDay}</span>
             </div>
           </div>
 
-
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             {isAvailable ? (
               <>
                 {onQuickBook && (
                   <button
                     onClick={() => onQuickBook(vehicle)}
-                    className="p-2 px-3 rounded-lg bg-carbon-850 hover:bg-gold-500/20 text-silver-300 hover:text-gold-400 border border-carbon-750 transition-colors text-xs font-medium whitespace-nowrap"
-                    title="Reservar rápidamente"
+                    className="flex-1 sm:flex-none py-2 px-3 sm:px-3.5 rounded-xl bg-carbon-850 hover:bg-gold-500/20 text-silver-300 hover:text-gold-400 border border-carbon-750 transition-colors text-xs font-semibold whitespace-nowrap active:scale-95 text-center min-h-[38px] flex items-center justify-center"
+                    title={language === 'ES' ? 'Reservar rápidamente' : 'Quick booking'}
                     aria-label={`Reservar ${vehicle.brand} ${vehicle.model}`}
                   >
-                    Reservar
+                    {language === 'ES' ? 'Reservar' : 'Book'}
                   </button>
                 )}
                 <Button
@@ -154,34 +153,41 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
                   size="sm"
                   onClick={() => onSelectVehicle(vehicle)}
                   icon={<ArrowRight className="w-4 h-4" />}
+                  className="flex-1 sm:flex-none whitespace-nowrap text-xs font-bold min-h-[38px]"
                 >
-                  VER DETALLE
+                  {language === 'ES' ? 'VER DETALLE' : 'VIEW DETAILS'}
                 </Button>
               </>
             ) : isRented ? (
               <Button
                 variant="secondary"
                 size="sm"
+                fullWidth
                 onClick={() => onSelectVehicle(vehicle)}
                 icon={<CalendarClock className="w-3.5 h-3.5 text-blue-400" />}
+                className="whitespace-nowrap text-xs font-semibold min-h-[38px]"
               >
-                CONSULTAR FECHA
+                {language === 'ES' ? 'CONSULTAR FECHA' : 'CHECK DATES'}
               </Button>
             ) : isMaintenance ? (
               <Button
                 variant="ghost"
                 size="sm"
+                fullWidth
                 onClick={() => onSelectVehicle(vehicle)}
+                className="whitespace-nowrap text-xs min-h-[38px]"
               >
-                EN MANTENIMIENTO
+                {language === 'ES' ? 'EN MANTENIMIENTO' : 'IN MAINTENANCE'}
               </Button>
             ) : (
               <Button
                 variant="ghost"
                 size="sm"
+                fullWidth
                 onClick={() => onSelectVehicle(vehicle)}
+                className="whitespace-nowrap text-xs min-h-[38px]"
               >
-                VER FICHA TÉCNICA
+                {language === 'ES' ? 'VER FICHA TÉCNICA' : 'VIEW SPECS'}
               </Button>
             )}
           </div>

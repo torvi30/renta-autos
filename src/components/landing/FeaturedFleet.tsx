@@ -53,12 +53,12 @@ export const FeaturedFleet: React.FC<FeaturedFleetProps> = ({
           </div>
 
           {/* Filtros rápidos por categoría */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
             {categories.map((cat) => (
               <button
                 key={cat.key}
                 onClick={() => setSelectedCategory(cat.key)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide whitespace-nowrap transition-all ${
+                className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide whitespace-nowrap transition-all active:scale-95 ${
                   selectedCategory === cat.key
                     ? 'bg-gold-500 text-carbon-950 shadow-md shadow-gold-500/10'
                     : 'bg-carbon-900 text-silver-400 hover:text-silver-200 border border-carbon-800'
@@ -99,8 +99,8 @@ export const FeaturedFleet: React.FC<FeaturedFleetProps> = ({
 
         {/* Banner / CTA hacia el Catálogo Completo */}
         {onNavigateToCatalog && (
-          <div className="mt-14 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-carbon-900 via-carbon-850 to-carbon-900 border border-carbon-800 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
-            <div className="text-center sm:text-left">
+          <div className="mt-14 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-carbon-900 via-carbon-850 to-carbon-900 border border-carbon-800 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl text-center sm:text-left">
+            <div>
               <h3 className="text-lg font-bold text-silver-100 font-display uppercase tracking-wider">
                 {t.featured.bannerTitle}
               </h3>
@@ -110,7 +110,7 @@ export const FeaturedFleet: React.FC<FeaturedFleetProps> = ({
             </div>
             <button
               onClick={onNavigateToCatalog}
-              className="px-6 py-3 rounded-xl bg-gold-500 hover:bg-gold-400 text-carbon-950 font-bold text-xs tracking-wider uppercase transition-all shadow-md shadow-gold-500/10 hover:shadow-gold-500/20 whitespace-nowrap"
+              className="w-full sm:w-auto px-6 py-3.5 sm:py-3 rounded-xl bg-gold-500 hover:bg-gold-400 text-carbon-950 font-bold text-xs tracking-wider uppercase transition-all shadow-md shadow-gold-500/10 hover:shadow-gold-500/20 whitespace-nowrap active:scale-98 text-center"
             >
               {t.featured.exploreCatalogBtn} ({vehicles.length})
             </button>

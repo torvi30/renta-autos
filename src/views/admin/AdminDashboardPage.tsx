@@ -338,14 +338,15 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {/* Botón Principal de Acción Rápida: Nuevo Vehículo */}
             <button
               onClick={handleOpenCreateVehicle}
-              className="hidden sm:inline-flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-gradient-to-r from-gold-500 via-gold-400 to-gold-500 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black text-sm sm:text-base shadow-xl shadow-gold-500/25 active:scale-95 transition-all"
+              className="inline-flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-5 py-2 sm:py-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-gold-500 via-gold-400 to-gold-500 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black text-xs sm:text-base shadow-xl shadow-gold-500/25 active:scale-95 transition-all"
+              title="Añadir nuevo vehículo a la flota"
             >
-              <Plus className="w-5 h-5" />
-              <span>Nuevo Vehículo</span>
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span className="hidden xs:inline">Nuevo Vehículo</span>
             </button>
 
             {/* Indicador de Estado Cloud Firestore (Spark $0) */}

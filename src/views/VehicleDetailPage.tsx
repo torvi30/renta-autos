@@ -591,7 +591,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                   href={whatsAppLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-carbon-800 hover:border-emerald-600/40 bg-carbon-850 hover:bg-carbon-800 text-xs font-semibold text-silver-200 hover:text-emerald-400 transition-all"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-carbon-800 hover:border-emerald-600/40 bg-carbon-850 hover:bg-carbon-800 text-xs font-semibold text-silver-200 hover:text-emerald-400 transition-all min-h-[44px] active:scale-98"
                 >
                   <Phone className="w-4 h-4 text-emerald-400" />
                   <span>{t.detail.bookViaWhatsApp}</span>

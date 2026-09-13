@@ -22,9 +22,9 @@ export const Button: React.FC<ButtonProps> = ({
   const baseStyles = "inline-flex items-center justify-center font-medium tracking-wide transition-all duration-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500/50 disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.98]";
 
   const sizeStyles = {
-    sm: "text-xs px-3.5 py-2 gap-1.5",
-    md: "text-sm px-5 py-2.5 gap-2",
-    lg: "text-base px-7 py-3.5 gap-2.5 font-semibold",
+    sm: "text-[11.5px] sm:text-xs px-3 sm:px-3.5 py-2 gap-1.5 min-h-[36px]",
+    md: "text-xs sm:text-sm px-3.5 sm:px-5 py-2.5 gap-2 min-h-[40px]",
+    lg: "text-xs sm:text-base px-4 sm:px-7 py-3 sm:py-3.5 gap-2 sm:gap-2.5 font-semibold min-h-[44px]",
   };
 
   const variantStyles = {

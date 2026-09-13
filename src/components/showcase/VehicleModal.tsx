@@ -231,30 +231,32 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
         </div>
 
         {/* Barra de acción inferior fijada */}
-        <div className="p-4 sm:p-6 border-t border-carbon-800 bg-carbon-900 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-baseline gap-2">
+        <div className="p-4 sm:p-6 border-t border-carbon-800 bg-carbon-900 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3.5 sm:gap-4">
+          <div className="flex items-baseline justify-between sm:justify-start gap-2">
             <span className="text-xs text-silver-400">{t.detail.officialRate}:</span>
-            <span className="text-2xl font-bold text-silver-100 font-mono">
-              {formatPrice(vehicle.pricePerDay)}
-            </span>
-            <span className="text-xs text-silver-400">/ {t.detail.day}</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-xl sm:text-2xl font-bold text-silver-100 font-mono">
+                {formatPrice(vehicle.pricePerDay)}
+              </span>
+              <span className="text-xs text-silver-400">/ {t.detail.day}</span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
             <a
               href={whatsAppLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs tracking-wider transition-all"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs tracking-wider transition-all min-h-[42px] active:scale-98 text-center"
             >
-              <MessageSquare className="w-4 h-4" />
+              <MessageSquare className="w-4 h-4 flex-shrink-0" />
               <span>{t.hero.vipWhatsApp}</span>
             </a>
 
             <Button
               variant="primary"
               size="md"
-              className="flex-1 sm:flex-none"
+              className="w-full sm:w-auto justify-center min-h-[42px]"
               onClick={() => onBook(vehicle)}
             >
               {t.detail.requestBooking}
