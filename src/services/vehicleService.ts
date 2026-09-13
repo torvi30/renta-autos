@@ -11,7 +11,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 
-const LOCAL_CACHE_KEY = 'PREMIUM_RENTAL_VEHICLES_CACHE_V3';
+const LOCAL_CACHE_KEY = 'PREMIUM_RENTAL_VEHICLES_CACHE_V4';
 const VEHICLES_COLLECTION = 'vehicles';
 
 type VehicleChangeListener = (vehicles: Vehicle[]) => void;
@@ -59,27 +59,12 @@ export const getLocalVehicles = (): Vehicle[] => {
       return MOCK_VEHICLES;
     }
     const parsed = JSON.parse(raw) as Vehicle[];
-    // Asegurar que si agregamos vehículos semilla (como las Toyotas), no se omitan si la caché vieja existe
-    const parsedIds = new Set(parsed.map((v) => v.id));
-    const missingMocks = MOCK_VEHICLES.filter((v) => !parsedIds.has(v.id));
-    
-    // Actualizar la foto de la Toyota Land Cruiser si tenía la foto incorrecta
-    let cacheNeedsUpdate = missingMocks.length > 0;
-    const updated = parsed.map((v) => {
-      if (v.id === 'veh-toyota-lc300' && v.mainImage && v.mainImage.includes('photo-1594502184342')) {
-        cacheNeedsUpdate = true;
-        const mockItem = MOCK_VEHICLES.find((m) => m.id === 'veh-toyota-lc300');
-        return mockItem ? { ...v, mainImage: mockItem.mainImage } : v;
-      }
-      return v;
-    });
-
-    if (cacheNeedsUpdate) {
-      const merged = [...updated, ...missingMocks];
-      localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(merged));
-      return merged;
+    // Si la caché está vacía o no tiene los mocks actuales, restablecer
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(MOCK_VEHICLES));
+      return MOCK_VEHICLES;
     }
-    return updated;
+    return parsed;
   } catch (error) {
     console.warn('Error al leer vehículos de la caché local:', error);
     return MOCK_VEHICLES;

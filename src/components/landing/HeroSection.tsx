@@ -44,7 +44,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     return vehicles.filter((v) => v.status !== 'INACTIVE');
   }, [vehicles]);
 
-  // Por defecto, index 0 es el Rolls-Royce Ghost Black Badge (el vehículo más elegante de la flota)
+  // Por defecto, index 0 es la Toyota Prado TXL (el vehículo insignia de la flota)
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const mobileDockRef = React.useRef<HTMLDivElement>(null);
