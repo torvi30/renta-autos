@@ -191,7 +191,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* TIER 1: MICRO-TOPBAR VIP (Estándar Oficial Concesionario de Superlujo)   */}
       {/* Aloja utilidades (Divisas, Idioma, Estado Showroom y Portal Staff)        */}
       {/* ========================================================================= */}
-      <div className="bg-carbon-950/95 border-b border-carbon-850/80 backdrop-blur-md transition-all">
+      <div className="bg-carbon-950/95 backdrop-blur-md transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-8 text-[11px] font-medium text-silver-400">
             
@@ -262,7 +262,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div
         className={`transition-all duration-300 ${
           isScrolled
-            ? 'bg-carbon-950/92 backdrop-blur-2xl border-b border-carbon-800/80 py-3 shadow-2xl shadow-carbon-950/80'
+            ? 'bg-carbon-950/95 backdrop-blur-2xl py-3 shadow-2xl shadow-carbon-950'
             : 'bg-gradient-to-b from-carbon-950/90 via-carbon-950/40 to-transparent py-4'
         }`}
       >
@@ -308,63 +308,48 @@ export const Navbar: React.FC<NavbarProps> = ({
             <nav className="hidden lg:flex items-center gap-8 xl:gap-10 text-xs font-bold uppercase tracking-[0.15em] text-silver-300">
               <button
                 onClick={handleFleetClick}
-                className={`transition-all py-1 relative group ${
-                  isFleetActive ? 'text-gold-400 font-black' : 'text-silver-300 hover:text-gold-400'
+                className={`transition-all py-1 ${
+                  isFleetActive ? 'text-gold-400 font-black drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]' : 'text-silver-300 hover:text-gold-400'
                 }`}
               >
                 <span>{t.nav.fleet}</span>
-                {isFleetActive && (
-                  <span className="absolute -bottom-1.5 left-0 w-full h-[2px] bg-gradient-to-r from-gold-400 to-amber-500 rounded-full shadow-[0_0_8px_rgba(234,179,8,0.7)]" />
-                )}
               </button>
 
               <button
                 onClick={handleCatalogClick}
-                className={`transition-all py-1 relative group flex items-center gap-1.5 ${
-                  isCatalogActive ? 'text-gold-400 font-black' : 'text-silver-300 hover:text-gold-400'
+                className={`transition-all py-1 flex items-center gap-1.5 ${
+                  isCatalogActive ? 'text-gold-400 font-black drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]' : 'text-silver-300 hover:text-gold-400'
                 }`}
               >
                 <Compass className="w-3.5 h-3.5 text-gold-400" />
                 <span>{t.nav.catalog}</span>
-                {isCatalogActive && (
-                  <span className="absolute -bottom-1.5 left-0 w-full h-[2px] bg-gradient-to-r from-gold-400 to-amber-500 rounded-full shadow-[0_0_8px_rgba(234,179,8,0.7)]" />
-                )}
               </button>
 
               <button
                 onClick={() => scrollToSection('experience')}
-                className={`transition-all py-1 relative group ${
-                  isExperienceActive ? 'text-gold-400 font-black' : 'text-silver-300 hover:text-gold-400'
+                className={`transition-all py-1 ${
+                  isExperienceActive ? 'text-gold-400 font-black drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]' : 'text-silver-300 hover:text-gold-400'
                 }`}
               >
                 <span>{t.nav.experience}</span>
-                {isExperienceActive && (
-                  <span className="absolute -bottom-1.5 left-0 w-full h-[2px] bg-gradient-to-r from-gold-400 to-amber-500 rounded-full shadow-[0_0_8px_rgba(234,179,8,0.7)]" />
-                )}
               </button>
 
               <button
                 onClick={() => scrollToSection('how-it-works')}
-                className={`transition-all py-1 relative group ${
-                  isHowItWorksActive ? 'text-gold-400 font-black' : 'text-silver-300 hover:text-gold-400'
+                className={`transition-all py-1 ${
+                  isHowItWorksActive ? 'text-gold-400 font-black drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]' : 'text-silver-300 hover:text-gold-400'
                 }`}
               >
                 <span>{t.nav.howItWorks}</span>
-                {isHowItWorksActive && (
-                  <span className="absolute -bottom-1.5 left-0 w-full h-[2px] bg-gradient-to-r from-gold-400 to-amber-500 rounded-full shadow-[0_0_8px_rgba(234,179,8,0.7)]" />
-                )}
               </button>
 
               <button
                 onClick={() => scrollToSection('faq')}
-                className={`transition-all py-1 relative group ${
-                  isFaqActive ? 'text-gold-400 font-black' : 'text-silver-300 hover:text-gold-400'
+                className={`transition-all py-1 ${
+                  isFaqActive ? 'text-gold-400 font-black drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]' : 'text-silver-300 hover:text-gold-400'
                 }`}
               >
                 <span>{t.nav.requirements}</span>
-                {isFaqActive && (
-                  <span className="absolute -bottom-1.5 left-0 w-full h-[2px] bg-gradient-to-r from-gold-400 to-amber-500 rounded-full shadow-[0_0_8px_rgba(234,179,8,0.7)]" />
-                )}
               </button>
             </nav>
 
