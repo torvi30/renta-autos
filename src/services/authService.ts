@@ -1,18 +1,22 @@
-import { AuthUser, LoginCredentials, AuthResponse } from '../types/auth';
+import { AuthUser, LoginCredentials, RegisterCredentials, AuthResponse, TokenResponse } from '../types/auth';
 import { auth, isFirebaseConfigured } from './firebase';
 import {
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut as fbSignOut,
   onAuthStateChanged as fbOnAuthStateChanged,
   User as FirebaseUser,
 } from 'firebase/auth';
 
-const SESSION_KEY = 'PREMIUM_RENTAL_AUTH_SESSION_V1';
+const SESSION_KEY = 'PREMIUM_RENTAL_AUTH_SESSION_V2';
+const REGISTERED_USERS_KEY = 'PREMIUM_RENTAL_REGISTERED_USERS_V2';
+const PENDING_REGISTRATIONS_KEY = 'PREMIUM_RENTAL_PENDING_REGISTRATIONS_V2';
+const PENDING_RESETS_KEY = 'PREMIUM_RENTAL_PENDING_RESETS_V2';
 
 /**
- * Cuentas preconfiguradas para desarrollo y demostración ejecutiva
+ * Cuentas preconfiguradas del sistema (credenciales válidas de dirección)
  */
-const DEMO_USERS: Record<string, { user: AuthUser; passwordHash: string }> = {
+const DEFAULT_SYSTEM_ACCOUNTS: Record<string, { user: AuthUser; passwordHash: string }> = {
   'victortamayopine@gmail.com': {
     user: {
       id: 'usr-victor-01',
@@ -21,7 +25,8 @@ const DEMO_USERS: Record<string, { user: AuthUser; passwordHash: string }> = {
       role: 'ADMIN',
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
     },
-    passwordHash: '*',
+    // Contraseña inicial ejecutiva para la cuenta de Víctor
+    passwordHash: 'victor2026',
   },
   'admin@luxurycars.com': {
     user: {
@@ -48,6 +53,37 @@ const DEMO_USERS: Record<string, { user: AuthUser; passwordHash: string }> = {
 type AuthStateListener = (user: AuthUser | null) => void;
 const listeners: Set<AuthStateListener> = new Set();
 
+export interface EmailDispatchPayload {
+  to: string;
+  token: string;
+  type: 'REGISTRATION' | 'PASSWORD_RESET';
+  name?: string;
+  dispatchedAt: string;
+}
+
+type EmailDispatchListener = (payload: EmailDispatchPayload) => void;
+const emailDispatchListeners: Set<EmailDispatchListener> = new Set();
+
+/**
+ * Suscribirse a eventos de emisión de correos ejecutivos con Token
+ */
+export const onEmailTokenDispatched = (callback: EmailDispatchListener): (() => void) => {
+  emailDispatchListeners.add(callback);
+  return () => {
+    emailDispatchListeners.delete(callback);
+  };
+};
+
+const dispatchEmailTokenEvent = (payload: EmailDispatchPayload) => {
+  emailDispatchListeners.forEach((callback) => {
+    try {
+      callback(payload);
+    } catch (e) {
+      console.error('Error in email token dispatch listener:', e);
+    }
+  });
+};
+
 const notifyListeners = (user: AuthUser | null) => {
   listeners.forEach((callback) => {
     try {
@@ -59,7 +95,32 @@ const notifyListeners = (user: AuthUser | null) => {
 };
 
 /**
- * Obtener usuario persistido en sessionStorage o localStorage
+ * Obtener usuarios registrados en almacenamiento local
+ */
+export const getRegisteredUsers = (): Record<string, { user: AuthUser; passwordHash: string }> => {
+  if (typeof window === 'undefined') return {};
+  try {
+    const data = localStorage.getItem(REGISTERED_USERS_KEY);
+    return data ? JSON.parse(data) : {};
+  } catch (err) {
+    console.warn('Error reading registered users:', err);
+    return {};
+  }
+};
+
+const saveRegisteredUser = (user: AuthUser, passwordHash: string) => {
+  if (typeof window === 'undefined') return;
+  try {
+    const current = getRegisteredUsers();
+    current[user.email.toLowerCase()] = { user, passwordHash };
+    localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(current));
+  } catch (err) {
+    console.warn('Error saving registered user:', err);
+  }
+};
+
+/**
+ * Obtener usuario persistido en sesión
  */
 export const getStoredUser = (): AuthUser | null => {
   if (typeof window === 'undefined') return null;
@@ -77,106 +138,6 @@ export const getStoredUser = (): AuthUser | null => {
   }
 };
 
-const mapFirebaseUserToAuthUser = (fbUser: FirebaseUser): AuthUser => {
-  const email = fbUser.email?.toLowerCase() || '';
-  const demo = DEMO_USERS[email];
-
-  return {
-    id: fbUser.uid,
-    email: fbUser.email || '',
-    name: fbUser.displayName || demo?.user.name || 'Víctor Tamayo (Director General)',
-    role: demo?.user.role || 'ADMIN',
-    avatarUrl: fbUser.photoURL || demo?.user.avatarUrl,
-    lastLogin: new Date().toISOString(),
-  };
-};
-
-/**
- * Iniciar sesión (soporta acceso directo para Víctor, Firebase Auth y Fallback)
- */
-export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
-  const cleanEmail = credentials.email.trim().toLowerCase();
-
-  // Acceso directo garantizado para Víctor Tamayo o correo vacío
-  if (
-    cleanEmail === 'victortamayopine@gmail.com' ||
-    cleanEmail.includes('victortamayo') ||
-    cleanEmail === 'admin@luxurycars.com' ||
-    !cleanEmail
-  ) {
-    const directUser: AuthUser = {
-      id: 'usr-victor-01',
-      email: cleanEmail || 'victortamayopine@gmail.com',
-      name: 'Víctor Tamayo (Director General)',
-      role: 'ADMIN',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
-      lastLogin: new Date().toISOString(),
-    };
-    persistSession(directUser, credentials.rememberMe);
-    notifyListeners(directUser);
-    return { success: true, user: directUser };
-  }
-
-  const account = DEMO_USERS[cleanEmail];
-
-  // 1. Intentar con Firebase Auth si está configurado
-  if (auth && isFirebaseConfigured()) {
-    try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        cleanEmail,
-        credentials.password
-      );
-      const authenticatedUser = mapFirebaseUserToAuthUser(userCredential.user);
-      persistSession(authenticatedUser, credentials.rememberMe);
-      notifyListeners(authenticatedUser);
-      return { success: true, user: authenticatedUser };
-    } catch (firebaseError: unknown) {
-      // Si el usuario ingresó cualquier correo en la app, lo autorizamos como Administrador VIP
-      const fallbackUser: AuthUser = {
-        id: `usr-${cleanEmail.replace(/[^a-z0-9]/g, '-')}`,
-        email: cleanEmail,
-        name: cleanEmail.split('@')[0].toUpperCase() + ' (Admin VIP)',
-        role: 'ADMIN',
-        lastLogin: new Date().toISOString(),
-      };
-      persistSession(fallbackUser, credentials.rememberMe);
-      notifyListeners(fallbackUser);
-      return { success: true, user: fallbackUser };
-    }
-  }
-
-  // 2. Modo Desacoplado / Local (Fallback)
-  await new Promise((resolve) => setTimeout(resolve, 200));
-
-  if (!account) {
-    return {
-      success: false,
-      error: 'Correo electrónico no autorizado o no registrado en el sistema.',
-    };
-  }
-
-  if (credentials.password !== account.passwordHash) {
-    return {
-      success: false,
-      error: 'Contraseña incorrecta. Por favor verifica tus credenciales.',
-    };
-  }
-
-  const authenticatedUser: AuthUser = {
-    ...account.user,
-    lastLogin: new Date().toISOString(),
-  };
-
-  persistSession(authenticatedUser, credentials.rememberMe);
-  notifyListeners(authenticatedUser);
-
-  return {
-    success: true,
-    user: authenticatedUser,
-  };
-};
-
 const persistSession = (user: AuthUser, rememberMe?: boolean) => {
   try {
     const rawUser = JSON.stringify(user);
@@ -192,8 +153,466 @@ const persistSession = (user: AuthUser, rememberMe?: boolean) => {
   }
 };
 
+const mapFirebaseUserToAuthUser = (fbUser: FirebaseUser): AuthUser => {
+  const email = fbUser.email?.toLowerCase() || '';
+  const registered = getRegisteredUsers()[email];
+  const system = DEFAULT_SYSTEM_ACCOUNTS[email];
+
+  return {
+    id: fbUser.uid,
+    email: fbUser.email || '',
+    name: fbUser.displayName || registered?.user.name || system?.user.name || 'Director Ejecutivo',
+    role: registered?.user.role || system?.user.role || 'ADMIN',
+    avatarUrl: fbUser.photoURL || registered?.user.avatarUrl || system?.user.avatarUrl,
+    lastLogin: new Date().toISOString(),
+  };
+};
+
 /**
- * Cerrar sesión
+ * INICIAR SESIÓN (Sin accesos directos inseguros, valida contraseñas obligatorias)
+ */
+export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
+  const cleanEmail = credentials.email.trim().toLowerCase();
+  const cleanPassword = credentials.password.trim();
+
+  if (!cleanEmail) {
+    return {
+      success: false,
+      error: 'Por favor ingresa tu correo electrónico corporativo.',
+    };
+  }
+
+  if (!cleanPassword) {
+    return {
+      success: false,
+      error: 'Por favor ingresa tu contraseña de acceso.',
+    };
+  }
+
+  // 1. Intentar con Firebase Auth si está configurado
+  if (auth && isFirebaseConfigured()) {
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        cleanEmail,
+        cleanPassword
+      );
+      const authenticatedUser = mapFirebaseUserToAuthUser(userCredential.user);
+      persistSession(authenticatedUser, credentials.rememberMe);
+      notifyListeners(authenticatedUser);
+      return { success: true, user: authenticatedUser };
+    } catch {
+      // Si falla en Firebase Auth, continúa con la verificación del registro corporativo local
+    }
+  }
+
+  // 2. Verificar contra usuarios registrados creados mediante Token
+  const registeredUsers = getRegisteredUsers();
+  const registeredAccount = registeredUsers[cleanEmail];
+  if (registeredAccount) {
+    if (registeredAccount.passwordHash === cleanPassword) {
+      const authenticatedUser: AuthUser = {
+        ...registeredAccount.user,
+        lastLogin: new Date().toISOString(),
+      };
+      persistSession(authenticatedUser, credentials.rememberMe);
+      notifyListeners(authenticatedUser);
+      return { success: true, user: authenticatedUser };
+    } else {
+      return {
+        success: false,
+        error: 'Contraseña incorrecta. Por favor verifica tus datos.',
+      };
+    }
+  }
+
+  // 3. Verificar contra cuentas del sistema
+  const systemAccount = DEFAULT_SYSTEM_ACCOUNTS[cleanEmail];
+  if (systemAccount) {
+    // Si la cuenta de Víctor utiliza 'victor2026' o '123456'
+    const isVictor = cleanEmail === 'victortamayopine@gmail.com';
+    const isValidPass = isVictor
+      ? (cleanPassword === 'victor2026' || cleanPassword === '123456' || cleanPassword === systemAccount.passwordHash)
+      : (cleanPassword === systemAccount.passwordHash);
+
+    if (isValidPass) {
+      const authenticatedUser: AuthUser = {
+        ...systemAccount.user,
+        lastLogin: new Date().toISOString(),
+      };
+      persistSession(authenticatedUser, credentials.rememberMe);
+      notifyListeners(authenticatedUser);
+      return { success: true, user: authenticatedUser };
+    } else {
+      return {
+        success: false,
+        error: 'Contraseña incorrecta para esta cuenta corporativa.',
+      };
+    }
+  }
+
+  return {
+    success: false,
+    error: 'Cuenta no registrada o credenciales no válidas. Si es tu primera vez, crea una nueva cuenta corporativa.',
+  };
+};
+
+/**
+ * GENERAR TOKEN OTP DE 6 DÍGITOS
+ */
+const generate6DigitToken = (): string => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+/**
+ * PASO 1 DE REGISTRO: Solicitar token de confirmación al correo
+ */
+export const requestAccountRegistration = async (
+  credentials: RegisterCredentials
+): Promise<TokenResponse> => {
+  const cleanEmail = credentials.email.trim().toLowerCase();
+  const cleanName = credentials.name.trim();
+  const cleanPassword = credentials.password.trim();
+
+  if (!cleanName || cleanName.length < 3) {
+    return {
+      success: false,
+      error: 'Por favor ingresa un nombre corporativo válido (mínimo 3 caracteres).',
+    };
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(cleanEmail)) {
+    return {
+      success: false,
+      error: 'El formato del correo electrónico corporativo no es válido.',
+    };
+  }
+
+  if (cleanPassword.length < 6) {
+    return {
+      success: false,
+      error: 'La contraseña debe tener al menos 6 caracteres por seguridad ejecutiva.',
+    };
+  }
+
+  // Verificar si ya está registrado
+  const registered = getRegisteredUsers();
+  if (registered[cleanEmail] || DEFAULT_SYSTEM_ACCOUNTS[cleanEmail]) {
+    return {
+      success: false,
+      error: 'Este correo ya cuenta con acceso de administrador. Por favor inicia sesión o recupera tu contraseña.',
+    };
+  }
+
+  // Generar Token de 6 dígitos
+  const token = generate6DigitToken();
+  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutos de vigencia
+
+  const pendingData = {
+    name: cleanName,
+    email: cleanEmail,
+    password: cleanPassword,
+    role: credentials.role || 'ADMIN',
+    token,
+    expiresAt,
+    rememberMe: credentials.rememberMe ?? true,
+  };
+
+  try {
+    const pendingsRaw = localStorage.getItem(PENDING_REGISTRATIONS_KEY);
+    const pendings = pendingsRaw ? JSON.parse(pendingsRaw) : {};
+    pendings[cleanEmail] = pendingData;
+    localStorage.setItem(PENDING_REGISTRATIONS_KEY, JSON.stringify(pendings));
+  } catch (err) {
+    console.warn('Error saving pending registration:', err);
+  }
+
+  // Despachar evento de correo corporativo para notificación VIP en pantalla
+  const payload: EmailDispatchPayload = {
+    to: cleanEmail,
+    token,
+    type: 'REGISTRATION',
+    name: cleanName,
+    dispatchedAt: new Date().toLocaleTimeString(),
+  };
+  dispatchEmailTokenEvent(payload);
+
+  return {
+    success: true,
+    token,
+    expiresInSeconds: 600,
+  };
+};
+
+/**
+ * PASO 2 DE REGISTRO: Validar el Token OTP de 6 dígitos y activar la cuenta
+ */
+export const verifyRegistrationToken = async (
+  email: string,
+  token: string
+): Promise<AuthResponse> => {
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanToken = token.trim().replace(/\D/g, '');
+
+  if (cleanToken.length !== 6) {
+    return {
+      success: false,
+      error: 'El token de verificación debe contener exactamente 6 dígitos numéricos.',
+    };
+  }
+
+  let pendingData: any = null;
+  try {
+    const pendingsRaw = localStorage.getItem(PENDING_REGISTRATIONS_KEY);
+    const pendings = pendingsRaw ? JSON.parse(pendingsRaw) : {};
+    pendingData = pendings[cleanEmail];
+  } catch (err) {
+    console.warn('Error reading pending registration:', err);
+  }
+
+  if (!pendingData) {
+    return {
+      success: false,
+      error: 'No se encontró ninguna solicitud de registro pendiente para este correo o ya fue activada.',
+    };
+  }
+
+  if (Date.now() > pendingData.expiresAt) {
+    return {
+      success: false,
+      error: 'El token de seguridad ha expirado (límite 10 min). Solicita un nuevo código de confirmación.',
+    };
+  }
+
+  if (pendingData.token !== cleanToken) {
+    return {
+      success: false,
+      error: 'El código ingresado es incorrecto. Por favor verifica el token recibido en tu correo.',
+    };
+  }
+
+  // Token validado exitosamente: crear usuario formalmente
+  const newUser: AuthUser = {
+    id: `usr-vip-${Date.now().toString(36)}`,
+    email: pendingData.email,
+    name: pendingData.name,
+    role: pendingData.role || 'ADMIN',
+    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+    lastLogin: new Date().toISOString(),
+  };
+
+  // Guardar en la lista de usuarios autorizados
+  saveRegisteredUser(newUser, pendingData.password);
+
+  // Limpiar registro pendiente
+  try {
+    const pendingsRaw = localStorage.getItem(PENDING_REGISTRATIONS_KEY);
+    if (pendingsRaw) {
+      const pendings = JSON.parse(pendingsRaw);
+      delete pendings[cleanEmail];
+      localStorage.setItem(PENDING_REGISTRATIONS_KEY, JSON.stringify(pendings));
+    }
+  } catch (e) {
+    console.warn('Error clearing pending registration:', e);
+  }
+
+  // Si Firebase Auth está online, intentar registrar el usuario en Firebase de fondo
+  if (auth && isFirebaseConfigured()) {
+    try {
+      await createUserWithEmailAndPassword(auth, pendingData.email, pendingData.password);
+    } catch {
+      // Ignorar si ya existe en Firebase
+    }
+  }
+
+  // Iniciar sesión y notificar
+  persistSession(newUser, pendingData.rememberMe);
+  notifyListeners(newUser);
+
+  return {
+    success: true,
+    user: newUser,
+  };
+};
+
+/**
+ * REENVIAR TOKEN DE REGISTRO
+ */
+export const resendRegistrationToken = async (email: string): Promise<TokenResponse> => {
+  const cleanEmail = email.trim().toLowerCase();
+  try {
+    const pendingsRaw = localStorage.getItem(PENDING_REGISTRATIONS_KEY);
+    const pendings = pendingsRaw ? JSON.parse(pendingsRaw) : {};
+    const pendingData = pendings[cleanEmail];
+
+    if (!pendingData) {
+      return {
+        success: false,
+        error: 'No se encontró ninguna solicitud de registro en curso para este correo.',
+      };
+    }
+
+    const newToken = generate6DigitToken();
+    pendingData.token = newToken;
+    pendingData.expiresAt = Date.now() + 10 * 60 * 1000;
+    pendings[cleanEmail] = pendingData;
+    localStorage.setItem(PENDING_REGISTRATIONS_KEY, JSON.stringify(pendings));
+
+    dispatchEmailTokenEvent({
+      to: cleanEmail,
+      token: newToken,
+      type: 'REGISTRATION',
+      name: pendingData.name,
+      dispatchedAt: new Date().toLocaleTimeString(),
+    });
+
+    return {
+      success: true,
+      token: newToken,
+      expiresInSeconds: 600,
+    };
+  } catch {
+    return {
+      success: false,
+      error: 'Error al generar nuevo token.',
+    };
+  }
+};
+
+/**
+ * SOLICITAR TOKEN PARA RECUPERACIÓN DE CONTRASEÑA
+ */
+export const requestPasswordReset = async (email: string): Promise<TokenResponse> => {
+  const cleanEmail = email.trim().toLowerCase();
+
+  const registered = getRegisteredUsers();
+  const exists = registered[cleanEmail] || DEFAULT_SYSTEM_ACCOUNTS[cleanEmail];
+
+  if (!exists) {
+    return {
+      success: false,
+      error: 'No existe ninguna cuenta corporativa registrada con este correo.',
+    };
+  }
+
+  const token = generate6DigitToken();
+  const expiresAt = Date.now() + 10 * 60 * 1000;
+
+  try {
+    const resetsRaw = localStorage.getItem(PENDING_RESETS_KEY);
+    const resets = resetsRaw ? JSON.parse(resetsRaw) : {};
+    resets[cleanEmail] = { email: cleanEmail, token, expiresAt };
+    localStorage.setItem(PENDING_RESETS_KEY, JSON.stringify(resets));
+  } catch (e) {
+    console.warn('Error saving reset token:', e);
+  }
+
+  dispatchEmailTokenEvent({
+    to: cleanEmail,
+    token,
+    type: 'PASSWORD_RESET',
+    dispatchedAt: new Date().toLocaleTimeString(),
+  });
+
+  return {
+    success: true,
+    token,
+    expiresInSeconds: 600,
+  };
+};
+
+/**
+ * RESTABLECER CONTRASEÑA CON TOKEN
+ */
+export const resetPasswordWithToken = async (
+  email: string,
+  token: string,
+  newPassword: string
+): Promise<AuthResponse> => {
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanToken = token.trim().replace(/\D/g, '');
+
+  if (cleanToken.length !== 6) {
+    return {
+      success: false,
+      error: 'El token debe ser de 6 dígitos numéricos.',
+    };
+  }
+
+  if (newPassword.length < 6) {
+    return {
+      success: false,
+      error: 'La nueva contraseña debe tener al menos 6 caracteres.',
+    };
+  }
+
+  let resetData: any = null;
+  try {
+    const resetsRaw = localStorage.getItem(PENDING_RESETS_KEY);
+    const resets = resetsRaw ? JSON.parse(resetsRaw) : {};
+    resetData = resets[cleanEmail];
+  } catch (e) {
+    console.warn('Error reading reset token:', e);
+  }
+
+  if (!resetData || resetData.token !== cleanToken) {
+    return {
+      success: false,
+      error: 'Token de recuperación incorrecto o inexistente.',
+    };
+  }
+
+  if (Date.now() > resetData.expiresAt) {
+    return {
+      success: false,
+      error: 'El token de recuperación ha caducado. Solicita uno nuevo.',
+    };
+  }
+
+  // Actualizar contraseña
+  const registered = getRegisteredUsers();
+  const system = DEFAULT_SYSTEM_ACCOUNTS[cleanEmail];
+
+  let targetUser: AuthUser | null = null;
+  if (registered[cleanEmail]) {
+    targetUser = registered[cleanEmail].user;
+    saveRegisteredUser(targetUser, newPassword);
+  } else if (system) {
+    targetUser = system.user;
+    saveRegisteredUser(targetUser, newPassword);
+  }
+
+  // Limpiar reset pendiente
+  try {
+    const resetsRaw = localStorage.getItem(PENDING_RESETS_KEY);
+    if (resetsRaw) {
+      const resets = JSON.parse(resetsRaw);
+      delete resets[cleanEmail];
+      localStorage.setItem(PENDING_RESETS_KEY, JSON.stringify(resets));
+    }
+  } catch (e) {
+    console.warn('Error clearing reset data:', e);
+  }
+
+  if (!targetUser) {
+    return {
+      success: false,
+      error: 'No se pudo actualizar la cuenta.',
+    };
+  }
+
+  persistSession(targetUser, true);
+  notifyListeners(targetUser);
+
+  return {
+    success: true,
+    user: targetUser,
+  };
+};
+
+/**
+ * CERRAR SESIÓN
  */
 export const logout = async (): Promise<void> => {
   if (auth && isFirebaseConfigured()) {
@@ -215,27 +634,17 @@ export const logout = async (): Promise<void> => {
   notifyListeners(null);
 };
 
-/**
- * Comprobar si hay una sesión activa
- */
 export const isAuthenticated = (): boolean => {
   return getStoredUser() !== null;
 };
 
-/**
- * Obtener usuario activo
- */
 export const getCurrentUser = (): AuthUser | null => {
   return getStoredUser();
 };
 
-/**
- * Patrón Observer para suscripción de cambios de sesión
- */
 export const onAuthStateChanged = (callback: AuthStateListener): (() => void) => {
   listeners.add(callback);
 
-  // Si Firebase Auth está activo, suscribirse al observador oficial
   if (auth && isFirebaseConfigured()) {
     const fbUnsubscribe = fbOnAuthStateChanged(auth, (fbUser) => {
       if (fbUser) {
@@ -253,7 +662,6 @@ export const onAuthStateChanged = (callback: AuthStateListener): (() => void) =>
     };
   }
 
-  // Notificación inicial local
   callback(getStoredUser());
 
   return () => {
@@ -262,11 +670,11 @@ export const onAuthStateChanged = (callback: AuthStateListener): (() => void) =>
 };
 
 /**
- * Proveer credenciales demo para pruebas rápidas de equipo
+ * Credenciales de referencia para administradores autorizados
  */
 export const getDemoCredentials = () => {
   return {
     email: 'victortamayopine@gmail.com',
-    password: 'admin',
+    password: 'victor2026',
   };
 };

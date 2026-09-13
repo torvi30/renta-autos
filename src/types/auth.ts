@@ -15,6 +15,30 @@ export interface LoginCredentials {
   rememberMe?: boolean;
 }
 
+export interface RegisterCredentials {
+  name: string;
+  email: string;
+  password: string;
+  role?: UserRole;
+  rememberMe?: boolean;
+}
+
+export interface EmailVerificationToken {
+  token: string;
+  email: string;
+  expiresAt: number; // Timestamp
+  type: 'REGISTRATION' | 'PASSWORD_RESET';
+}
+
+export interface PendingRegistration {
+  name: string;
+  email: string;
+  passwordHash: string;
+  role: UserRole;
+  token: string;
+  expiresAt: number;
+}
+
 export interface AuthState {
   user: AuthUser | null;
   isAuthenticated: boolean;
@@ -25,4 +49,18 @@ export interface AuthResponse {
   success: boolean;
   user?: AuthUser;
   error?: string;
+  tokenRequired?: boolean;
+  tokenInfo?: {
+    email: string;
+    expiresInSeconds: number;
+    previewCode?: string; // Para entorno de demostración / preview de correo
+  };
 }
+
+export interface TokenResponse {
+  success: boolean;
+  error?: string;
+  token?: string;
+  expiresInSeconds?: number;
+}
+
