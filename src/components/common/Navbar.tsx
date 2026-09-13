@@ -24,6 +24,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<'fleet' | 'experience' | 'how-it-works' | 'faq'>('fleet');
 
   const { currency, setCurrency } = useCurrency();
   const { language, setLanguage, t } = useLanguage();
@@ -32,13 +33,47 @@ export const Navbar: React.FC<NavbarProps> = ({
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
+
+      if (currentRoute === 'home') {
+        const sections: Array<{ id: string; key: 'fleet' | 'experience' | 'how-it-works' | 'faq' }> = [
+          { id: 'faq', key: 'faq' },
+          { id: 'how-it-works', key: 'how-it-works' },
+          { id: 'experience', key: 'experience' },
+          { id: 'showroom', key: 'fleet' },
+        ];
+
+        const scrollPosition = window.scrollY + 220; // Offset visual para compensar la barra superior
+
+        for (const sec of sections) {
+          const el = document.getElementById(sec.id);
+          if (el) {
+            const top = el.offsetTop;
+            if (scrollPosition >= top) {
+              setActiveSection(sec.key);
+              return;
+            }
+          }
+        }
+
+        // Si está en el Hero superior
+        setActiveSection('fleet');
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [currentRoute]);
 
   const scrollToSection = (id: string) => {
     setIsMobileMenuOpen(false);
+
+    // Actualizar estado de sección activa inmediatamente al hacer clic
+    if (id === 'showroom') setActiveSection('fleet');
+    else if (id === 'experience') setActiveSection('experience');
+    else if (id === 'how-it-works') setActiveSection('how-it-works');
+    else if (id === 'faq') setActiveSection('faq');
+
     if (currentRoute !== 'home' && onNavigateHome) {
       onNavigateHome();
       setTimeout(() => {
@@ -59,6 +94,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const handleHomeClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsMobileMenuOpen(false);
+    setActiveSection('fleet');
     if (onNavigateHome) {
       onNavigateHome();
     } else {
@@ -75,6 +111,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const handleFleetClick = () => {
     setIsMobileMenuOpen(false);
+    setActiveSection('fleet');
     if (currentRoute !== 'home' && onNavigateHome) {
       onNavigateHome();
       setTimeout(() => {
@@ -89,6 +126,12 @@ export const Navbar: React.FC<NavbarProps> = ({
       scrollToSection('showroom');
     }
   };
+
+  const isFleetActive = currentRoute === 'home' && activeSection === 'fleet';
+  const isCatalogActive = currentRoute === 'catalog';
+  const isExperienceActive = currentRoute === 'home' && activeSection === 'experience';
+  const isHowItWorksActive = currentRoute === 'home' && activeSection === 'how-it-works';
+  const isFaqActive = currentRoute === 'home' && activeSection === 'faq';
 
   const whatsAppLink = getWhatsAppLink();
 
@@ -233,11 +276,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={handleFleetClick}
                 className={`transition-all py-1 relative group ${
-                  currentRoute === 'home' ? 'text-gold-400 font-black' : 'hover:text-gold-400'
+                  isFleetActive ? 'text-gold-400 font-black' : 'text-silver-300 hover:text-gold-400'
                 }`}
               >
                 <span>{t.nav.fleet}</span>
-                {currentRoute === 'home' && (
+                {isFleetActive && (
                   <span className="absolute -bottom-1.5 left-0 w-full h-[2px] bg-gradient-to-r from-gold-400 to-amber-500 rounded-full shadow-[0_0_8px_rgba(234,179,8,0.7)]" />
                 )}
               </button>
@@ -245,38 +288,50 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={handleCatalogClick}
                 className={`transition-all py-1 relative group flex items-center gap-1.5 ${
-                  currentRoute === 'catalog' ? 'text-gold-400 font-black' : 'hover:text-gold-400'
+                  isCatalogActive ? 'text-gold-400 font-black' : 'text-silver-300 hover:text-gold-400'
                 }`}
               >
                 <Compass className="w-3.5 h-3.5 text-gold-400" />
                 <span>{t.nav.catalog}</span>
-                {currentRoute === 'catalog' && (
+                {isCatalogActive && (
                   <span className="absolute -bottom-1.5 left-0 w-full h-[2px] bg-gradient-to-r from-gold-400 to-amber-500 rounded-full shadow-[0_0_8px_rgba(234,179,8,0.7)]" />
                 )}
               </button>
 
               <button
                 onClick={() => scrollToSection('experience')}
-                className="hover:text-gold-400 transition-colors py-1 relative group text-silver-300"
+                className={`transition-all py-1 relative group ${
+                  isExperienceActive ? 'text-gold-400 font-black' : 'text-silver-300 hover:text-gold-400'
+                }`}
               >
-                {t.nav.experience}
-                <span className="absolute -bottom-1.5 left-0 w-0 h-[2px] bg-gold-400 rounded-full transition-all group-hover:w-full" />
+                <span>{t.nav.experience}</span>
+                {isExperienceActive && (
+                  <span className="absolute -bottom-1.5 left-0 w-full h-[2px] bg-gradient-to-r from-gold-400 to-amber-500 rounded-full shadow-[0_0_8px_rgba(234,179,8,0.7)]" />
+                )}
               </button>
 
               <button
                 onClick={() => scrollToSection('how-it-works')}
-                className="hover:text-gold-400 transition-colors py-1 relative group text-silver-300"
+                className={`transition-all py-1 relative group ${
+                  isHowItWorksActive ? 'text-gold-400 font-black' : 'text-silver-300 hover:text-gold-400'
+                }`}
               >
-                {t.nav.howItWorks}
-                <span className="absolute -bottom-1.5 left-0 w-0 h-[2px] bg-gold-400 rounded-full transition-all group-hover:w-full" />
+                <span>{t.nav.howItWorks}</span>
+                {isHowItWorksActive && (
+                  <span className="absolute -bottom-1.5 left-0 w-full h-[2px] bg-gradient-to-r from-gold-400 to-amber-500 rounded-full shadow-[0_0_8px_rgba(234,179,8,0.7)]" />
+                )}
               </button>
 
               <button
                 onClick={() => scrollToSection('faq')}
-                className="hover:text-gold-400 transition-colors py-1 relative group text-silver-300"
+                className={`transition-all py-1 relative group ${
+                  isFaqActive ? 'text-gold-400 font-black' : 'text-silver-300 hover:text-gold-400'
+                }`}
               >
-                {t.nav.requirements}
-                <span className="absolute -bottom-1.5 left-0 w-0 h-[2px] bg-gold-400 rounded-full transition-all group-hover:w-full" />
+                <span>{t.nav.requirements}</span>
+                {isFaqActive && (
+                  <span className="absolute -bottom-1.5 left-0 w-full h-[2px] bg-gradient-to-r from-gold-400 to-amber-500 rounded-full shadow-[0_0_8px_rgba(234,179,8,0.7)]" />
+                )}
               </button>
             </nav>
 
@@ -375,43 +430,54 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={handleHomeClick}
               className={`text-left py-2 border-b border-carbon-900 flex items-center justify-between ${
-                currentRoute === 'home' ? 'text-gold-400 font-bold' : 'hover:text-gold-400'
+                isFleetActive ? 'text-gold-400 font-bold' : 'hover:text-gold-400 text-silver-300'
               }`}
             >
               <span>{t.nav.fleet}</span>
-              {currentRoute === 'home' && <span className="w-2 h-2 rounded-full bg-gold-400" />}
+              {isFleetActive && <span className="w-2 h-2 rounded-full bg-gold-400" />}
             </button>
 
             <button
               onClick={handleCatalogClick}
               className={`text-left py-2 border-b border-carbon-900 flex items-center justify-between ${
-                currentRoute === 'catalog' ? 'text-gold-400 font-bold' : 'hover:text-gold-400'
+                isCatalogActive ? 'text-gold-400 font-bold' : 'hover:text-gold-400 text-silver-300'
               }`}
             >
               <span className="flex items-center gap-2">
                 <Compass className="w-4 h-4 text-gold-400" />
                 {t.nav.catalog}
               </span>
-              {currentRoute === 'catalog' && <span className="w-2 h-2 rounded-full bg-gold-400" />}
+              {isCatalogActive && <span className="w-2 h-2 rounded-full bg-gold-400" />}
             </button>
 
             <button
               onClick={() => scrollToSection('experience')}
-              className="text-left py-2 border-b border-carbon-900 hover:text-gold-400"
+              className={`text-left py-2 border-b border-carbon-900 flex items-center justify-between ${
+                isExperienceActive ? 'text-gold-400 font-bold' : 'hover:text-gold-400 text-silver-300'
+              }`}
             >
-              {t.nav.experience}
+              <span>{t.nav.experience}</span>
+              {isExperienceActive && <span className="w-2 h-2 rounded-full bg-gold-400" />}
             </button>
+
             <button
               onClick={() => scrollToSection('how-it-works')}
-              className="text-left py-2 border-b border-carbon-900 hover:text-gold-400"
+              className={`text-left py-2 border-b border-carbon-900 flex items-center justify-between ${
+                isHowItWorksActive ? 'text-gold-400 font-bold' : 'hover:text-gold-400 text-silver-300'
+              }`}
             >
-              {t.nav.howItWorks}
+              <span>{t.nav.howItWorks}</span>
+              {isHowItWorksActive && <span className="w-2 h-2 rounded-full bg-gold-400" />}
             </button>
+
             <button
               onClick={() => scrollToSection('faq')}
-              className="text-left py-2 border-b border-carbon-900 hover:text-gold-400"
+              className={`text-left py-2 border-b border-carbon-900 flex items-center justify-between ${
+                isFaqActive ? 'text-gold-400 font-bold' : 'hover:text-gold-400 text-silver-300'
+              }`}
             >
-              {t.nav.requirements}
+              <span>{t.nav.requirements}</span>
+              {isFaqActive && <span className="w-2 h-2 rounded-full bg-gold-400" />}
             </button>
           </nav>
 
