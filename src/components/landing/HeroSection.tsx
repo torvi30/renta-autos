@@ -57,15 +57,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     }
   }, [currentVehicleId, showroomVehicles]);
 
-  // Auto-desplazar la tarjeta activa al centro en vista móvil/táctil o desktop
+  // Auto-desplazar la tarjeta activa al centro de forma suave y precisa sin rebotes
   useEffect(() => {
     if (mobileDockRef.current) {
-      const activeCard = mobileDockRef.current.children[currentIndex] as HTMLElement;
+      const container = mobileDockRef.current;
+      const activeCard = container.children[currentIndex] as HTMLElement;
       if (activeCard) {
-        activeCard.scrollIntoView({
+        const cardLeft = activeCard.offsetLeft;
+        const cardWidth = activeCard.offsetWidth;
+        const containerWidth = container.offsetWidth;
+        const targetLeft = cardLeft - (containerWidth - cardWidth) / 2;
+        container.scrollTo({
+          left: Math.max(0, targetLeft),
           behavior: 'smooth',
-          inline: 'center',
-          block: 'nearest',
         });
       }
     }
@@ -386,7 +390,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             ref={mobileDockRef}
             onTouchStart={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
-            className="flex gap-2 sm:gap-2.5 xl:gap-3 overflow-x-auto pb-4 pt-1 px-4 sm:px-1 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-carbon-700 scrollbar-track-transparent scroll-smooth"
+            className="flex gap-2 sm:gap-2.5 xl:gap-3 overflow-x-auto pb-4 pt-1 px-4 sm:px-1 scrollbar-thin scrollbar-thumb-carbon-700 scrollbar-track-transparent"
           >
             {showroomVehicles.map((veh, idx) => {
               const isActive = currentIndex === idx;
@@ -394,7 +398,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 <button
                   key={veh.id}
                   onClick={() => handleSelectCar(idx)}
-                  className={`relative p-2 sm:p-2.5 rounded-2xl border text-left transition-all duration-300 group flex flex-col justify-between w-[134px] min-w-[134px] sm:w-[140px] sm:min-w-[140px] lg:w-[144px] lg:min-w-[144px] xl:w-[150px] xl:min-w-[150px] flex-shrink-0 snap-center min-h-[195px] sm:min-h-[205px] xl:min-h-[215px] ${
+                  className={`relative p-2 sm:p-2.5 rounded-2xl border text-left transition-all duration-300 group flex flex-col justify-between w-[134px] min-w-[134px] sm:w-[140px] sm:min-w-[140px] lg:w-[144px] lg:min-w-[144px] xl:w-[150px] xl:min-w-[150px] flex-shrink-0 min-h-[195px] sm:min-h-[205px] xl:min-h-[215px] ${
                     isActive
                       ? 'bg-gradient-to-b from-carbon-850 via-carbon-900 to-carbon-950 border-gold-400 ring-2 ring-gold-400/50 shadow-[0_12px_28px_rgba(212,175,55,0.25)] -translate-y-1.5'
                       : 'bg-gradient-to-b from-carbon-900/90 to-carbon-950/90 border-carbon-800/90 hover:border-gold-500/40 hover:bg-carbon-850 hover:-translate-y-1'

@@ -510,7 +510,7 @@ export const MOCK_VEHICLES: Vehicle[] = [
       'Paquete de Seguridad Activa Toyota Safety Sense 3.0 con visión 360°'
     ],
     status: 'AVAILABLE',
-    mainImage: 'https://images.unsplash.com/photo-1594502184342-2e12f877aa73?auto=format&fit=crop&w=1200&q=85',
+    mainImage: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=85',
     specs: {
       acceleration0to100: '6.7 s',
       horsepower: 409,
@@ -519,10 +519,9 @@ export const MOCK_VEHICLES: Vehicle[] = [
     },
     gallery: {
       exteriorImages: [
-        'https://images.unsplash.com/photo-1594502184342-2e12f877aa73?auto=format&fit=crop&w=1200&q=85',
         'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=85',
-        'https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=85',
-        'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=85'
+        'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=85'
       ],
       interiorImages: [
         'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85',
@@ -536,5 +535,49 @@ export const MOCK_VEHICLES: Vehicle[] = [
     isFeatured: true,
     createdAt: '2026-03-01T10:00:00Z',
     updatedAt: '2026-03-01T10:00:00Z'
+  },
+  {
+    id: 'veh-mtzdzi0g-0fwh',
+    slug: 'toyota-2022-2026',
+    brand: 'Toyota',
+    model: '2022 GR Sport',
+    year: 2022,
+    plate: 'FRE334',
+    category: 'DEPORTIVO',
+    description: 'Exclusivo Toyota 2022 edición especial. Rendimiento superdeportivo, confort boutique y acabados de lujo para clientes VIP.',
+    pricePerDay: 1500,
+    currency: 'USD',
+    transmission: 'AUTOMATICA',
+    fuel: 'GASOLINA',
+    seats: 2,
+    features: [
+      'Audio Burmester 3D High-End',
+      'Frenos Carbono-Cerámicos',
+      'Interior Cuero Nappa & Alcantara',
+      'Escape Deportivo Activo'
+    ],
+    status: 'AVAILABLE',
+    mainImage: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=85',
+    specs: {
+      acceleration0to100: '2.9s',
+      horsepower: 650,
+      topSpeed: 330,
+      doors: 2
+    },
+    gallery: {
+      exteriorImages: [
+        'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=85'
+      ],
+      interiorImages: [
+        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85'
+      ],
+      detailImages: [
+        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=85'
+      ]
+    },
+    isFeatured: true,
+    createdAt: '2026-09-13T05:41:45.328Z',
+    updatedAt: '2026-09-13T05:41:45.328Z'
   }
 ];
