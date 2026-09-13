@@ -16,6 +16,7 @@ import {
   Pencil,
   Trash2,
   AlertTriangle,
+  X,
 } from 'lucide-react';
 
 interface AdminFleetViewProps {
@@ -39,6 +40,16 @@ export const AdminFleetView: React.FC<AdminFleetViewProps> = ({
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
+
+  const handleCardFilterClick = (targetStatus: string) => {
+    setStatusFilter(targetStatus);
+    setTimeout(() => {
+      document.getElementById('fleet-vehicles-grid-section')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }, 60);
+  };
 
   const filteredVehicles = useMemo(() => {
     return vehicles.filter((v) => {
@@ -64,16 +75,32 @@ export const AdminFleetView: React.FC<AdminFleetViewProps> = ({
   return (
     <div className="space-y-7 animate-fade-in">
       
-      {/* 1. KPIs de la Flota (Mismo Estilo Ejecutivo Grande) */}
+      {/* 1. KPIs de la Flota (Tarjetas Interactivas con Filtro Inmediato) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         {/* Flota Total */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-gold-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
+        <button
+          type="button"
+          onClick={() => handleCardFilterClick('ALL')}
+          className={`relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none ${
+            statusFilter === 'ALL'
+              ? 'border-gold-500 ring-2 ring-gold-500/40 shadow-gold-500/10'
+              : 'border-carbon-750 hover:border-gold-500/50'
+          }`}
+          title="Clic para ver toda la flota sin filtros"
+        >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold-500 via-gold-400 to-transparent" />
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
-              Flota Total
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
+                Flota Total
+              </span>
+              {statusFilter === 'ALL' && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-gold-500/20 text-gold-400 border border-gold-500/40 font-bold">
+                  Ver Todos
+                </span>
+              )}
+            </div>
             <div className="w-11 h-11 rounded-xl bg-gold-500/15 border border-gold-500/30 text-gold-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
               <Car className="w-5 h-5" />
             </div>
@@ -81,18 +108,37 @@ export const AdminFleetView: React.FC<AdminFleetViewProps> = ({
           <div className="text-4xl sm:text-5xl font-black font-display text-white tracking-tight">
             {totalCount} <span className="text-lg sm:text-xl font-semibold text-silver-400">Unidades</span>
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-400 font-medium">
-            100% Superdeportivos & Ultra-Lujo
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-400 font-medium flex items-center justify-between">
+            <span>100% Superdeportivos & Ultra-Lujo</span>
+            <span className="text-gold-400 text-xs font-mono font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              Filtrar ↓
+            </span>
           </div>
-        </div>
+        </button>
 
         {/* Disponibles para Renta */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-emerald-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
+        <button
+          type="button"
+          onClick={() => handleCardFilterClick(statusFilter === 'AVAILABLE' ? 'ALL' : 'AVAILABLE')}
+          className={`relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none ${
+            statusFilter === 'AVAILABLE'
+              ? 'border-emerald-500 ring-2 ring-emerald-500/40 bg-emerald-950/15 shadow-emerald-500/10'
+              : 'border-carbon-750 hover:border-emerald-500/50'
+          }`}
+          title="Clic para filtrar solo vehículos disponibles"
+        >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-emerald-400 to-transparent" />
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
-              Disponibles para Renta
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
+                Disponibles para Renta
+              </span>
+              {statusFilter === 'AVAILABLE' && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold">
+                  Filtrando
+                </span>
+              )}
+            </div>
             <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
               <CheckCircle2 className="w-5 h-5" />
             </div>
@@ -100,19 +146,40 @@ export const AdminFleetView: React.FC<AdminFleetViewProps> = ({
           <div className="text-4xl sm:text-5xl font-black font-display text-emerald-400 tracking-tight">
             {availableCount}
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-emerald-400 font-semibold flex items-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Listos para despacho inmediato</span>
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-emerald-400 font-semibold flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Listos para despacho inmediato</span>
+            </div>
+            <span className="text-emerald-400 text-xs font-mono font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              {statusFilter === 'AVAILABLE' ? 'Quitar' : 'Filtrar ↓'}
+            </span>
           </div>
-        </div>
+        </button>
 
         {/* Alquilados en Servicio */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-blue-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
+        <button
+          type="button"
+          onClick={() => handleCardFilterClick(statusFilter === 'RENTED' ? 'ALL' : 'RENTED')}
+          className={`relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none ${
+            statusFilter === 'RENTED'
+              ? 'border-blue-500 ring-2 ring-blue-500/40 bg-blue-950/15 shadow-blue-500/10'
+              : 'border-carbon-750 hover:border-blue-500/50'
+          }`}
+          title="Clic para filtrar solo vehículos alquilados"
+        >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-blue-400 to-transparent" />
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
-              Alquilados en Servicio
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
+                Alquilados en Servicio
+              </span>
+              {statusFilter === 'RENTED' && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-blue-500/20 text-blue-400 border border-blue-500/40 font-bold">
+                  Filtrando
+                </span>
+              )}
+            </div>
             <div className="w-11 h-11 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
               <DollarSign className="w-5 h-5" />
             </div>
@@ -120,18 +187,37 @@ export const AdminFleetView: React.FC<AdminFleetViewProps> = ({
           <div className="text-4xl sm:text-5xl font-black font-display text-white tracking-tight">
             {rentedCount}
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-300 font-medium">
-            En circulación con clientes VIP
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-300 font-medium flex items-center justify-between">
+            <span>En circulación con clientes VIP</span>
+            <span className="text-blue-400 text-xs font-mono font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              {statusFilter === 'RENTED' ? 'Quitar' : 'Filtrar ↓'}
+            </span>
           </div>
-        </div>
+        </button>
 
         {/* En Mantenimiento */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-amber-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
+        <button
+          type="button"
+          onClick={() => handleCardFilterClick(statusFilter === 'MAINTENANCE' ? 'ALL' : 'MAINTENANCE')}
+          className={`relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none ${
+            statusFilter === 'MAINTENANCE'
+              ? 'border-amber-500 ring-2 ring-amber-500/40 bg-amber-950/15 shadow-amber-500/10'
+              : 'border-carbon-750 hover:border-amber-500/50'
+          }`}
+          title="Clic para filtrar solo vehículos en mantenimiento"
+        >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-amber-400 to-transparent" />
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
-              En Mantenimiento
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
+                En Mantenimiento
+              </span>
+              {statusFilter === 'MAINTENANCE' && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/20 text-amber-400 border border-amber-500/40 font-bold">
+                  Filtrando
+                </span>
+              )}
+            </div>
             <div className="w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
               <Wrench className="w-5 h-5" />
             </div>
@@ -139,10 +225,13 @@ export const AdminFleetView: React.FC<AdminFleetViewProps> = ({
           <div className="text-4xl sm:text-5xl font-black font-display text-amber-400 tracking-tight">
             {maintenanceCount}
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-400 font-medium">
-            Taller preventivo / Detailing VIP
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-400 font-medium flex items-center justify-between">
+            <span>Taller preventivo / Detailing VIP</span>
+            <span className="text-amber-400 text-xs font-mono font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              {statusFilter === 'MAINTENANCE' ? 'Quitar' : 'Filtrar ↓'}
+            </span>
           </div>
-        </div>
+        </button>
 
       </div>
 
@@ -209,8 +298,42 @@ export const AdminFleetView: React.FC<AdminFleetViewProps> = ({
 
       </div>
 
-      {/* 3. Grid de Vehículos con Tarjetas de Alta Gama */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+      {/* Anclaje para scroll suave y Banner de Filtro Activo */}
+      <div id="fleet-vehicles-grid-section" className="space-y-4 pt-1">
+        {statusFilter !== 'ALL' && (
+          <div className="p-4 sm:p-4.5 rounded-2xl bg-gradient-to-r from-carbon-900 via-carbon-850 to-carbon-900 border border-carbon-750 flex items-center justify-between shadow-xl animate-fade-in">
+            <div className="flex items-center gap-3">
+              <span className={`w-3 h-3 rounded-full flex-shrink-0 animate-pulse ${
+                statusFilter === 'AVAILABLE'
+                  ? 'bg-emerald-400 shadow-lg shadow-emerald-400/50'
+                  : statusFilter === 'RENTED'
+                  ? 'bg-blue-400 shadow-lg shadow-blue-400/50'
+                  : 'bg-amber-400 shadow-lg shadow-amber-400/50'
+              }`} />
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-black text-white">
+                  {statusFilter === 'AVAILABLE' && `Mostrando ${filteredVehicles.length} vehículos disponibles para despacho`}
+                  {statusFilter === 'RENTED' && `Mostrando ${filteredVehicles.length} vehículos en servicio con clientes VIP`}
+                  {statusFilter === 'MAINTENANCE' && `Mostrando ${filteredVehicles.length} vehículo en taller o inspección`}
+                </span>
+                <span className="text-xs text-silver-400 font-mono">
+                  (de {vehicles.length} unidades totales en flota)
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setStatusFilter('ALL')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-gold-400 hover:text-gold-300 border border-gold-500/30 text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95"
+            >
+              <span>Ver Todos</span>
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* 3. Grid de Vehículos con Tarjetas de Alta Gama */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
         {filteredVehicles.map((vehicle) => {
           const isMaintenance = vehicle.status === 'MAINTENANCE';
 
@@ -358,6 +481,7 @@ export const AdminFleetView: React.FC<AdminFleetViewProps> = ({
             </div>
           );
         })}
+        </div>
       </div>
 
       {/* Modal de Confirmación para Eliminar Vehículo */}

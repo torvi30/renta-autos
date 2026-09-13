@@ -260,13 +260,13 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
           </div>
 
           <div className="flex items-center gap-3 sm:gap-4">
-            {/* Botón Principal de Acción Rápida: + Nuevo Vehículo */}
+            {/* Botón Principal de Acción Rápida: Nuevo Vehículo */}
             <button
               onClick={handleOpenCreateVehicle}
               className="hidden sm:inline-flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-gradient-to-r from-gold-500 via-gold-400 to-gold-500 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black text-sm sm:text-base shadow-xl shadow-gold-500/25 active:scale-95 transition-all"
             >
               <Plus className="w-5 h-5" />
-              <span>+ Nuevo Vehículo</span>
+              <span>Nuevo Vehículo</span>
             </button>
 
             {/* Indicador de Estado Cloud Firestore (Spark $0) */}
@@ -341,10 +341,11 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
           {currentTab === 'dashboard' && (
             <div className="space-y-7 animate-fade-in">
               
-              {/* Tarjetas de Métricas de Alto Impacto */}
+              {/* Tarjetas de Métricas de Alto Impacto con Navegación Directa */}
               <AdminMetricsGrid
                 vehicles={vehicles}
                 reservations={reservations}
+                onSelectTab={setCurrentTab}
               />
 
               {/* Barra de Acciones Rápidas y Telemetría con Tamaños Cómodos */}

@@ -11,7 +11,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  CheckCircle2,
   AlertTriangle,
   Wrench,
   X,
@@ -24,6 +23,9 @@ import {
   Trash2,
   ListOrdered,
   Sparkles,
+  SlidersHorizontal,
+  User,
+  Phone,
 } from 'lucide-react';
 
 interface AdminCalendarViewProps {
@@ -42,6 +44,47 @@ const MONTH_NAMES = [
 ];
 
 const WEEKDAY_NAMES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+// Monograma de 2 letras para cliente o código
+const getClientMonogram = (name: string): string => {
+  if (!name) return 'R';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+};
+
+// Helper para obtener las etiquetas numéricas de día de inicio y fin (ej: "11" y "15")
+const getReservationDayLabels = (
+  res: Reservation,
+  currentMonthPrefix: string,
+  daysInMonth: number
+) => {
+  const startParts = res.startDate.split('-');
+  const endParts = res.endDate.split('-');
+
+  let startLabel = '';
+  let endLabel = '';
+
+  if (res.startDate.startsWith(currentMonthPrefix)) {
+    startLabel = String(parseInt(startParts[2], 10));
+  } else if (res.startDate < `${currentMonthPrefix}-01`) {
+    startLabel = '◀ 1';
+  } else {
+    startLabel = String(parseInt(startParts[2], 10));
+  }
+
+  if (res.endDate.startsWith(currentMonthPrefix)) {
+    endLabel = String(parseInt(endParts[2], 10));
+  } else if (res.endDate > `${currentMonthPrefix}-${String(daysInMonth).padStart(2, '0')}`) {
+    endLabel = `${daysInMonth} ▶`;
+  } else {
+    endLabel = String(parseInt(endParts[2], 10));
+  }
+
+  return { startLabel, endLabel };
+};
 
 export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
   vehicles,
@@ -65,6 +108,13 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
   });
 
   const [viewMode, setViewMode] = useState<'timeline' | 'monthGrid' | 'agenda'>('timeline');
+  const [timeScale, setTimeScale] = useState<'month' | 'biweek1' | 'biweek2' | 'week'>('month');
+  const [hoveredReservation, setHoveredReservation] = useState<{
+    res: Reservation;
+    vehicle: Vehicle;
+    x: number;
+    y: number;
+  } | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   
@@ -101,6 +151,34 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
   const daysArray = useMemo(() => {
     return Array.from({ length: daysInMonth }, (_, i) => i + 1);
   }, [daysInMonth]);
+
+  // Días visibles según el zoom / escala seleccionada (Mes, Quincena o Semana)
+  const visibleDaysArray = useMemo(() => {
+    if (timeScale === 'biweek1') {
+      return Array.from({ length: Math.min(15, daysInMonth) }, (_, i) => i + 1);
+    }
+    if (timeScale === 'biweek2') {
+      const count = daysInMonth - 15;
+      return Array.from({ length: Math.max(1, count) }, (_, i) => i + 16);
+    }
+    if (timeScale === 'week') {
+      const now = new Date();
+      let startD = 1;
+      if (now.getFullYear() === currentYear && now.getMonth() === currentMonthIndex) {
+        startD = Math.max(1, Math.min(now.getDate(), Math.max(1, daysInMonth - 6)));
+      }
+      return Array.from({ length: Math.min(7, daysInMonth) }, (_, i) => startD + i).filter(
+        (d) => d <= daysInMonth
+      );
+    }
+    return daysArray;
+  }, [timeScale, daysInMonth, daysArray, currentYear, currentMonthIndex]);
+
+  const colMinWidth = useMemo(() => {
+    if (timeScale === 'week') return '90px';
+    if (timeScale === 'biweek1' || timeScale === 'biweek2') return '52px';
+    return '28px';
+  }, [timeScale]);
 
   // Fecha de hoy en formato YYYY-MM-DD
   const todayStr = useMemo(() => {
@@ -227,15 +305,36 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
     <div className="space-y-7 animate-fade-in">
       
       {/* 1. KPIs Ejecutivos de Ocupación Mensual (Mismo Estilo Grande y Homologado) */}
+      {/* 1. KPIs Ejecutivos de Ocupación e Integridad (Interactivos con Acceso Directo) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         {/* % Ocupación Mensual */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-gold-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
+        <button
+          type="button"
+          onClick={() => {
+            handleToday();
+            setStatusFilter('ALL');
+            setViewMode('timeline');
+          }}
+          className={`relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none ${
+            viewMode === 'timeline' && statusFilter === 'ALL'
+              ? 'border-gold-500 ring-2 ring-gold-500/40 shadow-gold-500/10'
+              : 'border-carbon-750 hover:border-gold-500/50'
+          }`}
+          title="Clic para enfocar el mes actual en el Timeline"
+        >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold-500 via-gold-400 to-transparent" />
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
-              Ocupación {MONTH_NAMES[currentMonthIndex]}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
+                Ocupación {MONTH_NAMES[currentMonthIndex]}
+              </span>
+              {viewMode === 'timeline' && statusFilter === 'ALL' && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-gold-500/20 text-gold-400 border border-gold-500/40 font-bold">
+                  Mes en Curso
+                </span>
+              )}
+            </div>
             <div className="w-11 h-11 rounded-xl bg-gold-500/15 border border-gold-500/30 text-gold-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
               <TrendingUp className="w-5 h-5" />
             </div>
@@ -243,18 +342,39 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
           <div className="text-4xl sm:text-5xl font-black font-display text-white tracking-tight">
             {occupancyRate}% <span className="text-lg sm:text-xl font-semibold text-silver-400">Ocupado</span>
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-300 font-medium">
-            Capacidad total: {totalFleetCapacity} días-auto
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-300 font-medium flex items-center justify-between">
+            <span>Capacidad: {totalFleetCapacity} días-auto</span>
+            <span className="text-gold-400 text-xs font-mono font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              Enfocar Hoy →
+            </span>
           </div>
-        </div>
+        </button>
 
-        {/* Días Contratados */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-blue-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
+        {/* Días Contratados (Ver Agenda de Contratos) */}
+        <button
+          type="button"
+          onClick={() => {
+            setViewMode(viewMode === 'agenda' ? 'timeline' : 'agenda');
+          }}
+          className={`relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none ${
+            viewMode === 'agenda'
+              ? 'border-blue-500 ring-2 ring-blue-500/40 bg-blue-950/15 shadow-blue-500/10'
+              : 'border-carbon-750 hover:border-blue-500/50'
+          }`}
+          title="Clic para alternar entre vista de Cronograma y Agenda de Contratos"
+        >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-blue-400 to-transparent" />
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
-              Días Contratados
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
+                Días Contratados
+              </span>
+              {viewMode === 'agenda' && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-blue-500/20 text-blue-400 border border-blue-500/40 font-bold">
+                  Modo Agenda
+                </span>
+              )}
+            </div>
             <div className="w-11 h-11 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
               <CalendarDays className="w-5 h-5" />
             </div>
@@ -262,13 +382,28 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
           <div className="text-4xl sm:text-5xl font-black font-display text-white tracking-tight">
             {totalBookedDaysInMonth} <span className="text-lg sm:text-xl font-semibold text-silver-400">Días</span>
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-300 font-medium">
-            {monthReservations.length} contrato(s) activos en el mes
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-300 font-medium flex items-center justify-between">
+            <span>{monthReservations.length} contrato(s) activos</span>
+            <span className="text-blue-400 text-xs font-mono font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              {viewMode === 'agenda' ? 'Ver Timeline →' : 'Ver Agenda →'}
+            </span>
           </div>
-        </div>
+        </button>
 
         {/* Próximas Salidas en 48h */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-amber-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
+        <button
+          type="button"
+          onClick={() => {
+            handleToday();
+            setViewMode('agenda');
+          }}
+          className={`relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none ${
+            upcomingDispatchesCount > 0
+              ? 'border-amber-500/80 hover:border-amber-400 ring-1 ring-amber-500/30'
+              : 'border-carbon-750 hover:border-amber-500/50'
+          }`}
+          title="Clic para ver despachos y entregas inmediatas de las próximas 48h"
+        >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-amber-400 to-transparent" />
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
@@ -281,36 +416,61 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
           <div className="text-4xl sm:text-5xl font-black font-display text-amber-400 tracking-tight">
             {upcomingDispatchesCount} <span className="text-lg sm:text-xl font-semibold text-silver-400">Entregas</span>
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-amber-400 font-semibold flex items-center gap-1.5">
-            <Clock className="w-4 h-4 animate-pulse" />
-            <span>Programadas en las próximas 48 horas</span>
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-amber-400 font-semibold flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-4 h-4 animate-pulse" />
+              <span>Próximas 48 horas</span>
+            </div>
+            <span className="text-amber-400 text-xs font-mono font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              Revisar →
+            </span>
           </div>
-        </div>
+        </button>
 
         {/* Detector de Conflictos de Agenda */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-emerald-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-emerald-400 to-transparent" />
+        <button
+          type="button"
+          onClick={() => {
+            if (conflictsList.length > 0) {
+              document.getElementById('conflicts-alert-banner')?.scrollIntoView({ behavior: 'smooth' });
+            }
+          }}
+          className={`relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none ${
+            conflictsList.length > 0
+              ? 'border-rose-500 ring-2 ring-rose-500/50 bg-rose-950/20'
+              : 'border-carbon-750 hover:border-emerald-500/50'
+          }`}
+          title={conflictsList.length > 0 ? "Clic para ver solapamientos detectados" : "100% Flota alineada sin solapes"}
+        >
+          <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${conflictsList.length > 0 ? 'from-rose-500 to-amber-500' : 'from-emerald-500 via-emerald-400 to-transparent'}`} />
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
               Integridad de Agenda
             </span>
-            <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner ${
+              conflictsList.length > 0
+                ? 'bg-rose-500/20 border border-rose-500/40 text-rose-400'
+                : 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400'
+            }`}>
               <ShieldCheck className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-4xl sm:text-5xl font-black font-display text-emerald-400 tracking-tight">
+          <div className={`text-4xl sm:text-5xl font-black font-display tracking-tight ${conflictsList.length > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
             {conflictsList.length === 0 ? '0' : conflictsList.length} <span className="text-lg sm:text-xl font-semibold text-silver-400">Conflictos</span>
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-300 font-medium">
-            {conflictsList.length === 0 ? '✓ 100% Flota alineada sin solapes' : '⚠️ Solapamiento detectado'}
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-300 font-medium flex items-center justify-between">
+            <span>{conflictsList.length === 0 ? '✓ 100% Sin solapes' : '⚠️ Solapamiento'}</span>
+            <span className="text-emerald-400 text-xs font-mono font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              {conflictsList.length > 0 ? 'Resolver →' : 'Verificar ✓'}
+            </span>
           </div>
-        </div>
+        </button>
 
       </div>
 
       {/* Alerta de Conflicto si existe */}
       {conflictsList.length > 0 && (
-        <div className="p-5 rounded-2xl bg-rose-950/70 border-2 border-rose-500/60 text-rose-300 shadow-xl flex items-center gap-4 animate-slide-up">
+        <div id="conflicts-alert-banner" className="p-5 rounded-2xl bg-rose-950/70 border-2 border-rose-500/60 text-rose-300 shadow-xl flex items-center gap-4 animate-slide-up">
           <AlertTriangle className="w-7 h-7 text-rose-400 flex-shrink-0" />
           <div>
             <h4 className="text-base font-bold text-white">Alerta de Solapamiento Operativo Detectada</h4>
@@ -442,33 +602,87 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
       {viewMode === 'timeline' && (
         <div className="rounded-3xl bg-carbon-900 border border-carbon-800 shadow-2xl overflow-hidden">
           
-          {/* Barra de Ayuda y Scroll en Móvil */}
-          <div className="flex items-center justify-between px-5 py-2.5 bg-carbon-850 border-b border-carbon-800 text-xs text-silver-300 font-semibold">
+          {/* Barra de Ayuda, Scroll y Selector de Escala / Zoom */}
+          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 bg-carbon-850 border-b border-carbon-800 text-xs text-silver-300 font-semibold">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-gold-400" />
-              <span>Cronograma Gantt de Flota • Clic en cualquier reserva para inspeccionar, editar o eliminar</span>
+              <Sparkles className="w-4 h-4 text-gold-400 flex-shrink-0" />
+              <span>Cronograma Gantt de Flota • Clic en cualquier reserva para inspeccionar o gestionar</span>
             </div>
-            <div className="text-gold-400 font-mono text-[11px] font-bold flex items-center gap-1 xl:hidden">
-              <span>Desliza para ver días ➔</span>
+
+            {/* Selector de Escala / Zoom Horizontal */}
+            <div className="flex items-center gap-1 bg-carbon-900/95 p-1 rounded-xl border border-carbon-750 shadow-inner">
+              <span className="text-[10px] uppercase font-bold text-silver-400 px-2 flex items-center gap-1">
+                <SlidersHorizontal className="w-3.5 h-3.5 text-gold-400" /> Vista:
+              </span>
+              <button
+                type="button"
+                onClick={() => setTimeScale('month')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  timeScale === 'month'
+                    ? 'bg-gold-500 text-carbon-950 shadow-md font-black'
+                    : 'text-silver-400 hover:text-white hover:bg-carbon-800'
+                }`}
+                title="Vista de mes completo ajustada a pantalla"
+              >
+                <span>Mes ({daysInMonth}d)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTimeScale('biweek1')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  timeScale === 'biweek1'
+                    ? 'bg-gold-500 text-carbon-950 shadow-md font-black'
+                    : 'text-silver-400 hover:text-white hover:bg-carbon-800'
+                }`}
+                title="Días 1 al 15"
+              >
+                <span>1ª Quincena (1-15)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTimeScale('biweek2')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  timeScale === 'biweek2'
+                    ? 'bg-gold-500 text-carbon-950 shadow-md font-black'
+                    : 'text-silver-400 hover:text-white hover:bg-carbon-800'
+                }`}
+                title={`Días 16 al ${daysInMonth}`}
+              >
+                <span>2ª Quincena (16-{daysInMonth})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTimeScale('week')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  timeScale === 'week'
+                    ? 'bg-gradient-to-r from-gold-400 to-amber-500 text-carbon-950 shadow-md font-black ring-1 ring-gold-300'
+                    : 'text-silver-400 hover:text-white hover:bg-carbon-800'
+                }`}
+                title="Vista detallada de 7 días"
+              >
+                <span>Semana (7d)</span>
+              </button>
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <div className="min-w-[1280px]">
+            <div className="min-w-full" style={{ minWidth: timeScale === 'month' ? '1060px' : timeScale === 'week' ? '880px' : '980px' }}>
               
-              {/* Encabezado del Timeline: Columnas de Días */}
+              {/* Encabezado del Timeline: Columnas de Días Visibles */}
               <div
-                className="grid border-b border-carbon-800 bg-carbon-850"
-                style={{ gridTemplateColumns: `290px repeat(${daysInMonth}, minmax(42px, 1fr))` }}
+                className="grid border-b border-carbon-800 bg-carbon-850 sticky top-0 z-30"
+                style={{ gridTemplateColumns: `220px repeat(${visibleDaysArray.length}, minmax(${colMinWidth}, 1fr))` }}
               >
                 {/* Cabecera de Vehículo Fija (Sticky) */}
-                <div className="p-4 border-r border-carbon-800 text-xs font-extrabold uppercase tracking-wider text-silver-300 flex items-center justify-between sticky left-0 z-30 bg-carbon-850 shadow-md min-w-[290px]">
-                  <span>Flota Boutique ({filteredVehicles.length})</span>
-                  <span className="text-[10px] text-gold-400 font-mono">Días 1-{daysInMonth}</span>
+                <div className="p-3 border-r border-carbon-800 text-xs font-extrabold uppercase tracking-wider text-silver-300 flex items-center justify-between sticky left-0 z-40 bg-carbon-850 shadow-md min-w-[220px] w-[220px]">
+                  <span>Flota ({filteredVehicles.length})</span>
+                  <span className="text-[10px] text-gold-400 font-mono">
+                    Días {visibleDaysArray[0]}-{visibleDaysArray[visibleDaysArray.length - 1]}
+                  </span>
                 </div>
 
-                {/* Columnas de los Días del Mes */}
-                {daysArray.map((day) => {
+                {/* Columnas de los Días Visibles */}
+                {visibleDaysArray.map((day) => {
                   const dayDate = new Date(currentYear, currentMonthIndex, day);
                   const dayOfWeekIndex = (dayDate.getDay() + 6) % 7;
                   const dayOfWeekName = WEEKDAY_NAMES[dayOfWeekIndex];
@@ -479,7 +693,7 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
                   return (
                     <div
                       key={day}
-                      className={`text-center py-2.5 px-0.5 border-r border-carbon-800/80 text-xs transition-colors flex flex-col justify-center ${
+                      className={`text-center py-2 px-0.5 border-r border-carbon-800/80 text-xs transition-colors flex flex-col justify-center ${
                         isToday
                           ? 'bg-gold-500/20 text-gold-400 font-black ring-1 ring-gold-400/50'
                           : isWeekend
@@ -487,8 +701,8 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
                           : 'text-silver-300'
                       }`}
                     >
-                      <span className="text-[10px] uppercase font-bold">{dayOfWeekName}</span>
-                      <span className={`text-sm font-black font-mono mt-0.5 ${isToday ? 'text-gold-400' : 'text-white'}`}>
+                      <span className="text-[9px] uppercase font-bold">{dayOfWeekName}</span>
+                      <span className={`text-xs font-black font-mono mt-0.5 ${isToday ? 'text-gold-400' : 'text-white'}`}>
                         {day}
                       </span>
                     </div>
@@ -500,31 +714,35 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
               <div className="divide-y divide-carbon-800/70">
                 {filteredVehicles.map((vehicle) => {
                   const vehicleMonthRes = monthReservations.filter((r) => r.vehicleId === vehicle.id);
+                  const firstVisible = visibleDaysArray[0];
+                  const lastVisible = visibleDaysArray[visibleDaysArray.length - 1];
+                  const totalVisible = visibleDaysArray.length;
 
                   return (
                     <div
                       key={vehicle.id}
-                      className="grid hover:bg-carbon-850/40 transition-colors relative"
-                      style={{ gridTemplateColumns: `290px repeat(${daysInMonth}, minmax(42px, 1fr))` }}
+                      className="grid hover:bg-carbon-850/40 transition-colors relative min-h-[56px]"
+                      style={{ gridTemplateColumns: `220px repeat(${totalVisible}, minmax(${colMinWidth}, 1fr))` }}
                     >
                       {/* Columna Fija de Información del Vehículo (Sticky) */}
-                      <div className="p-3.5 border-r border-carbon-800 flex items-center gap-3 min-w-[290px] bg-carbon-900 sticky left-0 z-20 shadow-lg">
+                      <div className="border-r border-carbon-800 flex items-center gap-2.5 min-w-[220px] w-[220px] bg-carbon-900 sticky left-0 z-20 shadow-lg p-2.5 h-14">
                         <img
                           src={vehicle.mainImage}
                           alt={vehicle.model}
-                          className="w-14 h-10 object-cover rounded-xl border border-carbon-750 shadow-md flex-shrink-0"
+                          className="w-11 h-8 object-cover rounded-lg border border-carbon-750 shadow-md flex-shrink-0"
                         />
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <button
+                            type="button"
                             onClick={() => onNavigateToVehicleDetail(vehicle.slug)}
-                            className="text-left font-black text-sm text-white hover:text-gold-400 transition-colors truncate block"
+                            className="text-left font-black text-xs text-white hover:text-gold-400 transition-colors truncate block w-full"
                           >
                             {vehicle.brand} {vehicle.model}
                           </button>
-                          <div className="flex items-center gap-2 text-xs font-mono mt-0.5">
+                          <div className="flex items-center gap-1.5 text-[11px] font-mono mt-0.5">
                             <span className="text-gold-400 font-bold">${vehicle.pricePerDay}/d</span>
                             <span className="text-carbon-600 font-bold">•</span>
-                            <span className="bg-carbon-800 px-1.5 py-0.5 rounded text-silver-300 font-bold text-[11px]">
+                            <span className="bg-carbon-800 px-1 py-0.2 rounded text-silver-300 font-bold text-[10px]">
                               {vehicle.plate}
                             </span>
                           </div>
@@ -533,19 +751,19 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
 
                       {/* Contenedor de Celdas y Barras Matemáticamente Posicionadas */}
                       <div
-                        className="relative col-span-full h-16"
+                        className="relative col-span-full h-14"
                         style={{
-                          gridColumn: `2 / span ${daysInMonth}`,
+                          gridColumn: `2 / span ${totalVisible}`,
                         }}
                       >
                         {/* Celdas de Fondo por Cada Día */}
                         <div
                           className="absolute inset-0 grid"
                           style={{
-                            gridTemplateColumns: `repeat(${daysInMonth}, minmax(42px, 1fr))`,
+                            gridTemplateColumns: `repeat(${totalVisible}, minmax(${colMinWidth}, 1fr))`,
                           }}
                         >
-                          {daysArray.map((day) => {
+                          {visibleDaysArray.map((day) => {
                             const dateStr = `${currentMonthPrefix}-${String(day).padStart(2, '0')}`;
                             const isToday = dateStr === todayStr;
 
@@ -562,7 +780,7 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
                           })}
                         </div>
 
-                        {/* Barras de Reserva Superpuestas sin colapso visual */}
+                        {/* Barras de Reserva con Proporción Perfecta */}
                         {vehicleMonthRes.map((res) => {
                           const startParts = res.startDate.split('-');
                           const endParts = res.endDate.split('-');
@@ -582,58 +800,186 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
                             endDay = daysInMonth;
                           }
 
-                          const colSpan = Math.max(1, endDay - startDay + 1);
-                          const leftPercent = ((startDay - 1) / daysInMonth) * 100;
-                          const widthPercent = (colSpan / daysInMonth) * 100;
+                          // Si la reserva no cae en la ventana visible actual, no renderizar
+                          if (endDay < firstVisible || startDay > lastVisible) {
+                            return null;
+                          }
+
+                          const effectiveStart = Math.max(startDay, firstVisible);
+                          const effectiveEnd = Math.min(endDay, lastVisible);
+                          const colOffset = effectiveStart - firstVisible;
+                          const colSpan = Math.max(1, effectiveEnd - effectiveStart + 1);
+
+                          const isStartsBeforeVisible = startDay < firstVisible;
+                          const isEndsAfterVisible = endDay > lastVisible;
+
+                          const leftPercent = (colOffset / totalVisible) * 100;
+                          const widthPercent = (colSpan / totalVisible) * 100;
 
                           const isMaintenance = res.status === 'MAINTENANCE';
                           const isConfirmed = res.status === 'CONFIRMED';
                           const isActive = res.status === 'ACTIVE';
                           const isPending = res.status === 'PENDING';
 
+                          // Paleta ejecutiva de Cintas Glassmorphic con Resplandor Neón
+                          const theme = isMaintenance
+                            ? {
+                                barClass:
+                                  'bg-gradient-to-r from-rose-950/90 via-zinc-950/80 to-rose-950/90 border border-rose-500/35 border-l-[3.5px] border-l-rose-500 text-rose-200 shadow-[0_2px_10px_rgba(244,63,94,0.18)] hover:shadow-[0_4px_22px_rgba(244,63,94,0.45)]',
+                                beaconDot: 'bg-rose-500 shadow-[0_0_6px_#f43f5e]',
+                                monogramBg: 'bg-rose-950/90 text-rose-300 border border-rose-500/30',
+                                badgeBg: 'bg-black/40 text-rose-300 border border-rose-500/25',
+                              }
+                            : isActive
+                            ? {
+                                barClass:
+                                  'bg-gradient-to-r from-cyan-950/90 via-blue-950/80 to-cyan-950/90 border border-cyan-500/35 border-l-[3.5px] border-l-cyan-400 text-cyan-200 shadow-[0_2px_10px_rgba(6,182,212,0.18)] hover:shadow-[0_4px_22px_rgba(6,182,212,0.45)]',
+                                beaconDot: 'bg-cyan-400 shadow-[0_0_6px_#22d3ee] animate-pulse',
+                                monogramBg: 'bg-cyan-950/90 text-cyan-300 border border-cyan-500/30',
+                                badgeBg: 'bg-black/40 text-cyan-300 border border-cyan-500/25',
+                              }
+                            : isConfirmed
+                            ? {
+                                barClass:
+                                  'bg-gradient-to-r from-emerald-950/90 via-teal-950/80 to-emerald-950/90 border border-emerald-500/35 border-l-[3.5px] border-l-emerald-400 text-emerald-200 shadow-[0_2px_10px_rgba(16,185,129,0.18)] hover:shadow-[0_4px_22px_rgba(16,185,129,0.45)]',
+                                beaconDot: 'bg-emerald-400 shadow-[0_0_6px_#34d399]',
+                                monogramBg: 'bg-emerald-950/90 text-emerald-300 border border-emerald-500/30',
+                                badgeBg: 'bg-black/40 text-emerald-300 border border-emerald-500/25',
+                              }
+                            : isPending
+                            ? {
+                                barClass:
+                                  'bg-gradient-to-r from-amber-950/90 via-yellow-950/80 to-amber-950/90 border border-amber-500/35 border-l-[3.5px] border-l-amber-400 text-amber-200 shadow-[0_2px_10px_rgba(245,158,11,0.18)] hover:shadow-[0_4px_22px_rgba(245,158,11,0.45)]',
+                                beaconDot: 'bg-amber-400 shadow-[0_0_6px_#fbbf24]',
+                                monogramBg: 'bg-amber-950/90 text-amber-300 border border-amber-500/30',
+                                badgeBg: 'bg-black/40 text-amber-300 border border-amber-500/25',
+                              }
+                            : {
+                                barClass: 'bg-carbon-900 border border-carbon-700 text-silver-300',
+                                beaconDot: 'bg-silver-400',
+                                monogramBg: 'bg-carbon-800 text-silver-300 border border-carbon-700',
+                                badgeBg: 'bg-black/40 text-silver-400 border border-carbon-700',
+                              };
+
+                          const monogram = getClientMonogram(res.client.fullName);
+                          const totalDays = res.pricing?.days || colSpan;
+                          const { startLabel, endLabel } = getReservationDayLabels(
+                            res,
+                            currentMonthPrefix,
+                            daysInMonth
+                          );
+                          const monthShort = MONTH_NAMES[currentMonthIndex]?.slice(0, 3) || 'Sep';
+                          const roundedClasses = `${isStartsBeforeVisible ? 'rounded-l-none' : 'rounded-l-lg'} ${isEndsAfterVisible ? 'rounded-r-none' : 'rounded-r-lg'}`;
+
                           return (
                             <div
                               key={res.id}
                               onClick={(e) => {
                                 e.stopPropagation();
+                                setHoveredReservation(null);
                                 setInspectedReservation(res);
                               }}
-                              style={{
-                                left: `calc(${leftPercent}% + 3px)`,
-                                width: `calc(${widthPercent}% - 6px)`,
+                              onMouseEnter={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setHoveredReservation({
+                                  res,
+                                  vehicle,
+                                  x: rect.left + rect.width / 2,
+                                  y: rect.top,
+                                });
                               }}
-                              className={`absolute top-2.5 bottom-2.5 z-10 rounded-xl px-2.5 py-1 text-xs font-bold cursor-pointer transition-all shadow-md hover:shadow-2xl flex items-center justify-between gap-1.5 overflow-hidden hover:scale-[1.01] hover:z-30 ${
-                                isMaintenance
-                                  ? 'bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 text-amber-200 border-2 border-amber-500/70 shadow-amber-900/30'
-                                  : isActive
-                                  ? 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 text-white border-2 border-blue-400 shadow-blue-900/40'
-                                  : isConfirmed
-                                  ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 text-carbon-950 font-black border-2 border-emerald-300 shadow-emerald-900/40'
-                                  : isPending
-                                  ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-carbon-950 font-black border-2 border-amber-300 shadow-amber-900/30'
-                                  : 'bg-carbon-800 text-silver-200 border border-carbon-700'
-                              }`}
-                              title={`${res.id} • ${res.client.fullName} (${res.startDate} al ${res.endDate}) - Clic para ver, editar o eliminar`}
+                              onMouseLeave={() => setHoveredReservation(null)}
+                              style={{
+                                left: `calc(${leftPercent}% + 2px)`,
+                                width: `calc(${widthPercent}% - 4px)`,
+                              }}
+                              className={`absolute top-1/2 -translate-y-1/2 h-8 z-10 ${roundedClasses} cursor-pointer transition-all duration-200 backdrop-blur-md flex items-center overflow-hidden hover:scale-[1.015] hover:-translate-y-0.5 hover:z-30 select-none ${theme.barClass}`}
                             >
-                              <div className="flex items-center gap-1.5 min-w-0 truncate">
-                                {isMaintenance ? (
-                                  <Wrench className="w-3.5 h-3.5 flex-shrink-0 text-amber-300" />
-                                ) : (
-                                  <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
-                                )}
-                                <span className="truncate font-extrabold text-[11px] sm:text-xs">
-                                  {isMaintenance ? (res.notes || 'Taller / Mantenimiento') : res.client.fullName}
-                                </span>
-                                {colSpan > 1 && (
-                                  <span className="text-[10px] opacity-80 flex-shrink-0">
-                                    ({colSpan}d)
-                                  </span>
-                                )}
-                              </div>
+                              {/* Divisores internos de días sincronizados con la cuadrícula */}
+                              {colSpan > 1 && (
+                                <div
+                                  className="absolute inset-0 grid pointer-events-none z-0"
+                                  style={{ gridTemplateColumns: `repeat(${colSpan}, 1fr)` }}
+                                >
+                                  {Array.from({ length: colSpan }).map((_, i) => (
+                                    <div
+                                      key={i}
+                                      className={`h-full ${i < colSpan - 1 ? 'border-r border-white/10' : ''}`}
+                                    />
+                                  ))}
+                                </div>
+                              )}
 
-                              <span className="text-[9px] sm:text-[10px] font-mono font-black uppercase bg-black/40 px-1.5 py-0.5 rounded text-white/90 flex-shrink-0">
-                                {res.id}
-                              </span>
+                              {/* Modo Semana y Quincena: Cápsula Ejecutiva Compacta */}
+                              {timeScale === 'week' || timeScale === 'biweek1' || timeScale === 'biweek2' ? (
+                                <div className="flex items-center gap-2 px-2.5 z-10 w-full overflow-hidden">
+                                  {/* Cápsula de Rango de Fechas Integrada */}
+                                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-black/65 border border-white/20 font-mono font-black text-xs text-white shadow-sm flex-shrink-0">
+                                    {isStartsBeforeVisible && <span className="text-silver-400 text-[10px]">◀</span>}
+                                    <span>{startLabel}</span>
+                                    <span className="text-silver-400 text-[10px]">➔</span>
+                                    <span>{endLabel} {timeScale === 'week' ? monthShort : ''}</span>
+                                    {isEndsAfterVisible && <span className="text-silver-400 text-[10px]">▶</span>}
+                                  </div>
+
+                                  {/* Monograma de Estado */}
+                                  <span className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded ${theme.monogramBg} flex-shrink-0`}>
+                                    {isMaintenance ? '🛠 TALLER' : monogram}
+                                  </span>
+
+                                  {/* Duración */}
+                                  <span className="text-xs font-mono font-black tracking-wider uppercase text-silver-200 flex-shrink-0">
+                                    {totalDays} {totalDays === 1 ? 'DÍA' : 'DÍAS'}
+                                  </span>
+
+                                  {/* Cliente / Notas */}
+                                  <span className="text-xs font-bold text-silver-300 truncate opacity-90">
+                                    • {isMaintenance ? (res.notes || 'Mantenimiento') : res.client.fullName.split(' ')[0]}
+                                  </span>
+                                </div>
+                              ) : colSpan === 1 ? (
+                                /* Modo Mes: 1 día */
+                                <div className="w-full h-full flex items-center justify-center z-10 font-mono font-black text-[11px] text-white">
+                                  {isMaintenance ? (
+                                    <Wrench className="w-3.5 h-3.5 text-rose-300 animate-pulse" />
+                                  ) : (
+                                    <span>{startLabel}</span>
+                                  )}
+                                </div>
+                              ) : colSpan === 2 ? (
+                                /* Modo Mes: 2 días */
+                                <div className="w-full h-full flex items-center justify-center gap-1 z-10 font-mono font-black text-[10px] text-white px-1">
+                                  <span>{startLabel}</span>
+                                  <span className="text-silver-400 text-[9px]">➔</span>
+                                  <span>{endLabel}</span>
+                                </div>
+                              ) : colSpan === 3 ? (
+                                /* Modo Mes: 3 días */
+                                <div className="flex items-center justify-between w-full h-full px-1.5 z-10 gap-1 font-mono">
+                                  <span className="px-1 py-0.5 rounded bg-black/65 border border-white/20 font-black text-[10px] text-white">
+                                    {startLabel}➔{endLabel}
+                                  </span>
+                                  <span className={`text-[9px] font-black px-1 py-0.5 rounded ${theme.monogramBg}`}>
+                                    {isMaintenance ? '🛠' : monogram}
+                                  </span>
+                                  <span className="text-[9px] font-bold text-silver-300">
+                                    {totalDays}d
+                                  </span>
+                                </div>
+                              ) : (
+                                /* Modo Mes: 4+ días */
+                                <div className="flex items-center gap-1.5 px-2 z-10 w-full overflow-hidden font-mono">
+                                  <span className="px-1.5 py-0.5 rounded bg-black/65 border border-white/20 font-black text-[10px] text-white flex-shrink-0">
+                                    {startLabel} ➔ {endLabel}
+                                  </span>
+                                  <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${theme.monogramBg} flex-shrink-0`}>
+                                    {isMaintenance ? '🛠' : monogram}
+                                  </span>
+                                  <span className="text-[10px] font-black uppercase text-silver-300 flex-shrink-0">
+                                    {totalDays}d
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           );
                         })}
@@ -650,23 +996,23 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
 
           {/* Leyenda Inferior del Timeline */}
           <div className="p-4 border-t border-carbon-800 bg-carbon-850 flex flex-wrap items-center justify-between gap-4 text-xs font-semibold text-silver-300">
-            <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
               <span className="text-silver-400 font-bold uppercase tracking-wider font-mono text-[11px]">Leyenda:</span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-emerald-500" />
-                <span>Confirmada</span>
+              <span className="flex items-center gap-1.5 bg-carbon-900 px-2.5 py-1 rounded-md border border-emerald-500/30">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                <span className="text-emerald-200 font-bold">Confirmada</span>
               </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />
-                <span>En Curso (Activa)</span>
+              <span className="flex items-center gap-1.5 bg-carbon-900 px-2.5 py-1 rounded-md border border-cyan-500/30">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee] animate-pulse" />
+                <span className="text-cyan-200 font-bold">En Curso (Activa)</span>
               </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-amber-400" />
-                <span>Pendiente</span>
+              <span className="flex items-center gap-1.5 bg-carbon-900 px-2.5 py-1 rounded-md border border-amber-500/30">
+                <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_6px_#fbbf24]" />
+                <span className="text-amber-200 font-bold">Pendiente</span>
               </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-amber-700" />
-                <span>Mantenimiento / Bloqueo</span>
+              <span className="flex items-center gap-1.5 bg-carbon-900 px-2.5 py-1 rounded-md border border-rose-500/30">
+                <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_6px_#f43f5e]" />
+                <span className="text-rose-200 font-bold">Mantenimiento / Bloqueo</span>
               </span>
             </div>
 
@@ -1119,6 +1465,132 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
               </div>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* 5. TOOLTIP FLOTANTE VIP (POPOVER HOVER) */}
+      {hoveredReservation && (
+        <div
+          className="fixed z-50 pointer-events-none transition-all duration-150 transform -translate-x-1/2 shadow-2xl"
+          style={{
+            left: `${Math.min(Math.max(hoveredReservation.x, 190), window.innerWidth - 190)}px`,
+            top: `${hoveredReservation.y < 300 ? hoveredReservation.y + 45 : hoveredReservation.y - 12}px`,
+            transform: hoveredReservation.y < 300 ? 'translateX(-50%)' : 'translate(-50%, -100%)',
+          }}
+        >
+          <div className="w-80 sm:w-96 rounded-2xl bg-carbon-900/95 backdrop-blur-xl border border-carbon-700 shadow-2xl p-4 text-white ring-1 ring-gold-500/40">
+            {/* Cabecera del Popover */}
+            <div className="flex items-start justify-between gap-3 border-b border-carbon-800 pb-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <img
+                  src={hoveredReservation.vehicle.mainImage}
+                  alt={hoveredReservation.vehicle.model}
+                  className="w-10 h-8 object-cover rounded-lg border border-carbon-750 flex-shrink-0"
+                />
+                <div className="min-w-0">
+                  <h4 className="font-extrabold text-xs sm:text-sm text-white truncate">
+                    {hoveredReservation.vehicle.brand} {hoveredReservation.vehicle.model}
+                  </h4>
+                  <div className="flex items-center gap-1.5 text-[11px] font-mono text-gold-400">
+                    <span>Placa: {hoveredReservation.vehicle.plate}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status Badge */}
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider flex-shrink-0 ${
+                  hoveredReservation.res.status === 'MAINTENANCE'
+                    ? 'bg-amber-950 text-amber-300 border border-amber-500/60'
+                    : hoveredReservation.res.status === 'ACTIVE'
+                    ? 'bg-blue-900/80 text-blue-200 border border-blue-400/60'
+                    : hoveredReservation.res.status === 'CONFIRMED'
+                    ? 'bg-emerald-900/80 text-emerald-200 border border-emerald-400/60'
+                    : hoveredReservation.res.status === 'PENDING'
+                    ? 'bg-amber-900/80 text-amber-200 border border-amber-400/60'
+                    : 'bg-carbon-800 text-silver-300'
+                }`}
+              >
+                {hoveredReservation.res.status === 'MAINTENANCE'
+                  ? 'Taller'
+                  : hoveredReservation.res.status === 'ACTIVE'
+                  ? 'En Curso'
+                  : hoveredReservation.res.status === 'CONFIRMED'
+                  ? 'Confirmada'
+                  : hoveredReservation.res.status === 'PENDING'
+                  ? 'Pendiente'
+                  : hoveredReservation.res.status}
+              </span>
+            </div>
+
+            {/* Código de Reserva */}
+            <div className="py-2.5 border-b border-carbon-800/80 flex items-center justify-between text-xs font-mono">
+              <span className="text-silver-400 font-medium">Contrato / Código:</span>
+              <span className="font-black text-gold-400 bg-carbon-850 px-2 py-0.5 rounded border border-carbon-750">
+                {hoveredReservation.res.id}
+              </span>
+            </div>
+
+            {/* Datos del Cliente */}
+            {hoveredReservation.res.status !== 'MAINTENANCE' ? (
+              <div className="py-2.5 border-b border-carbon-800/80 space-y-1.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-bold text-white truncate">
+                    <User className="w-3.5 h-3.5 text-silver-400 flex-shrink-0" />
+                    <span>{hoveredReservation.res.client.fullName}</span>
+                  </div>
+                  {hoveredReservation.res.client.ageConfirmation && (
+                    <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                      <ShieldCheck className="w-3 h-3" /> Verificado
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] text-silver-400">
+                  <span className="flex items-center gap-1">
+                    <Phone className="w-3 h-3 text-silver-500" />
+                    {hoveredReservation.res.client.phone}
+                  </span>
+                  <span className="font-mono">Doc: {hoveredReservation.res.client.documentId}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="py-2.5 border-b border-carbon-800/80 text-xs text-amber-300/90 font-medium">
+                <span className="font-bold text-amber-200">Motivo de Bloqueo: </span>
+                {hoveredReservation.res.notes || 'Revisión técnica periódica'}
+              </div>
+            )}
+
+            {/* Fechas y Duración */}
+            <div className="py-2.5 border-b border-carbon-800/80 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1.5 text-silver-300 font-medium">
+                <CalendarIcon className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
+                <span className="font-mono">{hoveredReservation.res.startDate}</span>
+                <span className="text-silver-500">➔</span>
+                <span className="font-mono">{hoveredReservation.res.endDate}</span>
+              </div>
+              <span className="font-black text-gold-400 font-mono">
+                {hoveredReservation.res.pricing?.days || 1} {(hoveredReservation.res.pricing?.days || 1) === 1 ? 'día' : 'días'}
+              </span>
+            </div>
+
+            {/* Finanzas */}
+            {hoveredReservation.res.status !== 'MAINTENANCE' && (
+              <div className="pt-2.5 flex items-center justify-between text-xs">
+                <div className="text-silver-400">
+                  Total: <span className="text-white font-black">{formatCurrency(hoveredReservation.res.pricing?.rentalTotal || 0)}</span>
+                </div>
+                <div className="text-silver-400 font-mono text-[11px]">
+                  Depósito: <span className="text-gold-400 font-bold">{formatCurrency(hoveredReservation.res.pricing?.securityDeposit || 0)}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Click Prompt */}
+            <div className="mt-3 pt-2 border-t border-carbon-800 text-[10px] text-center text-gold-400 font-bold tracking-wide">
+              ✨ Clic para abrir expediente completo y gestionar
+            </div>
           </div>
         </div>
       )}

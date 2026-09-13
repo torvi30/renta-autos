@@ -85,6 +85,17 @@ export const AdminReservationEditModal: React.FC<AdminReservationEditModalProps>
     }
   }, [reservation]);
 
+  // Cerrar modal con la tecla Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen || !reservation) return null;
 
   // Vehículo seleccionado actualmente en el modal
@@ -169,16 +180,21 @@ export const AdminReservationEditModal: React.FC<AdminReservationEditModalProps>
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-carbon-950/85 backdrop-blur-md animate-fade-in overflow-y-auto">
-      <div className="relative w-full max-w-3xl my-auto rounded-3xl bg-carbon-900 border-2 border-gold-500/40 shadow-2xl shadow-black/80 flex flex-col max-h-[92vh] overflow-hidden text-silver-100">
+    <div 
+      className="fixed inset-0 z-50 overflow-y-auto bg-carbon-950/90 backdrop-blur-md p-3 sm:p-6 flex justify-center items-start min-h-screen"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="relative w-full max-w-3xl my-4 sm:my-8 rounded-3xl bg-carbon-900 border-2 border-gold-500/40 shadow-2xl shadow-black/90 flex flex-col max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] overflow-hidden text-silver-100 animate-fade-in">
         
-        {/* Encabezado del Modal */}
-        <div className="p-5 sm:p-6 border-b border-carbon-800 bg-carbon-850/80 flex items-center justify-between gap-4 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-gold-500/20 text-gold-400 border border-gold-500/30 flex items-center justify-center flex-shrink-0 shadow-inner">
+        {/* Encabezado del Modal (Siempre visible, nunca cortado) */}
+        <div className="p-4 sm:p-5 border-b border-carbon-800 bg-carbon-850/95 backdrop-blur-md flex items-center justify-between gap-4 flex-shrink-0 z-20 shadow-md">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-2xl bg-gold-500/20 text-gold-400 border border-gold-500/30 flex items-center justify-center flex-shrink-0 shadow-inner">
               <Sparkles className="w-5 h-5" />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-mono font-bold bg-carbon-800 text-gold-400 px-2.5 py-0.5 rounded-md border border-gold-500/30">
                   {reservation.id}
@@ -187,18 +203,21 @@ export const AdminReservationEditModal: React.FC<AdminReservationEditModalProps>
                   {status}
                 </span>
               </div>
-              <h3 className="text-lg sm:text-xl font-black text-white font-display tracking-tight mt-0.5">
+              <h3 className="text-base sm:text-lg font-black text-white font-display tracking-tight mt-0.5 truncate">
                 Editar Contrato & Detalles de Reserva
               </h3>
             </div>
           </div>
 
+          {/* Botón de Cerrar Destacado y Visible */}
           <button
             type="button"
             onClick={onClose}
-            className="p-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-400 hover:text-white border border-carbon-750 transition-colors shadow-sm"
+            className="px-3.5 py-2 rounded-xl bg-carbon-800 hover:bg-rose-950/80 hover:border-rose-500/60 text-silver-300 hover:text-rose-300 border border-carbon-700 transition-all shadow-md cursor-pointer flex items-center gap-1.5 active:scale-95 group flex-shrink-0"
+            title="Cerrar ventana (Esc)"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 text-silver-300 group-hover:text-rose-400 group-hover:scale-110 transition-all" />
+            <span className="text-xs font-bold hidden sm:inline">Cerrar</span>
           </button>
         </div>
 
@@ -210,8 +229,10 @@ export const AdminReservationEditModal: React.FC<AdminReservationEditModalProps>
           </div>
         )}
 
-        {/* Formulario con Scroll */}
-        <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-6">
+        {/* Formulario con Scroll Interno y Footer Fijo */}
+        <form onSubmit={handleSave} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          
+          <div className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-6">
           
           {/* SECCIÓN 1: VEHÍCULO ASIGNADO */}
           <div className="space-y-3">
@@ -499,8 +520,10 @@ export const AdminReservationEditModal: React.FC<AdminReservationEditModalProps>
             </div>
           )}
 
-          {/* BARRA INFERIOR DE ACCIÓN */}
-          <div className="pt-4 border-t border-carbon-800 flex flex-col sm:flex-row items-center justify-end gap-3 sticky bottom-0 bg-carbon-900 pb-2">
+          </div>
+
+          {/* BARRA INFERIOR DE ACCIÓN (Siempre visible en la parte inferior) */}
+          <div className="p-4 sm:p-5 border-t border-carbon-800 bg-carbon-850/95 backdrop-blur-md flex flex-col sm:flex-row items-center justify-end gap-3 flex-shrink-0 z-20 shadow-lg">
             <button
               type="button"
               onClick={onClose}
@@ -512,7 +535,7 @@ export const AdminReservationEditModal: React.FC<AdminReservationEditModalProps>
             <button
               type="submit"
               disabled={isSaving}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-gold-500 via-gold-400 to-gold-500 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black text-sm shadow-xl shadow-gold-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-gold-500 via-gold-400 to-gold-500 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black text-sm shadow-xl shadow-gold-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>{isSaving ? 'Guardando...' : 'Guardar Cambios'}</span>

@@ -6,6 +6,23 @@ const LOCAL_SETTINGS_KEY = 'PREMIUM_RENTAL_COMPANY_SETTINGS_V1';
 const SETTINGS_COLLECTION = 'settings';
 const COMPANY_DOC_ID = 'company';
 
+const sanitizeSettings = (settings: CompanySettings): CompanySettings => {
+  const social = { ...(settings.socialLinks || {}) };
+  if (social.instagram === 'https://instagram.com' || social.instagram === 'https://instagram.com/') {
+    social.instagram = '';
+  }
+  if (social.tiktok === 'https://tiktok.com' || social.tiktok === 'https://tiktok.com/') {
+    social.tiktok = '';
+  }
+  if (social.facebook === 'https://facebook.com' || social.facebook === 'https://facebook.com/') {
+    social.facebook = '';
+  }
+  if (social.youtube === 'https://youtube.com' || social.youtube === 'https://youtube.com/') {
+    social.youtube = '';
+  }
+  return { ...settings, socialLinks: social };
+};
+
 /**
  * Obtener configuración almacenada en caché local
  */
@@ -17,7 +34,9 @@ export const getLocalCompanySettings = (): CompanySettings => {
       localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(DEFAULT_COMPANY_SETTINGS));
       return DEFAULT_COMPANY_SETTINGS;
     }
-    return { ...DEFAULT_COMPANY_SETTINGS, ...JSON.parse(raw) };
+    const parsed = sanitizeSettings({ ...DEFAULT_COMPANY_SETTINGS, ...JSON.parse(raw) });
+    localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(parsed));
+    return parsed;
   } catch (error) {
     console.warn('Error al leer configuración de caché local:', error);
     return DEFAULT_COMPANY_SETTINGS;

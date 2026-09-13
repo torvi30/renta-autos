@@ -64,9 +64,9 @@ export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
     description: 'Gira cada vehículo en 360° sobre nuestro plato giratorio de exhibición. Usa las flechas o la barra inferior para pasar de un auto a otro, y haz clic para ver su ficha técnica y galería completa.',
   },
   socialLinks: {
-    instagram: 'https://instagram.com',
-    tiktok: 'https://tiktok.com',
-    facebook: 'https://facebook.com',
+    instagram: '',
+    tiktok: '',
+    facebook: '',
     youtube: '',
   },
   policies: {

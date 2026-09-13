@@ -13,6 +13,7 @@ import {
   MapPin,
   CheckCircle2,
   Car,
+  ShieldCheck,
 } from 'lucide-react';
 
 
@@ -194,90 +195,124 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
         </div>
       </div>
 
-      {/* 2. Cuadrícula de KPIs Ejecutivos (Mismo tamaño gigante) */}
+      {/* 2. Cuadrícula de KPIs Ejecutivos (Interactivos con Enfoque Directo a Gráficas) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         {/* Facturación Bruta */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 p-6 lg:p-7 shadow-2xl">
+        <button
+          type="button"
+          onClick={() => document.getElementById('analytics-monthly-chart')?.scrollIntoView({ behavior: 'smooth' })}
+          className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-gold-500/70 p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none"
+          title="Clic para ver gráfica de evolución mensual de ingresos"
+        >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold-500 via-gold-400 to-transparent" />
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
               Facturación Bruta 2026
             </span>
-            <div className="w-11 h-11 rounded-xl bg-gold-500/15 border border-gold-500/30 text-gold-400 flex items-center justify-center shadow-inner">
+            <div className="w-11 h-11 rounded-xl bg-gold-500/15 border border-gold-500/30 text-gold-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
               <DollarSign className="w-5 h-5" />
             </div>
           </div>
           <div className="text-3xl sm:text-4xl lg:text-5xl font-black font-display text-white tracking-tight">
             {formatCurrency(totalRevenue + 524000)}
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs text-emerald-400 font-bold flex items-center gap-1.5">
-            <TrendingUp className="w-4 h-4" />
-            <span>+18.4% vs proyección trimestral</span>
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs text-emerald-400 font-bold flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <TrendingUp className="w-4 h-4" />
+              <span>+18.4% vs proyección trimestral</span>
+            </div>
+            <span className="text-gold-400 font-mono text-[11px] opacity-0 group-hover:opacity-100 transition-opacity">
+              Ver Gráfica ↓
+            </span>
           </div>
-        </div>
+        </button>
 
         {/* Ticket Promedio */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 p-6 lg:p-7 shadow-2xl">
+        <button
+          type="button"
+          onClick={() => document.getElementById('analytics-top-vehicles')?.scrollIntoView({ behavior: 'smooth' })}
+          className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-emerald-500/70 p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none"
+          title="Clic para ver superdeportivos más rentables del showroom"
+        >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-emerald-400 to-transparent" />
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
               Ticket Promedio VIP
             </span>
-            <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-inner">
+            <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
               <Award className="w-5 h-5" />
             </div>
           </div>
           <div className="text-3xl sm:text-4xl lg:text-5xl font-black font-display text-emerald-400 tracking-tight">
             {formatCurrency(averageBookingValue > 0 ? averageBookingValue : 5850)}
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs text-silver-400 font-medium">
-            Promedio de <strong className="text-white">{averageRentalDays} días</strong> por contrato
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs text-silver-400 font-medium flex items-center justify-between">
+            <span>Promedio de <strong className="text-white">{averageRentalDays} días</strong> por contrato</span>
+            <span className="text-emerald-400 font-mono text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              Top Autos ↓
+            </span>
           </div>
-        </div>
+        </button>
 
         {/* Tasa de Ocupación */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 p-6 lg:p-7 shadow-2xl">
+        <button
+          type="button"
+          onClick={() => document.getElementById('analytics-categories-chart')?.scrollIntoView({ behavior: 'smooth' })}
+          className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-blue-500/70 p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none"
+          title="Clic para ver demanda por categoría y modalidades de entrega"
+        >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-blue-400 to-transparent" />
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
               Ocupación de Flota
             </span>
-            <div className="w-11 h-11 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400 flex items-center justify-center shadow-inner">
+            <div className="w-11 h-11 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
               <Calendar className="w-5 h-5" />
             </div>
           </div>
           <div className="text-3xl sm:text-4xl lg:text-5xl font-black font-display text-white tracking-tight">
             76.8%
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs text-silver-300 font-medium">
-            Capacidad operativa de superdeportivos
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs text-silver-300 font-medium flex items-center justify-between">
+            <span>Capacidad operativa de superdeportivos</span>
+            <span className="text-blue-400 font-mono text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              Categorías ↓
+            </span>
           </div>
-        </div>
+        </button>
 
         {/* Depósitos en Custodia */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 p-6 lg:p-7 shadow-2xl">
+        <button
+          type="button"
+          onClick={() => document.getElementById('analytics-escrow-summary')?.scrollIntoView({ behavior: 'smooth' })}
+          className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-amber-500/70 p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none"
+          title="Clic para ver auditoría de garantías y pólizas de seguro"
+        >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-amber-400 to-transparent" />
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
               Garantías en Custodia
             </span>
-            <div className="w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shadow-inner">
+            <div className="w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
           <div className="text-3xl sm:text-4xl lg:text-5xl font-black font-display text-amber-400 tracking-tight">
             {formatCurrency(totalDepositsInEscrow > 0 ? totalDepositsInEscrow : 24000)}
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs text-silver-400 font-medium">
-            100% auditables bajo acta de inspección
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs text-silver-400 font-medium flex items-center justify-between">
+            <span>100% auditables bajo acta de inspección</span>
+            <span className="text-amber-400 font-mono text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              Auditoría ↓
+            </span>
           </div>
-        </div>
+        </button>
 
       </div>
 
       {/* 3. Gráfico Principal: Evolución Mensual de Ingresos (SVG Interactivo) */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-carbon-900 border border-carbon-800 shadow-2xl space-y-6">
+      <div id="analytics-monthly-chart" className="p-6 sm:p-8 rounded-3xl bg-carbon-900 border border-carbon-800 shadow-2xl space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-carbon-800">
           <div>
             <div className="flex items-center gap-2">
@@ -359,7 +394,7 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Top 5 Superdeportivos Más Rentables (7 Columnas) */}
-        <div className="lg:col-span-7 p-6 sm:p-8 rounded-3xl bg-carbon-900 border border-carbon-800 shadow-2xl space-y-5">
+        <div id="analytics-top-vehicles" className="lg:col-span-7 p-6 sm:p-8 rounded-3xl bg-carbon-900 border border-carbon-800 shadow-2xl space-y-5">
           <div className="flex items-center justify-between pb-3 border-b border-carbon-800">
             <div>
               <h3 className="text-lg font-black text-white font-display flex items-center gap-2">
@@ -414,7 +449,7 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
         </div>
 
         {/* Distribución por Categoría & Modalidad de Entrega (5 Columnas) */}
-        <div className="lg:col-span-5 p-6 sm:p-8 rounded-3xl bg-carbon-900 border border-carbon-800 shadow-2xl space-y-6 flex flex-col justify-between">
+        <div id="analytics-categories-chart" className="lg:col-span-5 p-6 sm:p-8 rounded-3xl bg-carbon-900 border border-carbon-800 shadow-2xl space-y-6 flex flex-col justify-between">
           
           <div className="space-y-4">
             <div className="pb-3 border-b border-carbon-800">
@@ -474,6 +509,45 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
 
         </div>
 
+      </div>
+
+      {/* 5. Módulo de Auditoría de Garantías y Pólizas VIP */}
+      <div id="analytics-escrow-summary" className="p-6 sm:p-8 rounded-3xl bg-carbon-900 border border-amber-500/30 shadow-2xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-carbon-800">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-white font-display">
+                Auditoría Legal de Garantías & Fondos de Fianza
+              </h3>
+              <p className="text-xs text-silver-400">
+                Custodia de depósitos en escrow respaldados por actas periciales de inspección vehicular y seguros todo riesgo.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold bg-amber-500/20 text-amber-400 border border-amber-500/35">
+              100% Auditables
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+          <div className="p-4 rounded-2xl bg-carbon-850 border border-carbon-800">
+            <span className="text-xs text-silver-400 uppercase font-mono font-bold block mb-1">Total en Escrow</span>
+            <span className="text-2xl font-black font-mono text-amber-400">{formatCurrency(totalDepositsInEscrow > 0 ? totalDepositsInEscrow : 24000)}</span>
+          </div>
+          <div className="p-4 rounded-2xl bg-carbon-850 border border-carbon-800">
+            <span className="text-xs text-silver-400 uppercase font-mono font-bold block mb-1">Estado de Reembolsos</span>
+            <span className="text-2xl font-black font-mono text-emerald-400">0 Reclamaciones</span>
+          </div>
+          <div className="p-4 rounded-2xl bg-carbon-850 border border-carbon-800">
+            <span className="text-xs text-silver-400 uppercase font-mono font-bold block mb-1">Protocolo KYC</span>
+            <span className="text-2xl font-black font-mono text-blue-400">Biometría 100%</span>
+          </div>
+        </div>
       </div>
 
     </div>

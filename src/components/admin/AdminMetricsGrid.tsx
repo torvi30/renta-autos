@@ -13,14 +13,18 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
 
+import { AdminTab } from './AdminSidebar';
+
 interface AdminMetricsGridProps {
   vehicles: Vehicle[];
   reservations: Reservation[];
+  onSelectTab?: (tab: AdminTab) => void;
 }
 
 export const AdminMetricsGrid: React.FC<AdminMetricsGridProps> = ({
   vehicles,
   reservations,
+  onSelectTab,
 }) => {
   const totalCars = vehicles.length || 1;
   const availableCars = vehicles.filter((v) => v.status === 'AVAILABLE').length;
@@ -46,7 +50,12 @@ export const AdminMetricsGrid: React.FC<AdminMetricsGridProps> = ({
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
       
       {/* 1. Flota Showroom */}
-      <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-gold-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
+      <button
+        type="button"
+        onClick={() => onSelectTab?.('fleet')}
+        className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-gold-500/70 p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none"
+        title="Clic para entrar a gestionar la Flota"
+      >
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold-500 via-gold-400 to-transparent" />
         
         <div className="flex items-center justify-between mb-4">
@@ -92,11 +101,23 @@ export const AdminMetricsGrid: React.FC<AdminMetricsGridProps> = ({
             <span className="text-blue-400">{rentedCars} Alquilados</span>
             <span className="text-amber-400">{maintenanceCars} Taller</span>
           </div>
+          
+          <div className="mt-3 pt-2.5 border-t border-carbon-800/80 flex items-center justify-between text-xs text-gold-400 font-mono font-bold">
+            <span className="text-silver-400 font-sans font-medium">Panel de Flota</span>
+            <span className="group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+              Entrar a Flota →
+            </span>
+          </div>
         </div>
-      </div>
+      </button>
 
       {/* 2. Reservas Activas & Pipeline */}
-      <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-amber-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
+      <button
+        type="button"
+        onClick={() => onSelectTab?.('reservations')}
+        className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-amber-500/70 p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none"
+        title="Clic para entrar a revisar Solicitudes y Reservas"
+      >
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-amber-400 to-transparent" />
         
         <div className="flex items-center justify-between mb-4">
@@ -134,11 +155,23 @@ export const AdminMetricsGrid: React.FC<AdminMetricsGridProps> = ({
               {activeReservations} confirmada(s)
             </span>
           </div>
+
+          <div className="mt-3 pt-2.5 border-t border-carbon-800/80 flex items-center justify-between text-xs text-amber-400 font-mono font-bold">
+            <span className="text-silver-400 font-sans font-medium">Bandeja de Contratos</span>
+            <span className="group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+              Entrar a Reservas →
+            </span>
+          </div>
         </div>
-      </div>
+      </button>
 
       {/* 3. Ingresos Proyectados */}
-      <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-gold-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
+      <button
+        type="button"
+        onClick={() => onSelectTab?.('analytics')}
+        className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-emerald-500/70 p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none"
+        title="Clic para entrar a Analítica Financiera"
+      >
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold-500 via-emerald-400 to-transparent" />
         
         <div className="flex items-center justify-between mb-4">
@@ -167,11 +200,23 @@ export const AdminMetricsGrid: React.FC<AdminMetricsGridProps> = ({
               <Sparkles className="w-3.5 h-3.5 text-gold-400" /> USD Oficial
             </span>
           </div>
+
+          <div className="mt-3 pt-2.5 border-t border-carbon-800/80 flex items-center justify-between text-xs text-emerald-400 font-mono font-bold">
+            <span className="text-silver-400 font-sans font-medium">Business Intelligence</span>
+            <span className="group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+              Ver Finanzas →
+            </span>
+          </div>
         </div>
-      </div>
+      </button>
 
       {/* 4. Garantías en Custodia */}
-      <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-blue-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
+      <button
+        type="button"
+        onClick={() => onSelectTab?.('analytics')}
+        className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-blue-500/70 p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none"
+        title="Clic para entrar a auditar el Fondo de Garantía"
+      >
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-blue-400 to-transparent" />
         
         <div className="flex items-center justify-between mb-4">
@@ -199,8 +244,15 @@ export const AdminMetricsGrid: React.FC<AdminMetricsGridProps> = ({
               100% Reembolsable
             </span>
           </div>
+
+          <div className="mt-3 pt-2.5 border-t border-carbon-800/80 flex items-center justify-between text-xs text-blue-400 font-mono font-bold">
+            <span className="text-silver-400 font-sans font-medium">Custodia Legal</span>
+            <span className="group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+              Auditar Fondos →
+            </span>
+          </div>
         </div>
-      </div>
+      </button>
 
     </div>
   );

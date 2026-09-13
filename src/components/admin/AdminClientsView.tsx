@@ -37,6 +37,9 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const [selectedClient, setSelectedClient] = useState<ClientProfile | null>(null);
+  const [kycFilter, setKycFilter] = useState<'ALL' | 'VERIFIED'>('ALL');
+  const [sortByRevenue, setSortByRevenue] = useState<boolean>(false);
+  const [minSpentFilter, setMinSpentFilter] = useState<boolean>(false);
 
   // Extraer cartera única de clientes a partir de las reservas registradas
   const clientsList: ClientProfile[] = useMemo(() => {
@@ -71,24 +74,41 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
     return Array.from(clientsMap.values());
   }, [reservations]);
 
-  const filteredClients = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    if (!term) return clientsList;
-    return clientsList.filter(
-      (c) =>
-        c.fullName.toLowerCase().includes(term) ||
-        c.documentId.toLowerCase().includes(term) ||
-        c.driverLicense.toLowerCase().includes(term) ||
-        c.email.toLowerCase().includes(term) ||
-        c.phone.includes(term)
-    );
-  }, [clientsList, searchTerm]);
-
   // Métricas acumuladas del CRM
   const totalClientsCount = clientsList.length;
   const verifiedCount = clientsList.filter((c) => c.ageConfirmed).length;
   const totalRevenue = clientsList.reduce((acc, c) => acc + c.totalSpent, 0);
   const averageSpent = totalClientsCount > 0 ? Math.round(totalRevenue / totalClientsCount) : 0;
+
+  const filteredClients = useMemo(() => {
+    let result = [...clientsList];
+
+    if (kycFilter === 'VERIFIED') {
+      result = result.filter((c) => c.ageConfirmed);
+    }
+
+    if (minSpentFilter) {
+      result = result.filter((c) => c.totalSpent >= averageSpent);
+    }
+
+    const term = searchTerm.trim().toLowerCase();
+    if (term) {
+      result = result.filter(
+        (c) =>
+          c.fullName.toLowerCase().includes(term) ||
+          c.documentId.toLowerCase().includes(term) ||
+          c.driverLicense.toLowerCase().includes(term) ||
+          c.email.toLowerCase().includes(term) ||
+          c.phone.includes(term)
+      );
+    }
+
+    if (sortByRevenue) {
+      result.sort((a, b) => b.totalSpent - a.totalSpent);
+    }
+
+    return result;
+  }, [clientsList, searchTerm, kycFilter, minSpentFilter, sortByRevenue, averageSpent]);
 
   const handleOpenWhatsApp = (phone: string, name: string) => {
     const cleanPhone = phone.replace(/[^0-9]/g, '');
@@ -96,19 +116,44 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
   };
 
+  const handleResetFilters = () => {
+    setKycFilter('ALL');
+    setSortByRevenue(false);
+    setMinSpentFilter(false);
+    setSearchTerm('');
+  };
+
+  const isAllSelected = kycFilter === 'ALL' && !sortByRevenue && !minSpentFilter;
+
   return (
     <div className="space-y-7 animate-fade-in">
       
-      {/* 1. KPIs Ejecutivos de Cartera de Clientes (Mismo Estilo Ejecutivo Grande) */}
+      {/* 1. KPIs Ejecutivos de Cartera de Clientes (Interactivos con Filtros Rápidos) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         {/* Clientes Registrados */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-gold-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
+        <button
+          type="button"
+          onClick={handleResetFilters}
+          className={`relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none ${
+            isAllSelected
+              ? 'border-gold-500 ring-2 ring-gold-500/40 shadow-gold-500/10'
+              : 'border-carbon-750 hover:border-gold-500/50'
+          }`}
+          title="Clic para ver toda la cartera sin filtros"
+        >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold-500 via-gold-400 to-transparent" />
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
-              Clientes Registrados
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
+                Clientes Registrados
+              </span>
+              {isAllSelected && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-gold-500/20 text-gold-400 border border-gold-500/40 font-bold">
+                  Ver Todos
+                </span>
+              )}
+            </div>
             <div className="w-11 h-11 rounded-xl bg-gold-500/15 border border-gold-500/30 text-gold-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
               <Users className="w-5 h-5" />
             </div>
@@ -116,18 +161,37 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
           <div className="text-4xl sm:text-5xl font-black font-display text-white tracking-tight">
             {totalClientsCount} <span className="text-lg sm:text-xl font-semibold text-silver-400">Titulares</span>
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-400 font-medium">
-            Directorio VIP de conductores boutique
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-400 font-medium flex items-center justify-between">
+            <span>Directorio VIP de conductores</span>
+            <span className="text-gold-400 text-xs font-mono font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              {isAllSelected ? 'Todos activos' : 'Restablecer →'}
+            </span>
           </div>
-        </div>
+        </button>
 
         {/* Verificación KYC */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-emerald-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
+        <button
+          type="button"
+          onClick={() => setKycFilter(kycFilter === 'VERIFIED' ? 'ALL' : 'VERIFIED')}
+          className={`relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none ${
+            kycFilter === 'VERIFIED'
+              ? 'border-emerald-500 ring-2 ring-emerald-500/40 bg-emerald-950/15 shadow-emerald-500/10'
+              : 'border-carbon-750 hover:border-emerald-500/50'
+          }`}
+          title="Clic para filtrar solo clientes con KYC verificado"
+        >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-emerald-400 to-transparent" />
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
-              Verificación KYC
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
+                Verificación KYC
+              </span>
+              {kycFilter === 'VERIFIED' && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold">
+                  Filtrando
+                </span>
+              )}
+            </div>
             <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
               <ShieldCheck className="w-5 h-5" />
             </div>
@@ -135,19 +199,40 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
           <div className="text-4xl sm:text-5xl font-black font-display text-emerald-400 tracking-tight">
             {verifiedCount} / {totalClientsCount}
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-emerald-400 font-semibold flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4" />
-            <span>100% Mayores de 25 años y validados</span>
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-emerald-400 font-semibold flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4" />
+              <span>100% Mayores de 25 años</span>
+            </div>
+            <span className="text-emerald-400 text-xs font-mono font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              {kycFilter === 'VERIFIED' ? 'Quitar' : 'Filtrar →'}
+            </span>
           </div>
-        </div>
+        </button>
 
-        {/* Inversión Facturada */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-gold-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
+        {/* Inversión Facturada (Ordenar por Mayor Gasto) */}
+        <button
+          type="button"
+          onClick={() => setSortByRevenue(!sortByRevenue)}
+          className={`relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none ${
+            sortByRevenue
+              ? 'border-gold-500 ring-2 ring-gold-500/40 bg-gold-950/15 shadow-gold-500/10'
+              : 'border-carbon-750 hover:border-gold-500/50'
+          }`}
+          title="Clic para ordenar clientes por mayor volumen de inversión (Top VIP)"
+        >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold-500 via-emerald-400 to-transparent" />
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
-              Inversión Facturada
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
+                Inversión Facturada
+              </span>
+              {sortByRevenue && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-gold-500/20 text-gold-400 border border-gold-500/40 font-bold">
+                  Top Inversores
+                </span>
+              )}
+            </div>
             <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
               <DollarSign className="w-5 h-5" />
             </div>
@@ -155,18 +240,37 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
           <div className="text-4xl sm:text-5xl font-black font-display text-gold-400 tracking-tight font-mono">
             {formatCurrency(totalRevenue)}
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-400 font-medium">
-            Facturación acumulada en cartera
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-400 font-medium flex items-center justify-between">
+            <span>Facturación acumulada</span>
+            <span className="text-gold-400 text-xs font-mono font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              {sortByRevenue ? 'Desactivar orden' : 'Ordenar Top →'}
+            </span>
           </div>
-        </div>
+        </button>
 
-        {/* Ticket Promedio */}
-        <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-blue-500/50 p-6 lg:p-7 shadow-2xl transition-all duration-300">
+        {/* Ticket Promedio (Filtrar Alto Rendimiento) */}
+        <button
+          type="button"
+          onClick={() => setMinSpentFilter(!minSpentFilter)}
+          className={`relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none ${
+            minSpentFilter
+              ? 'border-blue-500 ring-2 ring-blue-500/40 bg-blue-950/15 shadow-blue-500/10'
+              : 'border-carbon-750 hover:border-blue-500/50'
+          }`}
+          title="Clic para ver clientes con inversión superior al ticket promedio"
+        >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-blue-400 to-transparent" />
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
-              Ticket Promedio
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
+                Ticket Promedio
+              </span>
+              {minSpentFilter && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-blue-500/20 text-blue-400 border border-blue-500/40 font-bold">
+                  {'>'} Promedio
+                </span>
+              )}
+            </div>
             <div className="w-11 h-11 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
               <TrendingUp className="w-5 h-5" />
             </div>
@@ -174,10 +278,13 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
           <div className="text-4xl sm:text-5xl font-black font-display text-white tracking-tight font-mono">
             {formatCurrency(averageSpent)}
           </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-300 font-medium">
-            Inversión promedio por titular
+          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs sm:text-sm text-silver-300 font-medium flex items-center justify-between">
+            <span>Inversión promedio</span>
+            <span className="text-blue-400 text-xs font-mono font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              {minSpentFilter ? 'Quitar filtro' : 'Filtrar VIP →'}
+            </span>
           </div>
-        </div>
+        </button>
 
       </div>
 

@@ -73,53 +73,84 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
               </div>
             )}
 
-            {/* Redes Sociales Oficiales */}
-            <div className="flex items-center gap-2.5 pt-2">
-              {settings.socialLinks?.instagram && (
-                <a
-                  href={settings.socialLinks.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-lg bg-carbon-900 border border-carbon-800 flex items-center justify-center text-silver-400 hover:text-gold-400 hover:border-gold-500/40 transition-colors shadow-sm"
-                  aria-label="Instagram Oficial"
-                >
-                  <Instagram className="w-4 h-4" />
-                </a>
-              )}
-              {settings.socialLinks?.tiktok && (
-                <a
-                  href={settings.socialLinks.tiktok}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-lg bg-carbon-900 border border-carbon-800 flex items-center justify-center text-silver-400 hover:text-gold-400 hover:border-gold-500/40 transition-colors shadow-sm font-mono text-[10px] font-bold"
-                  aria-label="TikTok Oficial"
-                >
-                  TK
-                </a>
-              )}
-              {settings.socialLinks?.facebook && (
-                <a
-                  href={settings.socialLinks.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-lg bg-carbon-900 border border-carbon-800 flex items-center justify-center text-silver-400 hover:text-gold-400 hover:border-gold-500/40 transition-colors shadow-sm"
-                  aria-label="Facebook Oficial"
-                >
-                  <Facebook className="w-4 h-4" />
-                </a>
-              )}
-              {settings.socialLinks?.youtube && (
-                <a
-                  href={settings.socialLinks.youtube}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-lg bg-carbon-900 border border-carbon-800 flex items-center justify-center text-silver-400 hover:text-gold-400 hover:border-gold-500/40 transition-colors shadow-sm"
-                  aria-label="YouTube Oficial"
-                >
-                  <Youtube className="w-4 h-4" />
-                </a>
-              )}
-            </div>
+            {/* Redes Sociales Oficiales: Solo se muestran si el administrador las configuró */}
+            {(() => {
+              const isRealUrl = (url?: string) => {
+                if (!url) return false;
+                const trimmed = url.trim();
+                if (!trimmed) return false;
+                // Filtrar URLs dummy por defecto si no tienen cuenta o handle
+                const dummyRoots = [
+                  'https://instagram.com',
+                  'https://instagram.com/',
+                  'https://tiktok.com',
+                  'https://tiktok.com/',
+                  'https://facebook.com',
+                  'https://facebook.com/',
+                  'https://youtube.com',
+                  'https://youtube.com/',
+                ];
+                return !dummyRoots.includes(trimmed);
+              };
+
+              const instagramUrl = isRealUrl(settings.socialLinks?.instagram) ? settings.socialLinks?.instagram?.trim() : null;
+              const tiktokUrl = isRealUrl(settings.socialLinks?.tiktok) ? settings.socialLinks?.tiktok?.trim() : null;
+              const facebookUrl = isRealUrl(settings.socialLinks?.facebook) ? settings.socialLinks?.facebook?.trim() : null;
+              const youtubeUrl = isRealUrl(settings.socialLinks?.youtube) ? settings.socialLinks?.youtube?.trim() : null;
+
+              if (!instagramUrl && !tiktokUrl && !facebookUrl && !youtubeUrl) {
+                return null;
+              }
+
+              return (
+                <div className="flex items-center gap-2.5 pt-2">
+                  {instagramUrl && (
+                    <a
+                      href={instagramUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 rounded-lg bg-carbon-900 border border-carbon-800 flex items-center justify-center text-silver-400 hover:text-gold-400 hover:border-gold-500/40 transition-colors shadow-sm"
+                      aria-label="Instagram Oficial"
+                    >
+                      <Instagram className="w-4 h-4" />
+                    </a>
+                  )}
+                  {tiktokUrl && (
+                    <a
+                      href={tiktokUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 rounded-lg bg-carbon-900 border border-carbon-800 flex items-center justify-center text-silver-400 hover:text-gold-400 hover:border-gold-500/40 transition-colors shadow-sm font-mono text-[10px] font-bold"
+                      aria-label="TikTok Oficial"
+                    >
+                      TK
+                    </a>
+                  )}
+                  {facebookUrl && (
+                    <a
+                      href={facebookUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 rounded-lg bg-carbon-900 border border-carbon-800 flex items-center justify-center text-silver-400 hover:text-gold-400 hover:border-gold-500/40 transition-colors shadow-sm"
+                      aria-label="Facebook Oficial"
+                    >
+                      <Facebook className="w-4 h-4" />
+                    </a>
+                  )}
+                  {youtubeUrl && (
+                    <a
+                      href={youtubeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 rounded-lg bg-carbon-900 border border-carbon-800 flex items-center justify-center text-silver-400 hover:text-gold-400 hover:border-gold-500/40 transition-colors shadow-sm"
+                      aria-label="YouTube Oficial"
+                    >
+                      <Youtube className="w-4 h-4" />
+                    </a>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Col 3: Navegación Rápida */}
