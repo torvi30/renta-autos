@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, Phone, Sparkles, Compass, Lock, Globe } from 'lucide-react';
 import { Button } from './Button';
 import { useCurrency, CurrencyCode } from '../../context/CurrencyContext';
@@ -26,6 +26,20 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<'fleet' | 'experience' | 'how-it-works' | 'faq'>('fleet');
 
+  const isManualScrollingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const lockActiveSection = (sectionKey: 'fleet' | 'experience' | 'how-it-works' | 'faq') => {
+    setActiveSection(sectionKey);
+    isManualScrollingRef.current = true;
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    scrollTimeoutRef.current = setTimeout(() => {
+      isManualScrollingRef.current = false;
+    }, 1100); // Bloquea la sobreescritura durante el scroll suave
+  };
+
   const { currency, setCurrency } = useCurrency();
   const { language, setLanguage, t } = useLanguage();
   const { settings, getWhatsAppLink } = useSettings();
@@ -33,6 +47,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
+
+      // Si el usuario acaba de hacer clic en un enlace del menú, no sobreescribir con el scroll en tránsito
+      if (isManualScrollingRef.current) return;
 
       if (currentRoute === 'home') {
         const sections: Array<{ id: string; key: 'fleet' | 'experience' | 'how-it-works' | 'faq' }> = [
@@ -62,17 +79,22 @@ export const Navbar: React.FC<NavbarProps> = ({
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
   }, [currentRoute]);
 
   const scrollToSection = (id: string) => {
     setIsMobileMenuOpen(false);
 
-    // Actualizar estado de sección activa inmediatamente al hacer clic
-    if (id === 'showroom') setActiveSection('fleet');
-    else if (id === 'experience') setActiveSection('experience');
-    else if (id === 'how-it-works') setActiveSection('how-it-works');
-    else if (id === 'faq') setActiveSection('faq');
+    // Actualizar y bloquear la sección activa inmediatamente sin saltos durante el desplazamiento suave
+    if (id === 'showroom') lockActiveSection('fleet');
+    else if (id === 'experience') lockActiveSection('experience');
+    else if (id === 'how-it-works') lockActiveSection('how-it-works');
+    else if (id === 'faq') lockActiveSection('faq');
 
     if (currentRoute !== 'home' && onNavigateHome) {
       onNavigateHome();
@@ -94,7 +116,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const handleHomeClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsMobileMenuOpen(false);
-    setActiveSection('fleet');
+    lockActiveSection('fleet');
     if (onNavigateHome) {
       onNavigateHome();
     } else {
@@ -111,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const handleFleetClick = () => {
     setIsMobileMenuOpen(false);
-    setActiveSection('fleet');
+    lockActiveSection('fleet');
     if (currentRoute !== 'home' && onNavigateHome) {
       onNavigateHome();
       setTimeout(() => {
