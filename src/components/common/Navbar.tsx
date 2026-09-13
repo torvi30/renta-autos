@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, Phone, Sparkles, Compass, Lock, Globe } from 'lucide-react';
+import { Menu, X, Phone, Sparkles, Compass, Globe } from 'lucide-react';
 import { Button } from './Button';
 import { useCurrency, CurrencyCode } from '../../context/CurrencyContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -28,6 +28,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const isManualScrollingRef = useRef(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Contador de 3 clics secretos en el logotipo para acceso de administrador
+  const logoClickCountRef = useRef(0);
+  const logoClickTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const lockActiveSection = (sectionKey: 'fleet' | 'experience' | 'how-it-works' | 'faq') => {
     setActiveSection(sectionKey);
@@ -122,6 +126,31 @@ export const Navbar: React.FC<NavbarProps> = ({
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  };
+
+  // Puerta secreta: 3 clics rápidos al logotipo activan el portal administrativo
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    logoClickCountRef.current += 1;
+
+    if (logoClickTimerRef.current) {
+      clearTimeout(logoClickTimerRef.current);
+    }
+
+    if (logoClickCountRef.current >= 3) {
+      logoClickCountRef.current = 0;
+      setIsMobileMenuOpen(false);
+      if (onNavigateToAdmin) {
+        onNavigateToAdmin();
+      }
+      return;
+    }
+
+    logoClickTimerRef.current = setTimeout(() => {
+      logoClickCountRef.current = 0;
+    }, 1000);
+
+    handleHomeClick(e);
   };
 
   const handleCatalogClick = () => {
@@ -223,22 +252,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Globe className="w-3 h-3 text-gold-400" />
                 <span className="font-bold">{language === 'ES' ? 'ES' : 'EN'}</span>
               </button>
-
-              {/* Acceso a Portal Staff / Director */}
-              {onNavigateToAdmin && (
-                <>
-                  <div className="h-3 w-px bg-carbon-800" />
-                  <button
-                    onClick={onNavigateToAdmin}
-                    className="flex items-center gap-1 text-[11px] text-silver-400 hover:text-gold-400 transition-colors px-2 py-0.5 rounded hover:bg-carbon-900/80 group"
-                    title="Acceso exclusivo al Portal Administrativo"
-                  >
-                    <Lock className="w-3 h-3 text-gold-400/80 group-hover:text-gold-400" />
-                    <span className="hidden sm:inline font-medium">{t.nav.adminPortal}</span>
-                    <span className="sm:hidden font-medium">Staff</span>
-                  </button>
-                </>
-              )}
             </div>
 
           </div>
@@ -258,10 +271,10 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             
-            {/* 1. Logotipo Emblemático */}
+            {/* 1. Logotipo Emblemático con Puerta Secreta de 3 Clics */}
             <button
-              onClick={handleHomeClick}
-              className="flex items-center gap-3.5 group focus:outline-none text-left"
+              onClick={handleLogoClick}
+              className="flex items-center gap-3.5 group focus:outline-none text-left select-none"
               aria-label={`${settings.companyName} - Inicio`}
             >
               {settings.logoUrl ? (
@@ -431,24 +444,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Menú de Enlaces */}
           <nav className="flex flex-col space-y-3 text-base font-medium text-silver-200">
-            {onNavigateToAdmin && (
-              <button
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  onNavigateToAdmin();
-                }}
-                className="text-left py-2.5 px-3.5 rounded-xl bg-carbon-900 border border-gold-500/30 text-gold-400 font-bold flex items-center justify-between text-sm mb-1"
-              >
-                <span className="flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-gold-400" />
-                  {t.nav.adminPortal}
-                </span>
-                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-gold-500/20 text-gold-300">
-                  Acceso VIP
-                </span>
-              </button>
-            )}
-
             <button
               onClick={handleHomeClick}
               className={`text-left py-2 border-b border-carbon-900 flex items-center justify-between ${

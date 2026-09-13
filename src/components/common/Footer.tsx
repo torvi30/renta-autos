@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   Sparkles,
   Shield,
@@ -22,6 +22,30 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
   const { settings, getWhatsAppLink } = useSettings();
   const whatsAppUrl = getWhatsAppLink();
 
+  // Puerta secreta alternativa: 3 clics en el logo del pie de página
+  const footerClickCountRef = useRef(0);
+  const footerClickTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleFooterLogoClick = () => {
+    footerClickCountRef.current += 1;
+
+    if (footerClickTimerRef.current) {
+      clearTimeout(footerClickTimerRef.current);
+    }
+
+    if (footerClickCountRef.current >= 3) {
+      footerClickCountRef.current = 0;
+      if (onNavigateToAdmin) {
+        onNavigateToAdmin();
+      }
+      return;
+    }
+
+    footerClickTimerRef.current = setTimeout(() => {
+      footerClickCountRef.current = 0;
+    }, 1000);
+  };
+
   return (
     <footer className="bg-carbon-950 border-t border-carbon-800/80 pt-16 pb-12 text-silver-400">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,7 +53,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
           
           {/* Col 1 & 2: Identidad & Filosofía */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
+            <div 
+              onClick={handleFooterLogoClick}
+              className="flex items-center gap-3 select-none cursor-pointer"
+              title=""
+            >
               {settings.logoUrl ? (
                 <img
                   src={settings.logoUrl}
@@ -239,14 +267,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
             <a href="#" className="hover:text-silver-300 transition-colors">Términos del Servicio</a>
             <a href="#" className="hover:text-silver-300 transition-colors">Política de Privacidad</a>
             <a href="#" className="hover:text-silver-300 transition-colors">Requisitos de Alquiler</a>
-            {onNavigateToAdmin && (
-              <button
-                onClick={onNavigateToAdmin}
-                className="hover:text-gold-400 transition-colors text-[11px] underline underline-offset-4 decoration-carbon-700"
-              >
-                Portal Corporativo
-              </button>
-            )}
           </div>
         </div>
       </div>
