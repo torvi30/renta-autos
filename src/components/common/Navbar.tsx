@@ -191,45 +191,45 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* TIER 1: MICRO-TOPBAR VIP (Estándar Oficial Concesionario de Superlujo)   */}
       {/* Aloja utilidades (Divisas, Idioma, Estado Showroom y Portal Staff)        */}
       {/* ========================================================================= */}
-      <div className="bg-carbon-950/95 backdrop-blur-md transition-all">
+      <div className="bg-carbon-950/80 backdrop-blur-md transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-8 text-[11px] font-medium text-silver-400">
+          <div className="flex items-center justify-between h-7.5 text-[10px] font-medium text-silver-400 tracking-wider">
             
             {/* Lado Izquierdo: Telemetría de Ubicación & Servicio VIP */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5">
-                <span className="relative flex h-2 w-2">
+                <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                 </span>
-                <span className="font-semibold text-silver-300">
+                <span className="font-semibold text-silver-300 uppercase tracking-widest text-[9.5px]">
                   {settings.city.includes('Medellín')
                     ? (language === 'ES' ? 'Showroom Medellín' : 'Medellín Showroom')
                     : settings.city}
                 </span>
               </div>
-              <span className="hidden sm:inline text-carbon-700">•</span>
-              <span className="hidden sm:inline text-silver-400">
-                {language === 'ES' ? 'Aeropuerto JMC & Domicilio VIP' : 'JMC Airport & Private Delivery'}
+              <span className="hidden sm:inline text-carbon-700">·</span>
+              <span className="hidden sm:inline text-silver-400 font-mono text-[9.5px]">
+                {language === 'ES' ? 'Aeropuerto JMC & Entrega VIP' : 'JMC Airport & VIP Delivery'}
               </span>
-              <span className="hidden md:inline text-carbon-700">•</span>
-              <span className="hidden md:inline text-gold-400/90 font-mono">
+              <span className="hidden md:inline text-carbon-700">·</span>
+              <span className="hidden md:inline text-gold-400/90 font-mono font-semibold text-[9.5px]">
                 {language === 'ES' ? 'Atención 24/7' : '24/7 Concierge'}
               </span>
             </div>
 
-            {/* Lado Derecho: Utilidades Operativas (Moneda, Idioma, Portal Staff) */}
-            <div className="flex items-center gap-3">
+            {/* Lado Derecho: Utilidades Operativas (Moneda, Idioma) */}
+            <div className="flex items-center gap-2.5">
               
               {/* Selector de Moneda Satinado */}
-              <div className="flex items-center bg-carbon-900 border border-carbon-800 rounded-full p-0.5 text-[10px] font-mono font-bold shadow-inner">
+              <div className="flex items-center bg-carbon-900/90 border border-carbon-800/80 rounded-full p-0.5 text-[9.5px] font-mono font-bold shadow-inner">
                 {(['USD', 'EUR', 'COP'] as CurrencyCode[]).map((c) => (
                   <button
                     key={c}
                     onClick={() => setCurrency(c)}
                     className={`px-2 py-0.5 rounded-full transition-all ${
                       currency === c
-                        ? 'bg-gradient-to-r from-gold-500 to-gold-400 text-carbon-950 font-black shadow-sm'
+                        ? 'bg-gradient-to-r from-gold-400 to-gold-300 text-carbon-950 font-black shadow-sm'
                         : 'text-silver-400 hover:text-white'
                     }`}
                     title={`Cambiar a ${c}`}
@@ -239,12 +239,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                 ))}
               </div>
 
-              <div className="h-3 w-px bg-carbon-800" />
+              <div className="h-2.5 w-px bg-carbon-800" />
 
               {/* Selector de Idioma */}
               <button
                 onClick={() => setLanguage(language === 'ES' ? 'EN' : 'ES')}
-                className="flex items-center gap-1 text-[11px] font-mono text-silver-300 hover:text-gold-400 transition-colors px-1.5 py-0.5 rounded hover:bg-carbon-900"
+                className="flex items-center gap-1 text-[10px] font-mono text-silver-300 hover:text-gold-300 transition-colors px-1.5 py-0.5 rounded hover:bg-carbon-900/80"
                 title="Cambiar idioma / Switch language"
               >
                 <Globe className="w-3 h-3 text-gold-400" />
@@ -262,8 +262,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div
         className={`transition-all duration-300 ${
           isScrolled
-            ? 'bg-carbon-950/95 backdrop-blur-2xl py-3 shadow-2xl shadow-carbon-950'
-            : 'bg-gradient-to-b from-carbon-950/90 via-carbon-950/40 to-transparent py-4'
+            ? 'bg-carbon-950/90 backdrop-blur-2xl py-3 shadow-[0_16px_40px_rgba(0,0,0,0.9)]'
+            : 'bg-gradient-to-b from-carbon-950/95 via-carbon-950/60 to-transparent py-4'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -280,86 +280,114 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <img
                     src={settings.logoUrl}
                     alt={settings.companyName}
-                    className="h-9 w-auto max-w-[140px] object-contain group-hover:scale-105 transition-transform"
+                    className="h-9 w-auto max-w-[140px] object-contain group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
               ) : (
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-carbon-800 to-carbon-900 border border-gold-500/40 flex items-center justify-center group-hover:border-gold-400 transition-all shadow-lg shadow-gold-500/10 group-hover:shadow-gold-500/20">
-                  <Sparkles className="w-5 h-5 text-gold-400 group-hover:scale-110 transition-transform" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-b from-carbon-800 to-carbon-900 border border-gold-400/30 flex items-center justify-center group-hover:border-gold-300/70 transition-all duration-300 shadow-md shadow-black/60 group-hover:shadow-gold-500/10">
+                  <Sparkles className="w-5 h-5 text-gold-400 group-hover:scale-110 transition-transform duration-300" />
                 </div>
               )}
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] tracking-[0.28em] text-gold-400 font-bold uppercase leading-none">
+                  <span className="text-[9px] tracking-[0.32em] text-gold-400 font-bold uppercase leading-none">
                     PREMIUM
                   </span>
                   <span className="w-1 h-1 rounded-full bg-gold-400/80" />
-                  <span className="text-[9px] tracking-[0.18em] text-silver-400 uppercase font-mono">
+                  <span className="text-[8.5px] tracking-[0.24em] text-silver-400 uppercase font-mono">
                     VIP
                   </span>
                 </div>
-                <span className="text-base sm:text-lg tracking-[0.14em] font-black text-silver-100 uppercase leading-tight font-display">
+                <span className="text-base sm:text-lg tracking-[0.16em] font-black text-silver-100 uppercase leading-tight font-display">
                   {settings.companyName ? settings.companyName.replace(/Premium\s*/i, '') : 'CAR RENTAL'}
                 </span>
               </div>
             </button>
 
-            {/* 2. Navegación Principal Despejada con Espaciado Generoso */}
-            <nav className="hidden lg:flex items-center gap-8 xl:gap-10 text-xs font-bold uppercase tracking-[0.15em] text-silver-300">
+            {/* 2. Navegación Principal Despejada con Espaciado Generoso y Micro-Puntos Joya */}
+            <nav className="hidden lg:flex items-center gap-7 xl:gap-9 text-[11px] font-semibold uppercase tracking-[0.2em]">
               <button
                 onClick={handleFleetClick}
-                className={`transition-all py-1 ${
-                  isFleetActive ? 'text-gold-400 font-black drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]' : 'text-silver-300 hover:text-gold-400'
+                className={`transition-all duration-300 py-1.5 relative flex items-center gap-1.5 ${
+                  isFleetActive
+                    ? 'text-gold-300 font-bold drop-shadow-[0_0_10px_rgba(212,175,55,0.4)]'
+                    : 'text-silver-400 hover:text-silver-100'
                 }`}
               >
                 <span>{t.nav.fleet}</span>
+                {isFleetActive && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gold-400 shadow-[0_0_6px_rgba(212,175,55,0.8)]" />
+                )}
               </button>
 
               <button
                 onClick={handleCatalogClick}
-                className={`transition-all py-1 flex items-center gap-1.5 ${
-                  isCatalogActive ? 'text-gold-400 font-black drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]' : 'text-silver-300 hover:text-gold-400'
+                className={`transition-all duration-300 py-1.5 relative flex items-center gap-1.5 ${
+                  isCatalogActive
+                    ? 'text-gold-300 font-bold drop-shadow-[0_0_10px_rgba(212,175,55,0.4)]'
+                    : 'text-silver-400 hover:text-silver-100'
                 }`}
               >
-                <Compass className="w-3.5 h-3.5 text-gold-400" />
+                <Compass className="w-3 h-3 text-gold-400/90" />
                 <span>{t.nav.catalog}</span>
+                {isCatalogActive && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gold-400 shadow-[0_0_6px_rgba(212,175,55,0.8)]" />
+                )}
               </button>
 
               <button
                 onClick={() => scrollToSection('experience')}
-                className={`transition-all py-1 ${
-                  isExperienceActive ? 'text-gold-400 font-black drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]' : 'text-silver-300 hover:text-gold-400'
+                className={`transition-all duration-300 py-1.5 relative flex items-center gap-1.5 ${
+                  isExperienceActive
+                    ? 'text-gold-300 font-bold drop-shadow-[0_0_10px_rgba(212,175,55,0.4)]'
+                    : 'text-silver-400 hover:text-silver-100'
                 }`}
               >
                 <span>{t.nav.experience}</span>
+                {isExperienceActive && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gold-400 shadow-[0_0_6px_rgba(212,175,55,0.8)]" />
+                )}
               </button>
 
               <button
                 onClick={() => scrollToSection('how-it-works')}
-                className={`transition-all py-1 ${
-                  isHowItWorksActive ? 'text-gold-400 font-black drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]' : 'text-silver-300 hover:text-gold-400'
+                className={`transition-all duration-300 py-1.5 relative flex items-center gap-1.5 ${
+                  isHowItWorksActive
+                    ? 'text-gold-300 font-bold drop-shadow-[0_0_10px_rgba(212,175,55,0.4)]'
+                    : 'text-silver-400 hover:text-silver-100'
                 }`}
               >
                 <span>{t.nav.howItWorks}</span>
+                {isHowItWorksActive && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gold-400 shadow-[0_0_6px_rgba(212,175,55,0.8)]" />
+                )}
               </button>
 
               <button
                 onClick={() => scrollToSection('faq')}
-                className={`transition-all py-1 ${
-                  isFaqActive ? 'text-gold-400 font-black drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]' : 'text-silver-300 hover:text-gold-400'
+                className={`transition-all duration-300 py-1.5 relative flex items-center gap-1.5 ${
+                  isFaqActive
+                    ? 'text-gold-300 font-bold drop-shadow-[0_0_10px_rgba(212,175,55,0.4)]'
+                    : 'text-silver-400 hover:text-silver-100'
                 }`}
               >
                 <span>{t.nav.requirements}</span>
+                {isFaqActive && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gold-400 shadow-[0_0_6px_rgba(212,175,55,0.8)]" />
+                )}
               </button>
             </nav>
 
-            {/* 3. Acción Principal de Reserva */}
+            {/* 3. Acción Principal de Reserva (Oro Champán Satinado con Shimmer Líquido) */}
             <div className="hidden sm:flex items-center">
               <button
                 onClick={onNavigateToBooking || (() => scrollToSection('showroom'))}
-                className="relative inline-flex items-center justify-center px-5 py-2 rounded-xl text-xs font-black uppercase tracking-wider text-carbon-950 bg-gradient-to-r from-gold-400 via-gold-500 to-amber-500 hover:from-gold-300 hover:via-gold-400 hover:to-amber-400 transition-all shadow-lg shadow-gold-500/20 hover:shadow-gold-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                className="relative group overflow-hidden inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-[0.2em] text-carbon-950 bg-gradient-to-r from-gold-400 via-gold-300 to-amber-400 hover:from-gold-300 hover:via-gold-200 hover:to-gold-400 border border-gold-200/50 shadow-[0_4px_20px_rgba(212,175,55,0.25)] hover:shadow-[0_6px_28px_rgba(212,175,55,0.45)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
               >
-                <Sparkles className="w-3.5 h-3.5 mr-1.5 text-carbon-950 fill-carbon-950" />
+                {/* Reflejo Shimmer líquido en hover */}
+                <span className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/35 to-transparent skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 ease-out pointer-events-none" />
+                
+                <Sparkles className="w-3.5 h-3.5 mr-1.5 text-carbon-950 fill-carbon-950 group-hover:rotate-12 transition-transform duration-300" />
                 <span>{t.cta.bookNow}</span>
               </button>
             </div>
