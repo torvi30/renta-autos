@@ -3,6 +3,8 @@ import { MessageSquare, X, Send, ShieldCheck } from 'lucide-react';
 import { Vehicle } from '../../types/vehicle';
 import { Button } from '../common/Button';
 import { useSettings } from '../../context/SettingsContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { useCurrency } from '../../context/CurrencyContext';
 
 interface WhatsAppConciergeProps {
   vehicles: Vehicle[];
@@ -18,6 +20,8 @@ export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
   onClose: externalOnClose,
 }) => {
   const { getWhatsAppLink } = useSettings();
+  const { language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
   const handleClose = externalOnClose || (() => setInternalIsOpen(false));
@@ -59,11 +63,13 @@ export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
         <button
           onClick={() => setInternalIsOpen(true)}
           className="flex items-center gap-2.5 px-4 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs tracking-wider uppercase shadow-2xl shadow-emerald-950/80 transition-all duration-300 hover:scale-105 active:scale-95 border border-emerald-400/30"
-          aria-label="Abrir asistente de reserva por WhatsApp"
+          aria-label={language === 'ES' ? 'Abrir asistente de reserva por WhatsApp' : 'Open WhatsApp booking concierge'}
         >
           <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping" />
           <MessageSquare className="w-4 h-4" />
-          <span className="hidden sm:inline">RESERVAR POR WHATSAPP</span>
+          <span className="hidden sm:inline">
+            {language === 'ES' ? 'RESERVAR POR WHATSAPP' : 'BOOK VIA WHATSAPP'}
+          </span>
         </button>
       </div>
 
@@ -87,22 +93,26 @@ export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
 
             <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 uppercase tracking-widest mb-1">
               <MessageSquare className="w-4 h-4" />
-              <span>ATENCIÓN CONCIERGE DIRECTA</span>
+              <span>
+                {language === 'ES' ? 'ATENCIÓN CONCIERGE DIRECTA' : 'DIRECT CONCIERGE DESK'}
+              </span>
             </div>
 
             <h3 id="whatsapp-title" className="text-xl font-bold text-silver-100 font-display">
-              Reservar por WhatsApp
+              {language === 'ES' ? 'Reservar por WhatsApp' : 'Reserve via WhatsApp'}
             </h3>
 
             <p className="text-xs text-silver-400 mt-1">
-              Personaliza tu consulta y un asesor te responderá inmediatamente con la confirmación de fechas y tarifa.
+              {language === 'ES'
+                ? 'Personaliza tu consulta y un asesor te responderá inmediatamente con la confirmación de fechas y tarifa.'
+                : 'Customize your request and an advisor will promptly confirm availability, dates, and rates.'}
             </p>
 
             <form onSubmit={handleOpenWhatsApp} className="mt-6 space-y-4">
               {/* Selección de Vehículo */}
               <div>
                 <label className="block text-xs font-medium text-silver-300 mb-1">
-                  Vehículo de interés
+                  {language === 'ES' ? 'Vehículo de interés' : 'Vehicle of interest'}
                 </label>
                 <select
                   value={selectedVehicleId}
@@ -111,7 +121,7 @@ export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
                 >
                   {vehicles.map((veh) => (
                     <option key={veh.id} value={veh.id}>
-                      {veh.brand} {veh.model} ({veh.year}) - ${veh.pricePerDay}/día
+                      {veh.brand} {veh.model} ({veh.year}) — {formatPrice(veh.pricePerDay)}/{language === 'ES' ? 'día' : 'day'}
                     </option>
                   ))}
                 </select>
@@ -121,7 +131,7 @@ export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-silver-300 mb-1">
-                    Fecha de recogida
+                    {language === 'ES' ? 'Fecha de recogida' : 'Pick-up date'}
                   </label>
                   <input
                     type="date"
@@ -133,7 +143,7 @@ export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
 
                 <div>
                   <label className="block text-xs font-medium text-silver-300 mb-1">
-                    Fecha de devolución
+                    {language === 'ES' ? 'Fecha de devolución' : 'Return date'}
                   </label>
                   <input
                     type="date"
@@ -147,20 +157,24 @@ export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
               {/* Nombre del Cliente */}
               <div>
                 <label className="block text-xs font-medium text-silver-300 mb-1">
-                  Tu nombre completo
+                  {language === 'ES' ? 'Tu nombre completo' : 'Full name'}
                 </label>
                 <input
                   type="text"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Ej. Carlos Mendoza"
+                  placeholder={language === 'ES' ? 'Ej. Carlos Mendoza' : 'e.g. John Smith'}
                   className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-sm focus:outline-none focus:border-gold-500"
                 />
               </div>
 
               <div className="flex items-center gap-2 text-[11px] text-silver-400 pt-1">
                 <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                <span>No se compartirá tu número con terceros ni recibirás spam.</span>
+                <span>
+                  {language === 'ES'
+                    ? 'No se compartirá tu número con terceros ni recibirás spam.'
+                    : 'Your details remain confidential. No spam or third-party sharing.'}
+                </span>
               </div>
 
               <div className="pt-2">
@@ -171,7 +185,7 @@ export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
                   fullWidth
                   icon={<Send className="w-4 h-4" />}
                 >
-                  ABRIR EN WHATSAPP
+                  {language === 'ES' ? 'ABRIR EN WHATSAPP' : 'OPEN IN WHATSAPP'}
                 </Button>
               </div>
             </form>

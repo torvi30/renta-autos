@@ -34,6 +34,7 @@ import {
   getDeliveryLocationLabel,
 } from '../../services/reservationService';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { Button } from '../common/Button';
 
 export interface BookingFlowModalProps {
@@ -54,6 +55,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
   initialEndDate,
 }) => {
   const { formatPrice } = useCurrency();
+  const { language } = useLanguage();
   // Pasos: 1 = Fechas & Vehículo, 2 = Conductor KYC, 3 = Confirmación & Voucher
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
 
@@ -158,7 +160,11 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
     if (!activeVehicle) return;
 
     if (!clientInfo.ageConfirmation) {
-      setSubmissionError('Debes confirmar que cuentas con 25 años o más para reservar esta categoría de lujo.');
+      setSubmissionError(
+        language === 'ES'
+          ? 'Debes confirmar que cuentas con 25 años o más para reservar esta categoría de lujo.'
+          : 'You must confirm that you are 25 years or older to book this luxury category.'
+      );
       return;
     }
 
@@ -177,12 +183,33 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
     });
 
     if (result.error || !result.reservation) {
-      setSubmissionError(result.error || 'Ocurrió un error al procesar la reserva.');
+      setSubmissionError(
+        result.error ||
+          (language === 'ES'
+            ? 'Ocurrió un error al procesar la reserva.'
+            : 'An error occurred while processing the reservation.')
+      );
       return;
     }
 
     setCreatedReservation(result.reservation);
     setCurrentStep(3);
+  };
+
+  const getDeliveryLabel = (loc: DeliveryLocationType) => {
+    if (language === 'EN') {
+      switch (loc) {
+        case 'SHOWROOM':
+          return 'VIP Central Showroom';
+        case 'AIRPORT':
+          return 'International Airport (VIP Meet & Greet)';
+        case 'HOTEL_RESIDENCE':
+          return 'Hotel / Private Residence Delivery';
+        default:
+          return loc;
+      }
+    }
+    return getDeliveryLocationLabel(loc);
   };
 
   const handleOpenWhatsApp = useCallback(() => {
@@ -214,17 +241,20 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[11px] font-semibold uppercase tracking-widest text-gold-400">
-                Showroom Concierge VIP
+                {language === 'ES' ? 'Showroom Concierge VIP' : 'VIP Showroom Concierge'}
               </span>
               <span className="text-carbon-600">•</span>
               <span className="text-xs text-silver-400 font-mono">
-                Paso {currentStep} de 3
+                {language === 'ES' ? `Paso ${currentStep} de 3` : `Step ${currentStep} of 3`}
               </span>
             </div>
             <h2 id="booking-modal-title" className="text-lg sm:text-xl font-bold text-silver-100 font-display">
-              {currentStep === 1 && 'Configuración de Renta & Fechas'}
-              {currentStep === 2 && 'Registro del Conductor & KYC'}
-              {currentStep === 3 && 'Voucher de Reserva Oficial'}
+              {currentStep === 1 &&
+                (language === 'ES' ? 'Configuración de Renta & Fechas' : 'Rental Configuration & Dates')}
+              {currentStep === 2 &&
+                (language === 'ES' ? 'Registro del Conductor & KYC' : 'Driver Registration & KYC')}
+              {currentStep === 3 &&
+                (language === 'ES' ? 'Voucher de Reserva Oficial' : 'Official Booking Voucher')}
             </h2>
           </div>
 
@@ -299,23 +329,27 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                   />
                   <div className="min-w-0">
                     <span className="text-[10px] text-gold-400 font-semibold uppercase tracking-wider block">
-                      Vehículo Seleccionado
+                      {language === 'ES' ? 'Vehículo Seleccionado' : 'Selected Vehicle'}
                     </span>
                     <h4 className="text-base font-bold text-silver-100 truncate font-display">
                       {activeVehicle.brand} {activeVehicle.model}
                     </h4>
                     <div className="text-xs text-silver-400 flex items-center gap-2 mt-0.5">
                       <span className="text-gold-400 font-semibold">{formatPrice(activeVehicle.pricePerDay)}</span>
-                      <span>/ día</span>
+                      <span>{language === 'ES' ? '/ día' : '/ day'}</span>
                       <span className="text-carbon-600">•</span>
-                      <span className="font-mono text-silver-500">Placa: {activeVehicle.plate}</span>
+                      <span className="font-mono text-silver-500">
+                        {language === 'ES' ? 'Placa:' : 'Plate:'} {activeVehicle.plate}
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 {vehicles.length > 1 && (
                   <div className="w-full sm:w-auto">
-                    <label htmlFor="select-vehicle-flow" className="sr-only">Cambiar vehículo</label>
+                    <label htmlFor="select-vehicle-flow" className="sr-only">
+                      {language === 'ES' ? 'Cambiar vehículo' : 'Change vehicle'}
+                    </label>
                     <select
                       id="select-vehicle-flow"
                       value={selectedVehicleId}
@@ -324,7 +358,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     >
                       {vehicles.map((v) => (
                         <option key={v.id} value={v.id}>
-                          {v.brand} {v.model} ({formatPrice(v.pricePerDay)}/d)
+                          {v.brand} {v.model} ({formatPrice(v.pricePerDay)}/{language === 'ES' ? 'd' : 'day'})
                         </option>
                       ))}
                     </select>
@@ -339,11 +373,13 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                 <div className="p-4 rounded-xl bg-carbon-850/60 border border-carbon-800 space-y-3">
                   <div className="flex items-center gap-2 text-xs font-semibold text-silver-200 uppercase tracking-wider">
                     <Calendar className="w-4 h-4 text-gold-400" />
-                    <span>Fecha & Hora de Recogida</span>
+                    <span>{language === 'ES' ? 'Fecha & Hora de Recogida' : 'Pick-up Date & Time'}</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     <div className="col-span-2">
-                      <label htmlFor="flow-pickup-date" className="block text-[11px] text-silver-400 mb-1">Fecha</label>
+                      <label htmlFor="flow-pickup-date" className="block text-[11px] text-silver-400 mb-1">
+                        {language === 'ES' ? 'Fecha' : 'Date'}
+                      </label>
                       <input
                         id="flow-pickup-date"
                         type="date"
@@ -355,7 +391,9 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                       />
                     </div>
                     <div>
-                      <label htmlFor="flow-pickup-time" className="block text-[11px] text-silver-400 mb-1">Hora</label>
+                      <label htmlFor="flow-pickup-time" className="block text-[11px] text-silver-400 mb-1">
+                        {language === 'ES' ? 'Hora' : 'Time'}
+                      </label>
                       <input
                         id="flow-pickup-time"
                         type="time"
@@ -372,11 +410,13 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                 <div className="p-4 rounded-xl bg-carbon-850/60 border border-carbon-800 space-y-3">
                   <div className="flex items-center gap-2 text-xs font-semibold text-silver-200 uppercase tracking-wider">
                     <Clock className="w-4 h-4 text-gold-400" />
-                    <span>Fecha & Hora de Devolución</span>
+                    <span>{language === 'ES' ? 'Fecha & Hora de Devolución' : 'Return Date & Time'}</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     <div className="col-span-2">
-                      <label htmlFor="flow-return-date" className="block text-[11px] text-silver-400 mb-1">Fecha</label>
+                      <label htmlFor="flow-return-date" className="block text-[11px] text-silver-400 mb-1">
+                        {language === 'ES' ? 'Fecha' : 'Date'}
+                      </label>
                       <input
                         id="flow-return-date"
                         type="date"
@@ -388,7 +428,9 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                       />
                     </div>
                     <div>
-                      <label htmlFor="flow-return-time" className="block text-[11px] text-silver-400 mb-1">Hora</label>
+                      <label htmlFor="flow-return-time" className="block text-[11px] text-silver-400 mb-1">
+                        {language === 'ES' ? 'Hora' : 'Time'}
+                      </label>
                       <input
                         id="flow-return-time"
                         type="time"
@@ -416,10 +458,14 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                     <div>
                       <strong className="font-semibold block text-emerald-300">
-                        Vehículo disponible para las fechas seleccionadas
+                        {language === 'ES'
+                          ? 'Vehículo disponible para las fechas seleccionadas'
+                          : 'Vehicle available for selected dates'}
                       </strong>
                       <span className="text-emerald-400/80">
-                        Duración confirmada: {pricing.days} día(s) con entrega programada.
+                        {language === 'ES'
+                          ? `Duración confirmada: ${pricing.days} día(s) con entrega programada.`
+                          : `Confirmed duration: ${pricing.days} day(s) with scheduled handover.`}
                       </span>
                     </div>
                   </>
@@ -428,7 +474,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
                     <div>
                       <strong className="font-semibold block text-rose-300">
-                        Disponibilidad restringida
+                        {language === 'ES' ? 'Disponibilidad restringida' : 'Restricted availability'}
                       </strong>
                       <span>{availabilityResult.reason}</span>
                     </div>
@@ -440,7 +486,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
               <div className="space-y-3">
                 <label className="block text-xs font-semibold text-silver-300 uppercase tracking-wider flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-gold-400" />
-                  Modalidad de Entrega VIP
+                  {language === 'ES' ? 'Modalidad de Entrega VIP' : 'VIP Handover Option'}
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <button
@@ -452,8 +498,12 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                         : 'bg-carbon-850 border-carbon-750 text-silver-400 hover:border-carbon-700'
                     }`}
                   >
-                    <div className="text-xs font-bold text-silver-100">Showroom Central</div>
-                    <div className="text-[11px] text-silver-500 mt-0.5">Retiro VIP en boutique</div>
+                    <div className="text-xs font-bold text-silver-100">
+                      {language === 'ES' ? 'Showroom Central' : 'Main Showroom'}
+                    </div>
+                    <div className="text-[11px] text-silver-500 mt-0.5">
+                      {language === 'ES' ? 'Retiro VIP en boutique' : 'VIP boutique pick-up'}
+                    </div>
                   </button>
 
                   <button
@@ -465,8 +515,12 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                         : 'bg-carbon-850 border-carbon-750 text-silver-400 hover:border-carbon-700'
                     }`}
                   >
-                    <div className="text-xs font-bold text-silver-100">Aeropuerto VIP</div>
-                    <div className="text-[11px] text-silver-500 mt-0.5">Meet & Greet en terminal</div>
+                    <div className="text-xs font-bold text-silver-100">
+                      {language === 'ES' ? 'Aeropuerto VIP' : 'VIP Airport'}
+                    </div>
+                    <div className="text-[11px] text-silver-500 mt-0.5">
+                      {language === 'ES' ? 'Meet & Greet en terminal' : 'Terminal Meet & Greet'}
+                    </div>
                   </button>
 
                   <button
@@ -478,15 +532,19 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                         : 'bg-carbon-850 border-carbon-750 text-silver-400 hover:border-carbon-700'
                     }`}
                   >
-                    <div className="text-xs font-bold text-silver-100">Hotel / Residencia</div>
-                    <div className="text-[11px] text-silver-500 mt-0.5">Despacho personalizado</div>
+                    <div className="text-xs font-bold text-silver-100">
+                      {language === 'ES' ? 'Hotel / Residencia' : 'Hotel / Residence'}
+                    </div>
+                    <div className="text-[11px] text-silver-500 mt-0.5">
+                      {language === 'ES' ? 'Despacho personalizado' : 'White-glove delivery'}
+                    </div>
                   </button>
                 </div>
 
                 {deliveryLocation === 'HOTEL_RESIDENCE' && (
                   <div className="animate-fade-in pt-1">
                     <label htmlFor="flow-delivery-addr" className="block text-[11px] text-silver-400 mb-1">
-                      Dirección exacta o Nombre del Hotel *
+                      {language === 'ES' ? 'Dirección exacta o Nombre del Hotel *' : 'Exact address or Hotel name *'}
                     </label>
                     <input
                       id="flow-delivery-addr"
@@ -494,7 +552,11 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                       required
                       value={deliveryAddress}
                       onChange={(e) => setDeliveryAddress(e.target.value)}
-                      placeholder="Ej. Hotel Four Seasons / Carrera 43A #1-50, Penthouse 1201"
+                      placeholder={
+                        language === 'ES'
+                          ? 'Ej. Hotel Four Seasons / Penthouse 1201'
+                          : 'e.g. Four Seasons Hotel / Penthouse 1201'
+                      }
                       className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-800 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
                     />
                   </div>
@@ -504,27 +566,31 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
               {/* Desglose Financiero Preliminar */}
               <div className="p-4 rounded-xl bg-carbon-850 border border-carbon-800 space-y-2 text-xs">
                 <div className="flex justify-between text-silver-400">
-                  <span>Días de alquiler:</span>
-                  <span className="font-semibold text-silver-200">{pricing.days} día(s)</span>
+                  <span>{language === 'ES' ? 'Días de alquiler:' : 'Rental days:'}</span>
+                  <span className="font-semibold text-silver-200">
+                    {pricing.days} {language === 'ES' ? 'día(s)' : 'day(s)'}
+                  </span>
                 </div>
                 <div className="flex justify-between text-silver-400">
-                  <span>Tarifa por día:</span>
+                  <span>{language === 'ES' ? 'Tarifa por día:' : 'Daily rate:'}</span>
                   <span className="font-semibold text-silver-200">{formatPrice(pricing.dailyRate)}</span>
                 </div>
                 <div className="flex justify-between text-silver-400">
-                  <span>Subtotal Renta:</span>
+                  <span>{language === 'ES' ? 'Subtotal Renta:' : 'Rental Subtotal:'}</span>
                   <span className="font-semibold text-silver-200">{formatPrice(pricing.rentalTotal)}</span>
                 </div>
                 <div className="flex justify-between text-silver-400">
-                  <span>Depósito en Garantía (Reembolsable):</span>
+                  <span>{language === 'ES' ? 'Depósito en Garantía (Reembolsable):' : 'Security Deposit (Refundable):'}</span>
                   <span className="font-semibold text-silver-200">{formatPrice(pricing.securityDeposit)}</span>
                 </div>
                 <div className="flex justify-between text-silver-400">
-                  <span>Cobertura VIP a Todo Riesgo:</span>
-                  <span className="font-semibold text-emerald-400">Incluida ($0)</span>
+                  <span>{language === 'ES' ? 'Cobertura VIP a Todo Riesgo:' : 'VIP Comprehensive Coverage:'}</span>
+                  <span className="font-semibold text-emerald-400">
+                    {language === 'ES' ? 'Incluida ($0)' : 'Included ($0)'}
+                  </span>
                 </div>
                 <div className="pt-2 border-t border-carbon-750 flex justify-between text-sm font-bold text-silver-100">
-                  <span>Total Estimado al Despacho:</span>
+                  <span>{language === 'ES' ? 'Total Estimado al Despacho:' : 'Estimated Total at Handover:'}</span>
                   <span className="font-mono text-gold-400 text-base">
                     {formatPrice(pricing.rentalTotal + pricing.securityDeposit)}
                   </span>
@@ -540,7 +606,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                   fullWidth
                   disabled={!availabilityResult.isAvailable}
                 >
-                  <span>CONTINUAR A DATOS DEL CONDUCTOR</span>
+                  <span>{language === 'ES' ? 'CONTINUAR A DATOS DEL CONDUCTOR' : 'PROCEED TO DRIVER DETAILS'}</span>
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
@@ -557,7 +623,9 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-gold-400" />
                   <span className="text-xs font-semibold text-silver-200 uppercase tracking-wider">
-                    Información Requerida para Despacho VIP
+                    {language === 'ES'
+                      ? 'Información Requerida para Despacho VIP'
+                      : 'Information Required for VIP Handover'}
                   </span>
                 </div>
                 <button
@@ -566,7 +634,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                   className="text-xs text-silver-400 hover:text-gold-400 flex items-center gap-1 transition-colors"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Modificar fechas</span>
+                  <span>{language === 'ES' ? 'Modificar fechas' : 'Modify dates'}</span>
                 </button>
               </div>
 
@@ -576,7 +644,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                 <div>
                   <label htmlFor="kyc-fullname" className="block text-[11px] text-silver-400 mb-1 flex items-center gap-1">
                     <User className="w-3 h-3 text-gold-400" />
-                    Nombre y Apellido Completo *
+                    {language === 'ES' ? 'Nombre y Apellido Completo *' : 'Full Legal Name *'}
                   </label>
                   <input
                     id="kyc-fullname"
@@ -584,7 +652,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     required
                     value={clientInfo.fullName}
                     onChange={(e) => setClientInfo({ ...clientInfo, fullName: e.target.value })}
-                    placeholder="Ej. Roberto Gómez Silva"
+                    placeholder={language === 'ES' ? 'Ej. Roberto Gómez Silva' : 'e.g. Robert Smith'}
                     className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
                   />
                 </div>
@@ -593,7 +661,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                 <div>
                   <label htmlFor="kyc-doc" className="block text-[11px] text-silver-400 mb-1 flex items-center gap-1">
                     <FileText className="w-3 h-3 text-gold-400" />
-                    Documento de Identidad / Pasaporte *
+                    {language === 'ES' ? 'Documento de Identidad / Pasaporte *' : 'ID / Passport Number *'}
                   </label>
                   <input
                     id="kyc-doc"
@@ -601,7 +669,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     required
                     value={clientInfo.documentId}
                     onChange={(e) => setClientInfo({ ...clientInfo, documentId: e.target.value })}
-                    placeholder="Ej. 1020304050 o PAS-992144"
+                    placeholder={language === 'ES' ? 'Ej. 1020304050 o PAS-992144' : 'e.g. PAS-992144'}
                     className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
                   />
                 </div>
@@ -610,7 +678,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                 <div>
                   <label htmlFor="kyc-license" className="block text-[11px] text-silver-400 mb-1 flex items-center gap-1">
                     <ShieldCheck className="w-3 h-3 text-gold-400" />
-                    Número de Licencia de Conducir *
+                    {language === 'ES' ? 'Número de Licencia de Conducir *' : "Driver's License Number *"}
                   </label>
                   <input
                     id="kyc-license"
@@ -618,7 +686,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     required
                     value={clientInfo.driverLicense}
                     onChange={(e) => setClientInfo({ ...clientInfo, driverLicense: e.target.value })}
-                    placeholder="Ej. LC-2024-8890"
+                    placeholder={language === 'ES' ? 'Ej. LC-2024-8890' : 'e.g. DL-2026-8890'}
                     className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
                   />
                 </div>
@@ -627,7 +695,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                 <div>
                   <label htmlFor="kyc-phone" className="block text-[11px] text-silver-400 mb-1 flex items-center gap-1">
                     <Phone className="w-3 h-3 text-gold-400" />
-                    Teléfono Móvil / WhatsApp *
+                    {language === 'ES' ? 'Teléfono Móvil / WhatsApp *' : 'Mobile Phone / WhatsApp *'}
                   </label>
                   <input
                     id="kyc-phone"
@@ -644,7 +712,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                 <div className="sm:col-span-2">
                   <label htmlFor="kyc-email" className="block text-[11px] text-silver-400 mb-1 flex items-center gap-1">
                     <Mail className="w-3 h-3 text-gold-400" />
-                    Correo Electrónico Oficial *
+                    {language === 'ES' ? 'Correo Electrónico Oficial *' : 'Official Email Address *'}
                   </label>
                   <input
                     id="kyc-email"
@@ -652,7 +720,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     required
                     value={clientInfo.email}
                     onChange={(e) => setClientInfo({ ...clientInfo, email: e.target.value })}
-                    placeholder="roberto.gomez@empresa.com"
+                    placeholder="client@luxury.com"
                     className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
                   />
                 </div>
@@ -662,14 +730,20 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
               {/* Notas especiales */}
               <div>
                 <label htmlFor="kyc-notes" className="block text-[11px] text-silver-400 mb-1">
-                  Notas Especiales o Requerimientos de Vuelo (Opcional)
+                  {language === 'ES'
+                    ? 'Notas Especiales o Requerimientos de Vuelo (Opcional)'
+                    : 'Special Notes or Flight Details (Optional)'}
                 </label>
                 <textarea
                   id="kyc-notes"
                   rows={2}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Ej. Llegada en vuelo AA 921 a las 09:30 AM, requerimos silla de seguridad infantil o entrega en hangar."
+                  placeholder={
+                    language === 'ES'
+                      ? 'Ej. Llegada en vuelo AA 921 a las 09:30 AM, requerimos silla de seguridad infantil o entrega en hangar.'
+                      : 'e.g. Flight AA 921 arrival at 09:30 AM, child safety seat or hangar delivery requested.'
+                  }
                   className="w-full px-3.5 py-2 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500 resize-none"
                 />
               </div>
@@ -685,8 +759,17 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                   className="mt-0.5 rounded bg-carbon-800 border-carbon-700 text-gold-500 focus:ring-gold-500"
                 />
                 <label htmlFor="age-confirmation-checkbox" className="text-xs text-silver-300 leading-relaxed cursor-pointer">
-                  Confirmo que tengo <strong className="text-silver-100 font-semibold">25 años o más</strong> y
-                  cuento con licencia de conducir vigente y tarjeta de crédito para el depósito de garantía (Requisito estricto de aseguradora para flota ultra-lujo).
+                  {language === 'ES' ? (
+                    <>
+                      Confirmo que tengo <strong className="text-silver-100 font-semibold">25 años o más</strong> y
+                      cuento con licencia de conducir vigente y tarjeta de crédito para el depósito de garantía (Requisito estricto de aseguradora para flota ultra-lujo).
+                    </>
+                  ) : (
+                    <>
+                      I confirm that I am <strong className="text-silver-100 font-semibold">25 years of age or older</strong> and
+                      hold a valid driver&apos;s license and credit card for the security deposit (Strict insurance requirement for ultra-luxury fleet).
+                    </>
+                  )}
                 </label>
               </div>
 
@@ -700,7 +783,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                   className="sm:w-1/3"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1" />
-                  VOLVER
+                  {language === 'ES' ? 'VOLVER' : 'BACK'}
                 </Button>
                 <Button
                   type="submit"
@@ -708,7 +791,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                   size="md"
                   className="sm:w-2/3"
                 >
-                  CONFIRMAR & GENERAR VOUCHER
+                  {language === 'ES' ? 'CONFIRMAR & GENERAR VOUCHER' : 'CONFIRM & GENERATE VOUCHER'}
                 </Button>
               </div>
 
@@ -728,16 +811,26 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
 
               <div>
                 <span className="px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-400 text-xs font-mono font-semibold uppercase tracking-widest inline-flex items-center gap-1.5 mb-2">
-                  <span>Código Oficial:</span>
+                  <span>{language === 'ES' ? 'Código Oficial:' : 'Official Code:'}</span>
                   <strong className="text-silver-100">{createdReservation.id}</strong>
                 </span>
                 <h3 className="text-2xl font-bold text-silver-100 font-display">
-                  ¡Solicitud Registrada con Éxito!
+                  {language === 'ES' ? '¡Solicitud Registrada con Éxito!' : 'Booking Request Confirmed!'}
                 </h3>
                 <p className="text-xs sm:text-sm text-silver-400 mt-1.5 max-w-md mx-auto">
-                  Tu reserva ha sido ingresada al sistema con estado{' '}
-                  <span className="text-amber-400 font-semibold">PENDING (En Verificación)</span>.
-                  Un Concierge asignado validará los documentos y coordinará la entrega inmediata.
+                  {language === 'ES' ? (
+                    <>
+                      Tu reserva ha sido ingresada al sistema con estado{' '}
+                      <span className="text-amber-400 font-semibold">PENDING (En Verificación)</span>.
+                      Un Concierge asignado validará los documentos y coordinará la entrega inmediata.
+                    </>
+                  ) : (
+                    <>
+                      Your reservation has been recorded with status{' '}
+                      <span className="text-amber-400 font-semibold">PENDING (Under Review)</span>.
+                      An assigned Concierge will review your credentials and arrange handover.
+                    </>
+                  )}
                 </p>
               </div>
 
@@ -752,12 +845,14 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     className="w-16 h-11 object-cover rounded-lg border border-carbon-700"
                   />
                   <div>
-                    <span className="text-[10px] text-gold-400 font-semibold uppercase">Vehículo Asignado</span>
+                    <span className="text-[10px] text-gold-400 font-semibold uppercase">
+                      {language === 'ES' ? 'Vehículo Asignado' : 'Assigned Vehicle'}
+                    </span>
                     <h5 className="text-sm font-bold text-silver-100 font-display">
                       {createdReservation.vehicleName}
                     </h5>
                     <span className="text-silver-500 font-mono text-[11px]">
-                      Placa: {createdReservation.vehiclePlate}
+                      {language === 'ES' ? 'Placa:' : 'Plate:'} {createdReservation.vehiclePlate}
                     </span>
                   </div>
                 </div>
@@ -765,53 +860,72 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                 {/* Datos de Agenda y Entrega */}
                 <div className="grid grid-cols-2 gap-3 pb-3 border-b border-carbon-750">
                   <div>
-                    <span className="text-silver-500 text-[10px] block uppercase">Periodo de Reserva</span>
+                    <span className="text-silver-500 text-[10px] block uppercase">
+                      {language === 'ES' ? 'Periodo de Reserva' : 'Booking Period'}
+                    </span>
                     <span className="font-semibold text-silver-200">
-                      {createdReservation.startDate} al {createdReservation.endDate}
+                      {createdReservation.startDate} {language === 'ES' ? 'al' : 'to'} {createdReservation.endDate}
                     </span>
                     <span className="text-silver-500 block text-[11px]">
-                      ({createdReservation.pricing.days} día(s) • {createdReservation.pickupTime})
+                      ({createdReservation.pricing.days} {language === 'ES' ? 'día(s)' : 'day(s)'} • {createdReservation.pickupTime})
                     </span>
                   </div>
                   <div>
-                    <span className="text-silver-500 text-[10px] block uppercase">Lugar de Entrega</span>
+                    <span className="text-silver-500 text-[10px] block uppercase">
+                      {language === 'ES' ? 'Lugar de Entrega' : 'Delivery Location'}
+                    </span>
                     <span className="font-semibold text-silver-200">
-                      {getDeliveryLocationLabel(createdReservation.deliveryLocation)}
+                      {getDeliveryLabel(createdReservation.deliveryLocation)}
                     </span>
                   </div>
                 </div>
 
                 {/* Titular */}
                 <div className="pb-3 border-b border-carbon-750">
-                  <span className="text-silver-500 text-[10px] block uppercase">Titular / Conductor</span>
+                  <span className="text-silver-500 text-[10px] block uppercase">
+                    {language === 'ES' ? 'Titular / Conductor' : 'Primary Driver'}
+                  </span>
                   <span className="font-semibold text-silver-200">{createdReservation.client.fullName}</span>
                   <div className="text-silver-400 text-[11px] flex gap-3 mt-0.5">
                     <span>ID: {createdReservation.client.documentId}</span>
                     <span>•</span>
-                    <span>Licencia: {createdReservation.client.driverLicense}</span>
+                    <span>{language === 'ES' ? 'Licencia:' : 'License:'} {createdReservation.client.driverLicense}</span>
                   </div>
                 </div>
 
                 {/* Desglose Financiero Final */}
                 <div className="space-y-1.5 pt-1">
                   <div className="flex justify-between text-silver-400">
-                    <span>Subtotal Renta ({createdReservation.pricing.days} días):</span>
+                    <span>
+                      {language === 'ES' ? 'Subtotal Renta' : 'Rental Subtotal'} ({createdReservation.pricing.days}{' '}
+                      {language === 'ES' ? 'días' : 'days'}):
+                    </span>
                     <span className="font-semibold text-silver-200">
                       {formatPrice(createdReservation.pricing.rentalTotal)}
                     </span>
                   </div>
                   <div className="flex justify-between text-silver-400">
-                    <span>Depósito de Garantía (Reembolsable):</span>
+                    <span>
+                      {language === 'ES'
+                        ? 'Depósito de Garantía (Reembolsable):'
+                        : 'Security Deposit (Refundable):'}
+                    </span>
                     <span className="font-semibold text-silver-200">
                       {formatPrice(createdReservation.pricing.securityDeposit)}
                     </span>
                   </div>
                   <div className="flex justify-between text-silver-400">
-                    <span>Seguro VIP a Todo Riesgo:</span>
-                    <span className="font-semibold text-emerald-400">Incluido ($0)</span>
+                    <span>
+                      {language === 'ES' ? 'Seguro VIP a Todo Riesgo:' : 'VIP Comprehensive Insurance:'}
+                    </span>
+                    <span className="font-semibold text-emerald-400">
+                      {language === 'ES' ? 'Incluido ($0)' : 'Included ($0)'}
+                    </span>
                   </div>
                   <div className="pt-2 border-t border-carbon-750 flex justify-between text-sm font-bold text-silver-100">
-                    <span>Total Estimado al Despacho:</span>
+                    <span>
+                      {language === 'ES' ? 'Total Estimado al Despacho:' : 'Estimated Total at Handover:'}
+                    </span>
                     <span className="font-mono text-gold-400 text-base">
                       {formatPrice(
                         createdReservation.pricing.rentalTotal +
@@ -832,7 +946,9 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                   icon={<Send className="w-4 h-4" />}
                   fullWidth
                 >
-                  ENVIAR SOLICITUD A WHATSAPP CONCIERGE
+                  {language === 'ES'
+                    ? 'ENVIAR SOLICITUD A WHATSAPP CONCIERGE'
+                    : 'SEND INQUIRY TO WHATSAPP CONCIERGE'}
                 </Button>
 
                 <div className="flex gap-2">
@@ -843,7 +959,13 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     icon={copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                     fullWidth
                   >
-                    {copiedCode ? '¡CÓDIGO COPIADO!' : 'COPIAR CÓDIGO'}
+                    {copiedCode
+                      ? language === 'ES'
+                        ? '¡CÓDIGO COPIADO!'
+                        : 'CODE COPIED!'
+                      : language === 'ES'
+                      ? 'COPIAR CÓDIGO'
+                      : 'COPY CODE'}
                   </Button>
                   <Button
                     variant="outline"
@@ -854,7 +976,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     }}
                     fullWidth
                   >
-                    FINALIZAR Y CERRAR
+                    {language === 'ES' ? 'FINALIZAR Y CERRAR' : 'FINISH & CLOSE'}
                   </Button>
                 </div>
               </div>
