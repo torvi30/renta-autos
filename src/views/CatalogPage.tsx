@@ -14,6 +14,8 @@ import { CatalogFilters } from '../components/catalog/CatalogFilters';
 import { CatalogSkeleton } from '../components/catalog/CatalogSkeleton';
 import { CatalogEmptyState } from '../components/catalog/CatalogEmptyState';
 import { VehicleCard } from '../components/common/VehicleCard';
+import { useLanguage } from '../context/LanguageContext';
+import { useCurrency } from '../context/CurrencyContext';
 
 interface CatalogPageProps {
   vehicles: Vehicle[];
@@ -28,6 +30,8 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
   onQuickBook,
   onNavigateHome,
 }) => {
+  const { t } = useLanguage();
+  const { formatPrice } = useCurrency();
   const [layoutMode, setLayoutMode] = useState<'grid' | 'list'>('grid');
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -74,14 +78,14 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
                 onClick={onNavigateHome}
                 className="hover:text-gold-400 transition-colors"
               >
-                Inicio
+                {t.catalog.breadcrumbHome}
               </button>
             </li>
             <li>
               <ChevronRight className="w-3.5 h-3.5 text-silver-600" />
             </li>
             <li className="text-gold-400 font-medium" aria-current="page">
-              Catálogo de Vehículos
+              {t.catalog.breadcrumbCatalog}
             </li>
           </ol>
         </nav>
@@ -91,13 +95,13 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/20 text-gold-400 text-xs font-semibold tracking-widest uppercase mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>COLECCIÓN BOUTIQUE 2026</span>
+              <span>{t.catalog.badge}</span>
             </div>
             <h1 className="text-3xl sm:text-5xl font-extrabold text-silver-100 uppercase font-display tracking-tight">
-              Flota de Alto Rendimiento
+              {t.catalog.title}
             </h1>
             <p className="mt-3 text-sm sm:text-base text-silver-400 max-w-2xl leading-relaxed">
-              Explora nuestra cuidada selección de superdeportivos, SUVs de ultra-lujo y sedanes ejecutivos. Cada unidad se entrega con cobertura total y en estado de conservación de museo.
+              {t.catalog.subtitle}
             </p>
           </div>
 
@@ -108,7 +112,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
                 {vehicles.length}
               </div>
               <div className="text-[11px] text-silver-400 uppercase tracking-wider">
-                Total Flota
+                {t.catalog.totalFleet}
               </div>
             </div>
             <div className="h-8 w-px bg-carbon-800" />
@@ -117,7 +121,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
                 {availableCount}
               </div>
               <div className="text-[11px] text-silver-400 uppercase tracking-wider">
-                Disponibles
+                {t.catalog.available}
               </div>
             </div>
             <div className="h-8 w-px bg-carbon-800" />
@@ -126,7 +130,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
                 100%
               </div>
               <div className="text-[11px] text-silver-400 uppercase tracking-wider">
-                Garantía VIP
+                {t.catalog.vipWarranty}
               </div>
             </div>
           </div>
@@ -140,7 +144,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-500" />
             <input
               type="text"
-              placeholder="Buscar por marca, modelo o especificación (ej. GT3, V8)..."
+              placeholder={t.catalog.searchPlaceholder}
               value={filters.searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-10 py-2.5 bg-carbon-900 border border-carbon-800 rounded-xl text-xs sm:text-sm text-silver-100 placeholder-silver-500 focus:outline-none focus:border-gold-500/60 transition-colors shadow-inner"
@@ -165,7 +169,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
               className="lg:hidden flex items-center gap-2 px-4 py-2.5 rounded-xl bg-carbon-900 border border-carbon-800 text-xs font-semibold text-silver-200 hover:border-gold-500/40 transition-colors"
             >
               <SlidersHorizontal className="w-4 h-4 text-gold-400" />
-              <span>Filtros</span>
+              <span>{t.catalog.filtersBtn}</span>
               {activeFiltersCount > 0 && (
                 <span className="w-5 h-5 rounded-full bg-gold-500 text-carbon-950 text-[10px] font-bold flex items-center justify-center">
                   {activeFiltersCount}
@@ -176,7 +180,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
             {/* Selector de Ordenamiento */}
             <div className="flex items-center gap-2">
               <span className="hidden sm:inline text-xs text-silver-400 whitespace-nowrap">
-                Ordenar por:
+                {t.catalog.sortBy}
               </span>
               <select
                 value={filters.sortBy}
@@ -184,11 +188,11 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
                 className="bg-carbon-900 border border-carbon-800 rounded-xl px-3 py-2 text-xs font-medium text-silver-200 focus:outline-none focus:border-gold-500/60 cursor-pointer"
                 aria-label="Criterio de ordenamiento"
               >
-                <option value="featured">Destacados de la Flota</option>
-                <option value="price_asc">Tarifa: Menor a Mayor</option>
-                <option value="price_desc">Tarifa: Mayor a Menor</option>
-                <option value="power_desc">Potencia (Caballos de Fuerza)</option>
-                <option value="year_desc">Año: Más Reciente</option>
+                <option value="featured">{t.catalog.sortFeatured}</option>
+                <option value="price_asc">{t.catalog.sortPriceAsc}</option>
+                <option value="price_desc">{t.catalog.sortPriceDesc}</option>
+                <option value="power_desc">{t.catalog.sortPower}</option>
+                <option value="year_desc">{t.catalog.sortYear}</option>
               </select>
             </div>
 
@@ -226,10 +230,10 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
         {/* Chips de Filtros Activos para fácil eliminación */}
         {activeFiltersCount > 0 && (
           <div className="flex flex-wrap items-center gap-2 mb-6 pt-2">
-            <span className="text-xs text-silver-500">Filtros activos:</span>
+            <span className="text-xs text-silver-500">{t.catalog.activeFilters}</span>
             {filters.selectedCategory !== 'ALL' && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-carbon-850 border border-carbon-750 text-xs text-silver-300">
-                Categoría: {filters.selectedCategory}
+                {t.catalog.category}: {filters.selectedCategory}
                 <button
                   onClick={() => setSelectedCategory('ALL')}
                   className="hover:text-gold-400 ml-1"
@@ -240,7 +244,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
             )}
             {filters.selectedStatus !== 'ALL' && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-carbon-850 border border-carbon-750 text-xs text-silver-300">
-                Estado: {filters.selectedStatus}
+                {t.catalog.availability}: {filters.selectedStatus}
                 <button
                   onClick={() => setSelectedStatus('ALL')}
                   className="hover:text-gold-400 ml-1"
@@ -251,7 +255,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
             )}
             {filters.selectedTransmission !== 'ALL' && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-carbon-850 border border-carbon-750 text-xs text-silver-300">
-                Transmisión: {filters.selectedTransmission}
+                {t.catalog.transmission}: {filters.selectedTransmission}
                 <button
                   onClick={() => setSelectedTransmission('ALL')}
                   className="hover:text-gold-400 ml-1"
@@ -262,7 +266,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
             )}
             {filters.selectedFuel !== 'ALL' && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-carbon-850 border border-carbon-750 text-xs text-silver-300">
-                Combustible: {filters.selectedFuel}
+                {t.catalog.fuel}: {filters.selectedFuel}
                 <button
                   onClick={() => setSelectedFuel('ALL')}
                   className="hover:text-gold-400 ml-1"
@@ -273,7 +277,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
             )}
             {filters.minSeats > 0 && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-carbon-850 border border-carbon-750 text-xs text-silver-300">
-                Plazas: {filters.minSeats}+
+                {t.catalog.seats}: {filters.minSeats}+
                 <button
                   onClick={() => setMinSeats(0)}
                   className="hover:text-gold-400 ml-1"
@@ -284,7 +288,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
             )}
             {filters.maxPrice < absoluteMaxPrice && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-carbon-850 border border-carbon-750 text-xs text-silver-300">
-                Máx: ${filters.maxPrice}/día
+                {t.catalog.maxPricePerDay}: {formatPrice(filters.maxPrice)}/{t.detail.day}
                 <button
                   onClick={() => setMaxPrice(absoluteMaxPrice)}
                   className="hover:text-gold-400 ml-1"
@@ -297,7 +301,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
               onClick={resetFilters}
               className="text-xs text-gold-400 hover:text-gold-300 font-medium ml-2 underline underline-offset-4"
             >
-              Limpiar todo
+              {t.catalog.clearAll}
             </button>
           </div>
         )}
@@ -330,7 +334,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
             {/* Barra de Conteo de Resultados */}
             <div className="mb-6 flex items-center justify-between text-xs text-silver-400">
               <div>
-                Mostrando <span className="text-gold-400 font-bold">{filteredVehicles.length}</span> de <span className="text-silver-200">{vehicles.length}</span> vehículos disponibles
+                {t.catalog.showing} <span className="text-gold-400 font-bold">{filteredVehicles.length}</span> {t.catalog.of} <span className="text-silver-200">{vehicles.length}</span> {t.catalog.availableVehicles}
               </div>
             </div>
 
@@ -370,3 +374,4 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
     </div>
   );
 };
+

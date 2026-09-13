@@ -16,8 +16,9 @@ import { Vehicle } from '../../types/vehicle';
 import { VehicleTurntable360 } from '../showcase/VehicleTurntable360';
 import { Button } from '../common/Button';
 import { StatusBadge } from '../common/Badge';
-import { formatCurrency } from '../../utils/formatters';
 import { useSettings } from '../../context/SettingsContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { useCurrency } from '../../context/CurrencyContext';
 
 interface HeroSectionProps {
   vehicles: Vehicle[];
@@ -36,6 +37,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   onVehicleChange,
 }) => {
   const { settings, getWhatsAppLink } = useSettings();
+  const { t, language } = useLanguage();
+  const { formatPrice } = useCurrency();
   // Los 8 vehículos boutique principales para el Showroom Turntable Pavilion
   const showroomVehicles = useMemo(() => vehicles.slice(0, 8), [vehicles]);
 
@@ -127,18 +130,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         <div className="text-center max-w-3xl mx-auto mb-6 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-carbon-850/90 border border-gold-500/40 text-xs font-semibold tracking-widest text-gold-400 uppercase mb-4 shadow-lg shadow-gold-500/5 backdrop-blur-md">
             <Sparkles className="w-3.5 h-3.5 text-gold-400 animate-pulse" />
-            <span>{settings.hero?.badge || 'CONCESIONARIO SHOWROOM VIP 360° • FLOTA 2026'}</span>
+            <span>{language === 'EN' ? t.hero.badge : (settings.hero?.badge || t.hero.badge)}</span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white uppercase font-display leading-[1.05]">
-            {settings.hero?.titleLine1 || 'TU VIAJE.'} <br />
+            {language === 'EN' ? t.hero.titleLine1 : (settings.hero?.titleLine1 || t.hero.titleLine1)} <br />
             <span className="bg-gradient-to-r from-gold-300 via-gold-400 to-amber-500 bg-clip-text text-transparent">
-              {settings.hero?.titleLine2 || 'TU VEHÍCULO.'}
+              {language === 'EN' ? t.hero.titleLine2 : (settings.hero?.titleLine2 || t.hero.titleLine2)}
             </span>
           </h1>
 
           <p className="mt-3 text-sm sm:text-base text-silver-300 font-light max-w-2xl mx-auto">
-            {settings.hero?.description || 'Gira cada vehículo en 360° sobre nuestro plato giratorio de exhibición. Usa las flechas o la barra inferior para pasar de un auto a otro, y haz clic para ver su ficha técnica y galería completa.'}
+            {language === 'EN' ? t.hero.description : (settings.hero?.description || t.hero.description)}
           </p>
         </div>
 
@@ -157,9 +160,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
             <div className="h-6 w-px bg-carbon-750" />
             <div className="flex flex-col">
-              <span className="text-[10px] text-silver-400">Tarifa por día</span>
+              <span className="text-[10px] text-silver-400">{t.hero.dailyRate}</span>
               <span className="text-sm font-bold text-silver-100 font-mono">
-                {formatCurrency(activeVehicle.pricePerDay)} <span className="text-[10px] text-silver-400 font-normal">/ 24h</span>
+                {formatPrice(activeVehicle.pricePerDay)} <span className="text-[10px] text-silver-400 font-normal">{t.hero.perDaySuffix}</span>
               </span>
             </div>
             <StatusBadge status={activeVehicle.status} />
@@ -211,7 +214,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <div className="flex items-center gap-2.5 px-3">
                 <Zap className="w-4 h-4 text-gold-400 flex-shrink-0" />
                 <div>
-                  <div className="text-[10px] text-silver-400 uppercase tracking-wider">0 a 100 km/h</div>
+                  <div className="text-[10px] text-silver-400 uppercase tracking-wider">{t.specs.acceleration}</div>
                   <div className="text-sm font-bold text-silver-100 font-mono transition-all">
                     {activeVehicle.specs.acceleration0to100 || '3.2 s'}
                   </div>
@@ -221,7 +224,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <div className="flex items-center gap-2.5 px-3 border-l border-carbon-800">
                 <Flame className="w-4 h-4 text-gold-400 flex-shrink-0" />
                 <div>
-                  <div className="text-[10px] text-silver-400 uppercase tracking-wider">Potencia</div>
+                  <div className="text-[10px] text-silver-400 uppercase tracking-wider">{t.specs.horsepower}</div>
                   <div className="text-sm font-bold text-silver-100 font-mono transition-all">
                     {activeVehicle.specs.horsepower} HP
                   </div>
@@ -231,7 +234,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <div className="flex items-center gap-2.5 px-3 border-l border-carbon-800">
                 <Gauge className="w-4 h-4 text-gold-400 flex-shrink-0" />
                 <div>
-                  <div className="text-[10px] text-silver-400 uppercase tracking-wider">Velocidad Máx.</div>
+                  <div className="text-[10px] text-silver-400 uppercase tracking-wider">{t.specs.topSpeed}</div>
                   <div className="text-sm font-bold text-silver-100 font-mono transition-all">
                     {activeVehicle.specs.topSpeed} km/h
                   </div>
@@ -241,8 +244,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <div className="flex items-center gap-2.5 px-3 border-l border-carbon-800">
                 <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                 <div>
-                  <div className="text-[10px] text-silver-400 uppercase tracking-wider">Garantía Flota</div>
-                  <div className="text-sm font-bold text-silver-100">Seguro Integral</div>
+                  <div className="text-[10px] text-silver-400 uppercase tracking-wider">{t.hero.warranty}</div>
+                  <div className="text-sm font-bold text-silver-100">{t.hero.insurance}</div>
                 </div>
               </div>
             </div>
@@ -256,7 +259,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               onClick={() => onSelectVehicleForBooking(activeVehicle)}
               icon={<ArrowUpRight className="w-4 h-4" />}
             >
-              RESERVAR ESTE VEHÍCULO ({formatCurrency(activeVehicle.pricePerDay)}/día)
+              {t.hero.bookThisVehicle} ({formatPrice(activeVehicle.pricePerDay)}/{t.detail.day})
             </Button>
             
             <Button
@@ -265,7 +268,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               onClick={() => onSelectVehicleForModal(activeVehicle)}
               icon={<Eye className="w-4 h-4" />}
             >
-              VER FICHA TÉCNICA & GALERÍA COMPLETA (12 FOTOS)
+              {t.hero.viewSpecsAndGallery}
             </Button>
 
             <a
@@ -275,7 +278,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-950/80 hover:bg-emerald-900/90 text-emerald-400 border border-emerald-500/40 text-xs font-semibold tracking-wider transition-colors"
             >
               <MessageSquare className="w-4 h-4" />
-              <span>CONSULTA VIP POR WHATSAPP</span>
+              <span>{t.hero.vipWhatsApp}</span>
             </a>
           </div>
 
@@ -284,13 +287,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <div className="flex items-center justify-between mb-3 px-1">
               <span className="text-xs font-semibold text-silver-400 uppercase tracking-widest flex items-center gap-2">
                 <Compass className="w-3.5 h-3.5 text-gold-400" />
-                <span>EXHIBICIÓN SHOWROOM: ELIGE CUALQUIER VEHÍCULO PARA VERLO GIRAR</span>
+                <span>{t.hero.dockTitle}</span>
                 <span className="px-2 py-0.5 rounded-full bg-carbon-800 text-gold-400 font-mono text-[10px]">
                   0{currentIndex + 1} / 0{showroomVehicles.length}
                 </span>
               </span>
               <span className="text-[11px] text-silver-500 hidden sm:inline">
-                Usa las flechas ← → para cambiar de auto
+                {t.hero.dockHint}
               </span>
             </div>
 
@@ -333,7 +336,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         {veh.model.split(' ')[0]} {veh.model.split(' ')[1] || ''}
                       </div>
                       <div className="text-[10px] text-silver-400 font-mono mt-0.5">
-                        {formatCurrency(veh.pricePerDay)}/d
+                        {formatPrice(veh.pricePerDay)}/{t.detail.day.charAt(0)}
                       </div>
                     </div>
                   </button>

@@ -25,7 +25,9 @@ import { VehicleLightbox } from '../components/showcase/VehicleLightbox';
 import { VehicleCard } from '../components/common/VehicleCard';
 import { StatusBadge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
-import { formatCurrency, getCategoryLabel, generateWhatsAppLink } from '../utils/formatters';
+import { getCategoryLabel, generateWhatsAppLink } from '../utils/formatters';
+import { useLanguage } from '../context/LanguageContext';
+import { useCurrency } from '../context/CurrencyContext';
 
 interface VehicleDetailPageProps {
   vehicle: Vehicle | null;
@@ -44,6 +46,8 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
   onSelectVehicle,
   onOpenBooking,
 }) => {
+  const { t, language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const [copiedLink, setCopiedLink] = useState(false);
   const [activeGalleryTab, setActiveGalleryTab] = useState<'ALL' | 'EXTERIOR' | 'INTERIOR' | 'DETAILS'>('ALL');
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -173,7 +177,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                 onClick={onNavigateHome}
                 className="hover:text-gold-400 transition-colors"
               >
-                Inicio
+                {t.catalog.breadcrumbHome}
               </button>
             </li>
             <li>
@@ -184,7 +188,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                 onClick={onNavigateToCatalog}
                 className="hover:text-gold-400 transition-colors"
               >
-                Catálogo de Vehículos
+                {t.catalog.breadcrumbCatalog}
               </button>
             </li>
             <li>
@@ -205,7 +209,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
               </span>
               <StatusBadge status={vehicle.status} />
               <span className="text-xs px-2.5 py-0.5 rounded bg-carbon-900 border border-carbon-800 text-silver-400 font-mono">
-                Placa: {vehicle.plate}
+                {language === 'EN' ? 'Plate:' : 'Placa:'} {vehicle.plate}
               </span>
             </div>
 
@@ -214,7 +218,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                 {vehicle.brand}
               </span>
               <span className="text-xs text-silver-500 font-mono">
-                Año {vehicle.year}
+                {language === 'EN' ? 'Year' : 'Año'} {vehicle.year}
               </span>
             </div>
 
@@ -228,17 +232,17 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
             <button
               onClick={handleShare}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-carbon-900 border border-carbon-800 hover:border-gold-500/40 text-silver-300 hover:text-gold-400 text-xs font-semibold transition-all shadow-sm"
-              title="Copiar enlace del vehículo"
+              title={t.detail.shareVehicle}
             >
               {copiedLink ? (
                 <>
                   <Check className="w-4 h-4 text-emerald-400" />
-                  <span className="text-emerald-400">¡Enlace Copiado!</span>
+                  <span className="text-emerald-400">{t.detail.linkCopied}</span>
                 </>
               ) : (
                 <>
                   <Share2 className="w-4 h-4" />
-                  <span>Compartir Ficha</span>
+                  <span>{t.detail.shareVehicle}</span>
                 </>
               )}
             </button>
@@ -248,7 +252,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-carbon-900 border border-carbon-800 hover:border-carbon-700 text-silver-400 hover:text-silver-200 text-xs font-semibold transition-all"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Volver a la Flota</span>
+              <span>{t.detail.backToCatalog}</span>
             </button>
           </div>
         </div>
@@ -274,9 +278,9 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                 <Zap className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-xs text-silver-400 uppercase tracking-wider">Potencia</div>
+                <div className="text-xs text-silver-400 uppercase tracking-wider">{t.specs.horsepower}</div>
                 <div className="text-lg font-bold text-silver-100 font-mono">
-                  {vehicle.specs.horsepower ? `${vehicle.specs.horsepower} CV` : 'N/D'}
+                  {vehicle.specs.horsepower ? `${vehicle.specs.horsepower} HP` : 'N/D'}
                 </div>
               </div>
             </div>
@@ -286,7 +290,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                 <Gauge className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-xs text-silver-400 uppercase tracking-wider">0 - 100 km/h</div>
+                <div className="text-xs text-silver-400 uppercase tracking-wider">{t.specs.acceleration}</div>
                 <div className="text-lg font-bold text-silver-100 font-mono">
                   {vehicle.specs.acceleration0to100 || 'N/D'}
                 </div>
@@ -298,7 +302,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                 <Flame className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-xs text-silver-400 uppercase tracking-wider">Vel. Máxima</div>
+                <div className="text-xs text-silver-400 uppercase tracking-wider">{t.specs.topSpeed}</div>
                 <div className="text-lg font-bold text-silver-100 font-mono">
                   {vehicle.specs.topSpeed ? `${vehicle.specs.topSpeed} km/h` : 'N/D'}
                 </div>
@@ -310,9 +314,9 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                 <Users className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-xs text-silver-400 uppercase tracking-wider">Configuración</div>
+                <div className="text-xs text-silver-400 uppercase tracking-wider">{language === 'EN' ? 'Configuration' : 'Configuración'}</div>
                 <div className="text-lg font-bold text-silver-100 font-mono">
-                  {vehicle.seats} Plazas · {vehicle.specs.doors || 2}P
+                  {vehicle.seats} {language === 'EN' ? 'Seats' : 'Plazas'} · {vehicle.specs.doors || 2}{language === 'EN' ? 'D' : 'P'}
                 </div>
               </div>
             </div>
@@ -329,7 +333,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
             <div>
               <h2 className="text-xl font-bold uppercase tracking-wider text-silver-100 font-display flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-gold-400" />
-                <span>Sobre este Vehículo</span>
+                <span>{language === 'EN' ? 'About this Vehicle' : 'Sobre este Vehículo'}</span>
               </h2>
               <p className="mt-4 text-sm sm:text-base text-silver-300 leading-relaxed">
                 {vehicle.description}
@@ -341,20 +345,22 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                   <h3 className="text-xl font-bold uppercase tracking-wider text-silver-100 font-display">
-                    Galería Oficial de Showroom
+                    {language === 'EN' ? 'Official Showroom Gallery' : 'Galería Oficial de Showroom'}
                   </h3>
                   <p className="text-xs text-silver-400 mt-1">
-                    Inspección fotográfica en alta fidelidad ({allPhotos.length} / 12 fotografías). Clic en cualquier imagen para abrir visor a pantalla completa.
+                    {language === 'EN' 
+                      ? `High-fidelity inspection (${allPhotos.length} / 12 photos). Click any photo to enlarge.` 
+                      : `Inspección fotográfica en alta fidelidad (${allPhotos.length} / 12 fotografías). Clic en cualquier imagen para abrir visor a pantalla completa.`}
                   </p>
                 </div>
 
                 {/* Filtros de Galería por Sección */}
                 <div className="flex items-center gap-1.5 bg-carbon-900 border border-carbon-800 p-1 rounded-xl">
                   {[
-                    { key: 'ALL', label: 'Todas' },
-                    { key: 'EXTERIOR', label: 'Exterior' },
-                    { key: 'INTERIOR', label: 'Interior' },
-                    { key: 'DETAILS', label: 'Detalles' },
+                    { key: 'ALL', label: t.detail.galleryTabAll },
+                    { key: 'EXTERIOR', label: t.detail.galleryTabExt },
+                    { key: 'INTERIOR', label: t.detail.galleryTabInt },
+                    { key: 'DETAILS', label: t.detail.galleryTabDet },
                   ].map((tab) => (
                     <button
                       key={tab.key}
@@ -387,7 +393,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                     />
                     <div className="absolute inset-0 bg-carbon-950/20 group-hover:bg-transparent transition-colors" />
                     <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/70 text-[10px] text-silver-300 font-mono backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                      Ampliar ⤢
+                      {language === 'EN' ? 'Enlarge ⤢' : 'Ampliar ⤢'}
                     </div>
                   </button>
                 ))}
@@ -397,16 +403,18 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
             {/* Ficha Técnica Exhaustiva */}
             <div>
               <h3 className="text-xl font-bold uppercase tracking-wider text-silver-100 font-display mb-6">
-                Ficha Técnica de Fabricante
+                {t.detail.specsTitle}
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-2xl bg-carbon-900 border border-carbon-800 flex items-start gap-3">
                   <Settings2 className="w-5 h-5 text-gold-400 mt-0.5" />
                   <div>
-                    <div className="text-xs text-silver-400">Transmisión</div>
+                    <div className="text-xs text-silver-400">{t.specs.transmission}</div>
                     <div className="text-sm font-semibold text-silver-100 mt-0.5 capitalize">
-                      {vehicle.transmission === 'AUTOMATICA' ? 'Automática Secuencial de Alto Rendimiento' : 'Manual de Precisión'}
+                      {vehicle.transmission === 'AUTOMATICA' 
+                        ? (language === 'EN' ? 'High-Performance Sequential Automatic' : 'Automática Secuencial de Alto Rendimiento') 
+                        : (language === 'EN' ? 'Precision Manual' : 'Manual de Precisión')}
                     </div>
                   </div>
                 </div>
@@ -414,12 +422,12 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                 <div className="p-4 rounded-2xl bg-carbon-900 border border-carbon-800 flex items-start gap-3">
                   <Fuel className="w-5 h-5 text-gold-400 mt-0.5" />
                   <div>
-                    <div className="text-xs text-silver-400">Tipo de Combustible / Propulsión</div>
+                    <div className="text-xs text-silver-400">{t.specs.fuel}</div>
                     <div className="text-sm font-semibold text-silver-100 mt-0.5 capitalize">
-                      {vehicle.fuel === 'GASOLINA' && 'Gasolina Premium de Alto Octanaje (98+)'}
-                      {vehicle.fuel === 'HIBRIDO' && 'Híbrido Enchufable de Altas Prestaciones'}
-                      {vehicle.fuel === 'ELECTRICO' && '100% Eléctrico (Arquitectura 800V)'}
-                      {vehicle.fuel === 'DIESEL' && 'Diésel Biturbo Eficiente'}
+                      {vehicle.fuel === 'GASOLINA' && (language === 'EN' ? 'Premium 98+ Octane Gasoline' : 'Gasolina Premium de Alto Octanaje (98+)')}
+                      {vehicle.fuel === 'HIBRIDO' && (language === 'EN' ? 'High-Performance Plug-in Hybrid' : 'Híbrido Enchufable de Altas Prestaciones')}
+                      {vehicle.fuel === 'ELECTRICO' && (language === 'EN' ? '100% Electric (800V Architecture)' : '100% Eléctrico (Arquitectura 800V)')}
+                      {vehicle.fuel === 'DIESEL' && (language === 'EN' ? 'Efficient Twin-Turbo Diesel' : 'Diésel Biturbo Eficiente')}
                     </div>
                   </div>
                 </div>
@@ -427,9 +435,9 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                 <div className="p-4 rounded-2xl bg-carbon-900 border border-carbon-800 flex items-start gap-3">
                   <ShieldCheck className="w-5 h-5 text-gold-400 mt-0.5" />
                   <div>
-                    <div className="text-xs text-silver-400">Estado de Conservación</div>
+                    <div className="text-xs text-silver-400">{language === 'EN' ? 'Condition Status' : 'Estado de Conservación'}</div>
                     <div className="text-sm font-semibold text-silver-100 mt-0.5">
-                      Flota Certificada 100% Oficial de Fábrica
+                      {language === 'EN' ? 'Certified 100% Factory Specification' : 'Flota Certificada 100% Oficial de Fábrica'}
                     </div>
                   </div>
                 </div>
@@ -437,9 +445,9 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                 <div className="p-4 rounded-2xl bg-carbon-900 border border-carbon-800 flex items-start gap-3">
                   <Clock className="w-5 h-5 text-gold-400 mt-0.5" />
                   <div>
-                    <div className="text-xs text-silver-400">Disponibilidad de Entrega</div>
+                    <div className="text-xs text-silver-400">{language === 'EN' ? 'Delivery Availability' : 'Disponibilidad de Entrega'}</div>
                     <div className="text-sm font-semibold text-silver-100 mt-0.5">
-                      Inmediata en Showroom Central o Aeropuerto VIP
+                      {language === 'EN' ? 'Immediate at Central Showroom or VIP Airport' : 'Inmediata en Showroom Central o Aeropuerto VIP'}
                     </div>
                   </div>
                 </div>
@@ -450,7 +458,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
             {vehicle.features && vehicle.features.length > 0 && (
               <div>
                 <h3 className="text-xl font-bold uppercase tracking-wider text-silver-100 font-display mb-6">
-                  Equipamiento y Paquetes de Serie
+                  {t.detail.equipmentTitle}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {vehicle.features.map((feature, idx) => (
@@ -477,10 +485,10 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
               {/* Tarifa y Estado */}
               <div className="flex items-start justify-between gap-4 pb-6 border-b border-carbon-800">
                 <div>
-                  <span className="text-xs text-silver-400">Tarifa Diaria Oficial</span>
+                  <span className="text-xs text-silver-400">{t.detail.officialRate}</span>
                   <div className="text-3xl font-extrabold text-silver-100 font-mono mt-0.5">
-                    {formatCurrency(vehicle.pricePerDay)}
-                    <span className="text-xs font-normal text-silver-400"> / día</span>
+                    {formatPrice(vehicle.pricePerDay)}
+                    <span className="text-xs font-normal text-silver-400"> / {t.detail.day}</span>
                   </div>
                 </div>
                 <StatusBadge status={vehicle.status} />
@@ -490,13 +498,13 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
               <div className="space-y-4">
                 <span className="text-xs font-semibold uppercase tracking-wider text-silver-300 flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-gold-400" />
-                  <span>Cotizador de Reserva</span>
+                  <span>{t.detail.bookingCalculator}</span>
                 </span>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] text-silver-400 mb-1">
-                      Recogida
+                      {t.detail.pickup}
                     </label>
                     <input
                       type="date"
@@ -509,7 +517,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
 
                   <div>
                     <label className="block text-[11px] text-silver-400 mb-1">
-                      Devolución
+                      {t.detail.dropoff}
                     </label>
                     <input
                       type="date"
@@ -525,29 +533,29 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
               {/* Desglose de Precios */}
               <div className="space-y-2.5 pt-4 border-t border-carbon-800 text-xs">
                 <div className="flex justify-between text-silver-400">
-                  <span>{formatCurrency(vehicle.pricePerDay)} x {totalDays} {totalDays === 1 ? 'día' : 'días'}</span>
-                  <span className="font-mono text-silver-200">{formatCurrency(dailySubtotal)}</span>
+                  <span>{formatPrice(vehicle.pricePerDay)} x {totalDays} {totalDays === 1 ? t.detail.day : t.detail.days}</span>
+                  <span className="font-mono text-silver-200">{formatPrice(dailySubtotal)}</span>
                 </div>
 
                 <div className="flex justify-between text-silver-400">
                   <span className="flex items-center gap-1">
                     <Award className="w-3.5 h-3.5 text-gold-400" />
-                    Cobertura VIP a todo riesgo
+                    {t.detail.comprehensiveCoverage}
                   </span>
-                  <span className="text-emerald-400 font-semibold">Incluida</span>
+                  <span className="text-emerald-400 font-semibold">{t.detail.included}</span>
                 </div>
 
                 <div className="flex justify-between text-silver-400">
-                  <span>Depósito de garantía reembolsable</span>
-                  <span className="font-mono text-silver-300">{formatCurrency(securityDeposit)}</span>
+                  <span>{t.detail.securityDeposit}</span>
+                  <span className="font-mono text-silver-300">{formatPrice(securityDeposit)}</span>
                 </div>
 
                 <div className="pt-3 border-t border-carbon-800 flex justify-between items-baseline">
                   <span className="text-sm font-bold text-silver-100 uppercase tracking-wider font-display">
-                    Total Estimado
+                    {t.detail.totalEstimated}
                   </span>
                   <span className="text-xl font-extrabold text-gold-400 font-mono">
-                    {formatCurrency(totalEstimated)}
+                    {formatPrice(totalEstimated)}
                   </span>
                 </div>
               </div>
@@ -561,7 +569,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                     fullWidth
                     onClick={() => onOpenBooking(vehicle, startDate, endDate)}
                   >
-                    Solicitar Reserva ({totalDays} {totalDays === 1 ? 'Día' : 'Días'})
+                    {t.detail.requestBooking} ({totalDays} {totalDays === 1 ? t.detail.day : t.detail.days})
                   </Button>
                 ) : isRented ? (
                   <Button
@@ -570,11 +578,11 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                     fullWidth
                     onClick={() => onOpenBooking(vehicle, startDate, endDate)}
                   >
-                    Consultar Próxima Disponibilidad
+                    {language === 'EN' ? 'Inquire Future Availability' : 'Consultar Próxima Disponibilidad'}
                   </Button>
                 ) : isMaintenance ? (
                   <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-800/40 text-center text-xs text-amber-300">
-                    Vehículo en revisión técnica programada. Consulta con nuestro concierge para fechas futuras.
+                    {t.detail.vehicleInMaintenance}
                   </div>
                 ) : null}
 
@@ -585,7 +593,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-carbon-800 hover:border-emerald-600/40 bg-carbon-850 hover:bg-carbon-800 text-xs font-semibold text-silver-200 hover:text-emerald-400 transition-all"
                 >
                   <Phone className="w-4 h-4 text-emerald-400" />
-                  <span>Consultar por WhatsApp (Regla 30)</span>
+                  <span>{t.detail.bookViaWhatsApp}</span>
                 </a>
               </div>
 
@@ -593,11 +601,11 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
               <div className="pt-4 border-t border-carbon-800 space-y-2 text-[11px] text-silver-500">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
-                  <span>Sin penalización por cancelación hasta 48h antes.</span>
+                  <span>{language === 'EN' ? 'Free cancellation up to 48 hours before delivery.' : 'Sin penalización por cancelación hasta 48h antes.'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
-                  <span>Kilometraje flexible y asistencia 24/7 en carretera.</span>
+                  <span>{language === 'EN' ? 'Flexible mileage and 24/7 dedicated roadside response.' : 'Kilometraje flexible y asistencia 24/7 en carretera.'}</span>
                 </div>
               </div>
 
@@ -612,17 +620,17 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
             <div className="flex items-end justify-between mb-8">
               <div>
                 <span className="text-xs font-semibold uppercase tracking-widest text-gold-400">
-                  EXPLORA MÁS OPCIONES
+                  {language === 'EN' ? 'EXPLORE MORE OPTIONS' : 'EXPLORA MÁS OPCIONES'}
                 </span>
                 <h3 className="text-2xl sm:text-3xl font-extrabold text-silver-100 uppercase font-display mt-1">
-                  Vehículos Similares
+                  {t.detail.similarVehicles}
                 </h3>
               </div>
               <button
                 onClick={onNavigateToCatalog}
                 className="text-xs text-gold-400 hover:text-gold-300 font-semibold underline underline-offset-4"
               >
-                Ver todo el catálogo →
+                {t.detail.exploreCatalog} →
               </button>
             </div>
 

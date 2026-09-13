@@ -1,25 +1,28 @@
 import React from 'react';
 import { MousePointerClick, CalendarDays, KeyRound } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export const BookingSteps: React.FC = () => {
+  const { t } = useLanguage();
+
   const steps = [
     {
       stepNumber: '01',
       icon: <MousePointerClick className="w-6 h-6 text-gold-400" />,
-      title: 'Elige tu Vehículo',
-      description: 'Explora nuestra flota de alta gama con video exterior en showroom, galería de hasta 12 fotos y especificaciones completas.',
+      title: t.howItWorks.step1Title,
+      description: t.howItWorks.step1Desc,
     },
     {
       stepNumber: '02',
       icon: <CalendarDays className="w-6 h-6 text-gold-400" />,
-      title: 'Selecciona tus Fechas',
-      description: 'Indica el periodo de alquiler y el punto de entrega deseado (aeropuerto, hotel o domicilio). Confirmamos disponibilidad inmediata.',
+      title: t.howItWorks.step2Title,
+      description: t.howItWorks.step2Desc,
     },
     {
       stepNumber: '03',
       icon: <KeyRound className="w-6 h-6 text-gold-400" />,
-      title: 'Recibe las Llaves y Conduce',
-      description: 'Entrega puntual con inspección visual transparente y el tanque lleno. Tu viaje de ensueño comienza sin complicaciones.',
+      title: t.howItWorks.step3Title,
+      description: t.howItWorks.step3Desc,
     },
   ];
 
@@ -29,13 +32,13 @@ export const BookingSteps: React.FC = () => {
         
         <div className="text-center max-w-2xl mx-auto mb-16">
           <span className="text-xs font-semibold tracking-widest text-gold-400 uppercase">
-            PROCESO TRANSPARENTE
+            {t.howItWorks.badge}
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-silver-100 uppercase font-display mt-2">
-            Cómo Funciona tu Reserva
+            {t.howItWorks.title}
           </h2>
           <p className="mt-3 text-sm text-silver-400">
-            Tres sencillos pasos para asegurar el vehículo ideal con atención personalizada.
+            {t.howItWorks.subtitle}
           </p>
         </div>
 

@@ -1,37 +1,40 @@
 import React from 'react';
 import { ShieldCheck, MapPin, Sparkles, Clock4, KeyRound, Headphones } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export const ExperiencePillars: React.FC = () => {
+  const { t } = useLanguage();
+
   const pillars = [
     {
       icon: <KeyRound className="w-6 h-6 text-gold-400" />,
-      title: 'Entrega Concierge VIP',
-      description: 'Llevamos el vehículo directamente a la terminal privada del aeropuerto, a su hotel o residencia en el horario exacto.',
+      title: t.experience.pillar1Title,
+      description: t.experience.pillar1Desc,
     },
     {
       icon: <ShieldCheck className="w-6 h-6 text-emerald-400" />,
-      title: 'Póliza y Cobertura Total',
-      description: 'Tranquilidad absoluta garantizada. Todos nuestros alquileres incluyen seguro integral y asistencia vial especializada.',
+      title: t.experience.pillar2Title,
+      description: t.experience.pillar2Desc,
     },
     {
       icon: <Sparkles className="w-6 h-6 text-gold-400" />,
-      title: 'Condición Showroom Impecable',
-      description: 'Cada automóvil se somete a un detallado estético premium y revisión mecánica exhaustiva antes de cada entrega.',
+      title: t.experience.pillar3Title,
+      description: t.experience.pillar3Desc,
     },
     {
       icon: <Clock4 className="w-6 h-6 text-blue-400" />,
-      title: 'Sin Trámites Excesivos',
-      description: 'Proceso de verificación digital rápido y expedito. Sin pérdidas de tiempo en mostradores convencionales.',
+      title: t.experience.pillar4Title,
+      description: t.experience.pillar4Desc,
     },
     {
       icon: <Headphones className="w-6 h-6 text-gold-400" />,
-      title: 'Asistencia Personal 24/7',
-      description: 'Un asesor concierge dedicado estará disponible en todo momento durante su periodo de reserva.',
+      title: t.experience.pillar5Title,
+      description: t.experience.pillar5Desc,
     },
     {
       icon: <MapPin className="w-6 h-6 text-amber-400" />,
-      title: 'Flexibilidad de Devolución',
-      description: 'Coordinamos la recogida del vehículo en el punto y hora que mejor se adapte a su itinerario de viaje.',
+      title: t.experience.pillar6Title,
+      description: t.experience.pillar6Desc,
     },
   ];
 
@@ -44,13 +47,13 @@ export const ExperiencePillars: React.FC = () => {
         
         <div className="text-center max-w-2xl mx-auto mb-16">
           <span className="text-xs font-semibold tracking-widest text-gold-400 uppercase">
-            DISTINCIÓN AUTOMOTRIZ
+            {t.experience.badge}
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-silver-100 uppercase font-display mt-2">
-            La Experiencia Showroom
+            {t.experience.title}
           </h2>
           <p className="mt-3 text-sm text-silver-400">
-            Diseñamos cada aspecto de nuestro servicio para superar las expectativas de quienes buscan excelencia, exclusividad y privacidad.
+            {t.experience.subtitle}
           </p>
         </div>
 

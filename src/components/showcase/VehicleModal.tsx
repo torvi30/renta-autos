@@ -4,7 +4,9 @@ import { Vehicle } from '../../types/vehicle';
 import { VehicleShowcase } from './VehicleShowcase';
 import { StatusBadge } from '../common/Badge';
 import { Button } from '../common/Button';
-import { formatCurrency, generateWhatsAppLink } from '../../utils/formatters';
+import { generateWhatsAppLink } from '../../utils/formatters';
+import { useCurrency } from '../../context/CurrencyContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface VehicleModalProps {
   vehicle: Vehicle | null;
@@ -17,6 +19,8 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
   onClose,
   onBook,
 }) => {
+  const { formatPrice } = useCurrency();
+  const { t, language } = useLanguage();
   const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
 
   if (!vehicle) return null;
@@ -59,7 +63,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
           <button
             onClick={onClose}
             className="p-2 rounded-lg bg-carbon-850 hover:bg-carbon-800 text-silver-400 hover:text-white transition-colors"
-            aria-label="Cerrar modal de vehículo"
+            aria-label={t.cta.close}
           >
             <X className="w-5 h-5" />
           </button>
@@ -91,14 +95,14 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-silver-400 flex items-center gap-1.5">
                   <ImageIcon className="w-3.5 h-3.5 text-gold-400" />
-                  Galería Oficial ({allPhotos.length} / 12 fotografías)
+                  {language === 'EN' ? `Official Gallery (${allPhotos.length} / 12 photos)` : `Galería Oficial (${allPhotos.length} / 12 fotografías)`}
                 </span>
                 {activeImageIndex !== null && (
                   <button
                     onClick={() => setActiveImageIndex(null)}
                     className="text-[11px] text-gold-400 hover:underline"
                   >
-                    Volver al Video / Portada
+                    {language === 'EN' ? 'Back to Video / Cover' : 'Volver al Video / Portada'}
                   </button>
                 )}
               </div>
@@ -132,7 +136,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-gold-400" />
                 <div>
-                  <div className="text-[10px] text-silver-400">0 a 100 km/h</div>
+                  <div className="text-[10px] text-silver-400">{t.specs.acceleration}</div>
                   <div className="text-sm font-bold text-silver-100">{vehicle.specs.acceleration0to100 || '3.4 s'}</div>
                 </div>
               </div>
@@ -140,7 +144,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
               <div className="flex items-center gap-2">
                 <Flame className="w-4 h-4 text-gold-400" />
                 <div>
-                  <div className="text-[10px] text-silver-400">Potencia</div>
+                  <div className="text-[10px] text-silver-400">{t.specs.horsepower}</div>
                   <div className="text-sm font-bold text-silver-100">{vehicle.specs.horsepower} HP</div>
                 </div>
               </div>
@@ -148,7 +152,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
               <div className="flex items-center gap-2">
                 <Gauge className="w-4 h-4 text-gold-400" />
                 <div>
-                  <div className="text-[10px] text-silver-400">Velocidad Máx.</div>
+                  <div className="text-[10px] text-silver-400">{t.specs.topSpeed}</div>
                   <div className="text-sm font-bold text-silver-100">{vehicle.specs.topSpeed} km/h</div>
                 </div>
               </div>
@@ -156,7 +160,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 <div>
-                  <div className="text-[10px] text-silver-400">Estado</div>
+                  <div className="text-[10px] text-silver-400">{language === 'EN' ? 'Status' : 'Estado'}</div>
                   <StatusBadge status={vehicle.status} />
                 </div>
               </div>
@@ -166,7 +170,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
           {/* Descripción y Equipamiento */}
           <div>
             <h4 className="text-xs font-semibold uppercase tracking-wider text-silver-400 mb-2">
-              Descripción del Vehículo
+              {language === 'EN' ? 'Vehicle Description' : 'Descripción del Vehículo'}
             </h4>
             <p className="text-sm text-silver-300 leading-relaxed">
               {vehicle.description}
@@ -177,7 +181,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
           {vehicle.features.length > 0 && (
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-silver-400 mb-3">
-                Equipamiento & Detalles Exclusivos
+                {t.detail.equipmentTitle}
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {vehicle.features.map((feature, idx) => (
@@ -198,11 +202,11 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
         {/* Barra de acción inferior fijada */}
         <div className="p-4 sm:p-6 border-t border-carbon-800 bg-carbon-900 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-baseline gap-2">
-            <span className="text-xs text-silver-400">Tarifa oficial:</span>
+            <span className="text-xs text-silver-400">{t.detail.officialRate}:</span>
             <span className="text-2xl font-bold text-silver-100 font-mono">
-              {formatCurrency(vehicle.pricePerDay)}
+              {formatPrice(vehicle.pricePerDay)}
             </span>
-            <span className="text-xs text-silver-400">/ día</span>
+            <span className="text-xs text-silver-400">/ {t.detail.day}</span>
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -213,7 +217,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
               className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs tracking-wider transition-all"
             >
               <MessageSquare className="w-4 h-4" />
-              <span>CONSULTAR POR WHATSAPP</span>
+              <span>{t.hero.vipWhatsApp}</span>
             </a>
 
             <Button
@@ -222,7 +226,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
               className="flex-1 sm:flex-none"
               onClick={() => onBook(vehicle)}
             >
-              SOLICITAR RESERVA
+              {t.detail.requestBooking}
             </Button>
           </div>
         </div>

@@ -13,6 +13,7 @@ import {
   Youtube,
 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface FooterProps {
   onNavigateToAdmin?: () => void;
@@ -20,6 +21,7 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
   const { settings, getWhatsAppLink } = useSettings();
+  const { t } = useLanguage();
   const whatsAppUrl = getWhatsAppLink();
 
   // Puerta secreta alternativa: 3 clics en el logo del pie de página
@@ -184,33 +186,33 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
           {/* Col 3: Navegación Rápida */}
           <div>
             <h4 className="text-xs font-semibold uppercase tracking-wider text-silver-200 mb-4">
-              Colección
+              {t.footer.fleet}
             </h4>
             <ul className="space-y-2.5 text-sm">
-              <li><a href="#showroom" className="hover:text-gold-400 transition-colors">Superdeportivos</a></li>
-              <li><a href="#showroom" className="hover:text-gold-400 transition-colors">SUVs de Lujo</a></li>
-              <li><a href="#showroom" className="hover:text-gold-400 transition-colors">Sedanes Ejecutivos</a></li>
-              <li><a href="#showroom" className="hover:text-gold-400 transition-colors">Ver Toda la Flota</a></li>
+              <li><a href="#showroom" className="hover:text-gold-400 transition-colors">{t.categories.exotic}</a></li>
+              <li><a href="#showroom" className="hover:text-gold-400 transition-colors">{t.categories.suv}</a></li>
+              <li><a href="#showroom" className="hover:text-gold-400 transition-colors">{t.categories.sedan}</a></li>
+              <li><a href="#showroom" className="hover:text-gold-400 transition-colors">{t.categories.all}</a></li>
             </ul>
           </div>
 
           {/* Col 4: Servicios VIP */}
           <div>
             <h4 className="text-xs font-semibold uppercase tracking-wider text-silver-200 mb-4">
-              Servicios VIP
+              {t.footer.services}
             </h4>
             <ul className="space-y-2.5 text-sm">
-              <li><a href="#experience" className="hover:text-gold-400 transition-colors">Entrega en Aeropuerto</a></li>
-              <li><a href="#experience" className="hover:text-gold-400 transition-colors">Entrega a Domicilio</a></li>
-              <li><a href="#experience" className="hover:text-gold-400 transition-colors">Chófer Privado</a></li>
-              <li><a href="#experience" className="hover:text-gold-400 transition-colors">Eventos & Producciones</a></li>
+              <li><a href="#experience" className="hover:text-gold-400 transition-colors">{t.footer.airportDelivery}</a></li>
+              <li><a href="#experience" className="hover:text-gold-400 transition-colors">{t.footer.doorDelivery}</a></li>
+              <li><a href="#experience" className="hover:text-gold-400 transition-colors">{t.footer.chauffeur}</a></li>
+              <li><a href="#experience" className="hover:text-gold-400 transition-colors">{t.footer.events}</a></li>
             </ul>
           </div>
 
           {/* Col 5: Contacto Concierge Dinámico */}
           <div>
             <h4 className="text-xs font-semibold uppercase tracking-wider text-silver-200 mb-4">
-              Contacto Concierge
+              {t.footer.contactConcierge}
             </h4>
             <ul className="space-y-3 text-sm">
               
@@ -262,11 +264,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
 
         {/* Legal & Copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-silver-500">
-          <p>© {new Date().getFullYear()} {settings.companyName}. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} {settings.companyName}. {t.footer.rightsReserved}</p>
           <div className="flex items-center gap-6">
-            <a href="#" className="hover:text-silver-300 transition-colors">Términos del Servicio</a>
-            <a href="#" className="hover:text-silver-300 transition-colors">Política de Privacidad</a>
-            <a href="#" className="hover:text-silver-300 transition-colors">Requisitos de Alquiler</a>
+            <a href="#" className="hover:text-silver-300 transition-colors">{t.footer.terms}</a>
+            <a href="#" className="hover:text-silver-300 transition-colors">{t.footer.privacy}</a>
+            <a href="#" className="hover:text-silver-300 transition-colors">{t.footer.requirements}</a>
           </div>
         </div>
       </div>

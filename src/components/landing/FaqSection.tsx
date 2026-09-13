@@ -1,32 +1,34 @@
 import React, { useState } from 'react';
 import { ChevronDown, HelpCircle, FileCheck, CreditCard, UserCheck, ShieldAlert } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 export const FaqSection: React.FC = () => {
   const { settings } = useSettings();
+  const { t } = useLanguage();
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const minAge = settings.policies?.minAge || 25;
 
   const faqs = [
     {
-      question: '¿Cuáles son los requisitos mínimos para alquilar un vehículo de lujo?',
-      answer: 'Es necesario tener al menos 23 años de edad (25 para modelos superdeportivos), presentar una licencia de conducir vigente (nacional o internacional válida) y documento de identidad o pasaporte original.',
+      question: t.faq.q1,
+      answer: t.faq.a1,
     },
     {
-      question: '¿Qué cubre el seguro incluido en el alquiler?',
-      answer: 'Todos los vehículos cuentan con póliza a todo riesgo con franquicia reducida, cobertura contra robo, daños a terceros y asistencia médica de urgencia. También disponemos de opción de Cobertura Cero Franquicia.',
+      question: t.faq.q2,
+      answer: t.faq.a2,
     },
     {
-      question: '¿Cómo se gestiona la entrega y devolución (Concierge VIP)?',
-      answer: 'Coordinamos la entrega directa en la terminal de llegadas del aeropuerto (incluyendo aviación privada), en el lobby de su hotel o directamente en su residencia particular a la hora exacta solicitada.',
+      question: t.faq.q3,
+      answer: t.faq.a3,
     },
     {
-      question: '¿Existe límite de kilometraje diario?',
-      answer: 'Nuestras tarifas estándar incluyen 200 km libres por día. Disponemos de paquetes con kilometraje ampliado o ilimitado según el modelo y la duración de la reserva.',
+      question: t.faq.q4,
+      answer: t.faq.a4,
     },
     {
-      question: '¿Cuál es la política de combustible?',
-      answer: 'Entregamos el vehículo con el depósito completamente lleno y verificado. Se devuelve en el mismo estado para evitar cargos adicionales de reabastecimiento.',
+      question: t.faq.q5,
+      answer: t.faq.a5,
     },
   ];
 
@@ -37,13 +39,13 @@ export const FaqSection: React.FC = () => {
         <div className="text-center mb-16">
           <span className="text-xs font-semibold tracking-widest text-gold-400 uppercase flex items-center justify-center gap-1.5 mb-2">
             <HelpCircle className="w-4 h-4" />
-            <span>TRANSPARENCIA TOTAL</span>
+            <span>{t.faq.badge}</span>
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-silver-100 uppercase font-display">
-            Requisitos y Preguntas Frecuentes
+            {t.faq.title}
           </h2>
           <p className="mt-3 text-sm text-silver-400">
-            Todo lo que necesitas saber para disfrutar de una experiencia de alquiler sin contratiempos.
+            {t.faq.subtitle}
           </p>
         </div>
 
@@ -51,26 +53,26 @@ export const FaqSection: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12">
           <div className="p-4 rounded-xl bg-carbon-900 border border-carbon-800 text-center">
             <UserCheck className="w-5 h-5 mx-auto text-gold-400 mb-2" />
-            <div className="text-xs font-bold text-silver-200">Edad {minAge}+</div>
-            <div className="text-[10px] text-silver-400 mt-0.5">{minAge}+ en superdeportivos</div>
+            <div className="text-xs font-bold text-silver-200">{t.faq.reqAge} {minAge}+</div>
+            <div className="text-[10px] text-silver-400 mt-0.5">{minAge}+ {t.faq.reqAgeDesc}</div>
           </div>
 
           <div className="p-4 rounded-xl bg-carbon-900 border border-carbon-800 text-center">
             <FileCheck className="w-5 h-5 mx-auto text-gold-400 mb-2" />
-            <div className="text-xs font-bold text-silver-200">Licencia Vigente</div>
-            <div className="text-[10px] text-silver-400 mt-0.5">Mínimo 2 años antigüedad</div>
+            <div className="text-xs font-bold text-silver-200">{t.faq.reqLicense}</div>
+            <div className="text-[10px] text-silver-400 mt-0.5">{t.faq.reqLicenseDesc}</div>
           </div>
 
           <div className="p-4 rounded-xl bg-carbon-900 border border-carbon-800 text-center">
             <CreditCard className="w-5 h-5 mx-auto text-gold-400 mb-2" />
-            <div className="text-xs font-bold text-silver-200">Depósito Seguro</div>
-            <div className="text-[10px] text-silver-400 mt-0.5">Retención reembolsable</div>
+            <div className="text-xs font-bold text-silver-200">{t.faq.reqDeposit}</div>
+            <div className="text-[10px] text-silver-400 mt-0.5">{t.faq.reqDepositDesc}</div>
           </div>
 
           <div className="p-4 rounded-xl bg-carbon-900 border border-carbon-800 text-center">
             <ShieldAlert className="w-5 h-5 mx-auto text-emerald-400 mb-2" />
-            <div className="text-xs font-bold text-silver-200">Póliza Integral</div>
-            <div className="text-[10px] text-silver-400 mt-0.5">Cobertura completa</div>
+            <div className="text-xs font-bold text-silver-200">{t.faq.reqInsurance}</div>
+            <div className="text-[10px] text-silver-400 mt-0.5">{t.faq.reqInsuranceDesc}</div>
           </div>
         </div>
 

@@ -33,7 +33,7 @@ import {
   generateWhatsAppReservationLink,
   getDeliveryLocationLabel,
 } from '../../services/reservationService';
-import { formatCurrency } from '../../utils/formatters';
+import { useCurrency } from '../../context/CurrencyContext';
 import { Button } from '../common/Button';
 
 export interface BookingFlowModalProps {
@@ -53,6 +53,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
   initialStartDate,
   initialEndDate,
 }) => {
+  const { formatPrice } = useCurrency();
   // Pasos: 1 = Fechas & Vehículo, 2 = Conductor KYC, 3 = Confirmación & Voucher
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
 
@@ -304,7 +305,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                       {activeVehicle.brand} {activeVehicle.model}
                     </h4>
                     <div className="text-xs text-silver-400 flex items-center gap-2 mt-0.5">
-                      <span className="text-gold-400 font-semibold">{formatCurrency(activeVehicle.pricePerDay)}</span>
+                      <span className="text-gold-400 font-semibold">{formatPrice(activeVehicle.pricePerDay)}</span>
                       <span>/ día</span>
                       <span className="text-carbon-600">•</span>
                       <span className="font-mono text-silver-500">Placa: {activeVehicle.plate}</span>
@@ -323,7 +324,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     >
                       {vehicles.map((v) => (
                         <option key={v.id} value={v.id}>
-                          {v.brand} {v.model} ({formatCurrency(v.pricePerDay)}/d)
+                          {v.brand} {v.model} ({formatPrice(v.pricePerDay)}/d)
                         </option>
                       ))}
                     </select>
@@ -508,15 +509,15 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                 </div>
                 <div className="flex justify-between text-silver-400">
                   <span>Tarifa por día:</span>
-                  <span className="font-semibold text-silver-200">{formatCurrency(pricing.dailyRate)}</span>
+                  <span className="font-semibold text-silver-200">{formatPrice(pricing.dailyRate)}</span>
                 </div>
                 <div className="flex justify-between text-silver-400">
                   <span>Subtotal Renta:</span>
-                  <span className="font-semibold text-silver-200">{formatCurrency(pricing.rentalTotal)}</span>
+                  <span className="font-semibold text-silver-200">{formatPrice(pricing.rentalTotal)}</span>
                 </div>
                 <div className="flex justify-between text-silver-400">
                   <span>Depósito en Garantía (Reembolsable):</span>
-                  <span className="font-semibold text-silver-200">{formatCurrency(pricing.securityDeposit)}</span>
+                  <span className="font-semibold text-silver-200">{formatPrice(pricing.securityDeposit)}</span>
                 </div>
                 <div className="flex justify-between text-silver-400">
                   <span>Cobertura VIP a Todo Riesgo:</span>
@@ -525,7 +526,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                 <div className="pt-2 border-t border-carbon-750 flex justify-between text-sm font-bold text-silver-100">
                   <span>Total Estimado al Despacho:</span>
                   <span className="font-mono text-gold-400 text-base">
-                    {formatCurrency(pricing.rentalTotal + pricing.securityDeposit)}
+                    {formatPrice(pricing.rentalTotal + pricing.securityDeposit)}
                   </span>
                 </div>
               </div>
@@ -796,13 +797,13 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                   <div className="flex justify-between text-silver-400">
                     <span>Subtotal Renta ({createdReservation.pricing.days} días):</span>
                     <span className="font-semibold text-silver-200">
-                      {formatCurrency(createdReservation.pricing.rentalTotal)}
+                      {formatPrice(createdReservation.pricing.rentalTotal)}
                     </span>
                   </div>
                   <div className="flex justify-between text-silver-400">
                     <span>Depósito de Garantía (Reembolsable):</span>
                     <span className="font-semibold text-silver-200">
-                      {formatCurrency(createdReservation.pricing.securityDeposit)}
+                      {formatPrice(createdReservation.pricing.securityDeposit)}
                     </span>
                   </div>
                   <div className="flex justify-between text-silver-400">
@@ -812,7 +813,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                   <div className="pt-2 border-t border-carbon-750 flex justify-between text-sm font-bold text-silver-100">
                     <span>Total Estimado al Despacho:</span>
                     <span className="font-mono text-gold-400 text-base">
-                      {formatCurrency(
+                      {formatPrice(
                         createdReservation.pricing.rentalTotal +
                           createdReservation.pricing.securityDeposit
                       )}

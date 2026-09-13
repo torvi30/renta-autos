@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Car } from 'lucide-react';
 import { Vehicle } from '../../types/vehicle';
 import { VehicleCard } from '../common/VehicleCard';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface FeaturedFleetProps {
   vehicles: Vehicle[];
@@ -16,14 +17,15 @@ export const FeaturedFleet: React.FC<FeaturedFleetProps> = ({
   onQuickBook,
   onNavigateToCatalog,
 }) => {
+  const { t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
   const categories = [
-    { key: 'ALL', label: 'Toda la Colección' },
-    { key: 'DEPORTIVO', label: 'Deportivos' },
-    { key: 'SUV_LUJO', label: 'SUVs de Lujo' },
-    { key: 'EXOTICO', label: 'Superdeportivos' },
-    { key: 'SEDAN_EJECUTIVO', label: 'Sedanes Ejecutivos' },
+    { key: 'ALL', label: t.featured.allCollection },
+    { key: 'DEPORTIVO', label: t.categories.sports },
+    { key: 'SUV_LUJO', label: t.categories.suv },
+    { key: 'EXOTICO', label: t.categories.exotic },
+    { key: 'SEDAN_EJECUTIVO', label: t.categories.sedan },
   ];
 
   const filteredVehicles = useMemo(() => {
@@ -40,13 +42,13 @@ export const FeaturedFleet: React.FC<FeaturedFleetProps> = ({
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold tracking-widest text-gold-400 uppercase mb-2">
               <Car className="w-4 h-4" />
-              <span>COLECCIÓN EXCLUSIVA</span>
+              <span>{t.featured.badge}</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-silver-100 uppercase font-display">
-              Nuestra Flota en Showroom
+              {t.featured.title}
             </h2>
             <p className="mt-2 text-sm text-silver-400 max-w-xl">
-              Cada vehículo ha sido seleccionado minuciosamente para ofrecer un desempeño impecable, estética vanguardista y una experiencia de conducción suprema.
+              {t.featured.description}
             </p>
           </div>
 
@@ -84,13 +86,13 @@ export const FeaturedFleet: React.FC<FeaturedFleetProps> = ({
           /* Estado vacío (Regla 15: empty state profesional) */
           <div className="py-16 text-center bg-carbon-900/40 rounded-2xl border border-carbon-800 p-8">
             <Car className="w-12 h-12 mx-auto text-silver-500 mb-3" />
-            <h3 className="text-base font-bold text-silver-200">No hay vehículos en esta categoría</h3>
-            <p className="text-xs text-silver-500 mt-1">Explora nuestras otras categorías disponibles en el showroom.</p>
+            <h3 className="text-base font-bold text-silver-200">{t.featured.emptyTitle}</h3>
+            <p className="text-xs text-silver-500 mt-1">{t.featured.emptySubtitle}</p>
             <button
               onClick={() => setSelectedCategory('ALL')}
               className="mt-4 px-4 py-2 text-xs font-semibold text-gold-400 border border-gold-500/30 rounded-lg hover:bg-gold-500/10 transition-colors"
             >
-              Ver todos los vehículos
+              {t.featured.viewAllBtn}
             </button>
           </div>
         )}
@@ -100,17 +102,17 @@ export const FeaturedFleet: React.FC<FeaturedFleetProps> = ({
           <div className="mt-14 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-carbon-900 via-carbon-850 to-carbon-900 border border-carbon-800 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
             <div className="text-center sm:text-left">
               <h3 className="text-lg font-bold text-silver-100 font-display uppercase tracking-wider">
-                ¿Buscas un modelo o configuración específica?
+                {t.featured.bannerTitle}
               </h3>
               <p className="text-xs text-silver-400 mt-1">
-                Accede a nuestro catálogo extendido con filtros por transmisión, tipo de combustible, plazas y rango de presupuesto.
+                {t.featured.bannerSubtitle}
               </p>
             </div>
             <button
               onClick={onNavigateToCatalog}
               className="px-6 py-3 rounded-xl bg-gold-500 hover:bg-gold-400 text-carbon-950 font-bold text-xs tracking-wider uppercase transition-all shadow-md shadow-gold-500/10 hover:shadow-gold-500/20 whitespace-nowrap"
             >
-              Explorar Catálogo Completo ({vehicles.length} Autos)
+              {t.featured.exploreCatalogBtn} ({vehicles.length})
             </button>
           </div>
         )}
