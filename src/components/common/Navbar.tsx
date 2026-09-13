@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, Phone, Sparkles, Compass, Globe } from 'lucide-react';
+import { Menu, X, Sparkles, Compass, Globe } from 'lucide-react';
 import { Button } from './Button';
 import { useCurrency, CurrencyCode } from '../../context/CurrencyContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -46,7 +46,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const { currency, setCurrency } = useCurrency();
   const { language, setLanguage, t } = useLanguage();
-  const { settings, getWhatsAppLink } = useSettings();
+  const { settings } = useSettings();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -183,8 +183,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const isExperienceActive = currentRoute === 'home' && activeSection === 'experience';
   const isHowItWorksActive = currentRoute === 'home' && activeSection === 'how-it-works';
   const isFaqActive = currentRoute === 'home' && activeSection === 'faq';
-
-  const whatsAppLink = getWhatsAppLink();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
@@ -370,22 +368,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             </nav>
 
-            {/* 3. Acciones de Alto Impacto (Solo 2 Botones VIP Pulidos) */}
-            <div className="hidden sm:flex items-center gap-3">
-              
-              {/* Botón WhatsApp Concierge VIP */}
-              <a
-                href={whatsAppLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-xs font-semibold text-silver-300 hover:text-white px-3.5 py-2 rounded-xl border border-carbon-750 hover:border-emerald-500/50 bg-carbon-900/80 hover:bg-carbon-850 transition-all shadow-sm group"
-                aria-label="Atención Concierge por WhatsApp"
-              >
-                <Phone className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
-                <span>Concierge VIP</span>
-              </a>
-
-              {/* Botón Principal de Reserva con Oro Satinado */}
+            {/* 3. Acción Principal de Reserva */}
+            <div className="hidden sm:flex items-center">
               <button
                 onClick={onNavigateToBooking || (() => scrollToSection('showroom'))}
                 className="relative inline-flex items-center justify-center px-5 py-2 rounded-xl text-xs font-black uppercase tracking-wider text-carbon-950 bg-gradient-to-r from-gold-400 via-gold-500 to-amber-500 hover:from-gold-300 hover:via-gold-400 hover:to-amber-400 transition-all shadow-lg shadow-gold-500/20 hover:shadow-gold-500/40 hover:scale-[1.02] active:scale-[0.98]"
@@ -511,16 +495,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               {t.cta.bookNow}
             </Button>
-
-            <a
-              href={whatsAppLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 py-3 rounded-xl border border-carbon-800 text-sm font-medium text-silver-300 hover:text-gold-400 bg-carbon-900"
-            >
-              <Phone className="w-4 h-4 text-emerald-400" />
-              <span>WhatsApp Concierge</span>
-            </a>
           </div>
         </div>
       )}
