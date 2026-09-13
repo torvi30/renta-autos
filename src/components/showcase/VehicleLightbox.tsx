@@ -56,13 +56,27 @@ export const VehicleLightbox: React.FC<VehicleLightboxProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-between bg-black/95 backdrop-blur-2xl animate-fade-in p-4 sm:p-6"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-between bg-black/95 backdrop-blur-2xl animate-fade-in p-4 sm:p-6 select-none"
       role="dialog"
       aria-modal="true"
       aria-label={`Galería a pantalla completa de ${vehicleTitle}`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
+      {/* Backdrop con captura de toque y clic en toda la pantalla */}
+      <div
+        className="fixed inset-0 bg-black/95 backdrop-blur-2xl -z-10 cursor-pointer"
+        onClick={onClose}
+        onTouchStart={onClose}
+        aria-hidden="true"
+      />
+
       {/* Barra superior de control */}
-      <div className="w-full max-w-7xl flex items-center justify-between z-20 pt-2 pb-4">
+      <div 
+        onClick={(e) => e.stopPropagation()} 
+        className="w-full max-w-7xl flex items-center justify-between z-20 pt-2 pb-4"
+      >
         <div className="flex items-center gap-3">
           <Maximize2 className="w-4 h-4 text-gold-400" />
           <span className="text-xs sm:text-sm font-bold text-silver-100 uppercase tracking-wider font-display truncate max-w-xs sm:max-w-md">
@@ -75,7 +89,7 @@ export const VehicleLightbox: React.FC<VehicleLightboxProps> = ({
 
         <button
           onClick={onClose}
-          className="p-2.5 rounded-xl bg-carbon-900/90 hover:bg-gold-500 hover:text-carbon-950 text-silver-300 border border-carbon-800 transition-all shadow-lg"
+          className="p-2.5 rounded-xl bg-carbon-900/90 hover:bg-gold-500 hover:text-carbon-950 text-silver-300 border border-carbon-800 transition-all shadow-lg cursor-pointer"
           aria-label="Cerrar visor a pantalla completa"
           title="Cerrar (Esc)"
         >
@@ -89,26 +103,34 @@ export const VehicleLightbox: React.FC<VehicleLightboxProps> = ({
         {/* Flecha Anterior */}
         <button
           onClick={handlePrev}
-          className="absolute left-2 sm:left-4 z-20 p-3 rounded-full bg-carbon-900/80 hover:bg-gold-500 hover:text-carbon-950 text-silver-200 border border-carbon-750 transition-all backdrop-blur-md shadow-2xl focus:outline-none"
+          className="absolute left-2 sm:left-4 z-20 p-3 rounded-full bg-carbon-900/80 hover:bg-gold-500 hover:text-carbon-950 text-silver-200 border border-carbon-750 transition-all backdrop-blur-md shadow-2xl focus:outline-none cursor-pointer"
           aria-label="Fotografía anterior"
           title="Anterior (Flecha izquierda)"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
 
-        {/* Imagen en gran formato con transición fluida */}
-        <div className="w-full h-full flex items-center justify-center p-2">
+        {/* Imagen en gran formato con transición fluida y clic afuera para cerrar */}
+        <div 
+          onClick={onClose}
+          onTouchStart={(e) => {
+            if (e.target === e.currentTarget) onClose();
+          }}
+          className="w-full h-full flex items-center justify-center p-2 cursor-pointer"
+        >
           <img
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
             src={images[currentIndex]}
             alt={`${vehicleTitle} - Fotografía ${currentIndex + 1}`}
-            className="max-w-full max-h-[72vh] object-contain rounded-xl shadow-2xl transition-all duration-300 select-none"
+            className="max-w-full max-h-[72vh] object-contain rounded-xl shadow-2xl transition-all duration-300 select-none cursor-default"
           />
         </div>
 
         {/* Flecha Siguiente */}
         <button
           onClick={handleNext}
-          className="absolute right-2 sm:right-4 z-20 p-3 rounded-full bg-carbon-900/80 hover:bg-gold-500 hover:text-carbon-950 text-silver-200 border border-carbon-750 transition-all backdrop-blur-md shadow-2xl focus:outline-none"
+          className="absolute right-2 sm:right-4 z-20 p-3 rounded-full bg-carbon-900/80 hover:bg-gold-500 hover:text-carbon-950 text-silver-200 border border-carbon-750 transition-all backdrop-blur-md shadow-2xl focus:outline-none cursor-pointer"
           aria-label="Fotografía siguiente"
           title="Siguiente (Flecha derecha)"
         >

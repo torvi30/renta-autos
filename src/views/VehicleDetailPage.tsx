@@ -166,7 +166,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
   });
 
   return (
-    <div className="min-h-screen bg-carbon-950 text-silver-100 pt-28 pb-20">
+    <div className="min-h-screen bg-carbon-950 text-silver-100 pt-32 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Breadcrumb Navigation (Regla 17: SEO y navegación) */}
@@ -227,11 +227,19 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
             </h1>
           </div>
 
-          {/* Acciones de Cabecera: Compartir y Volver */}
+          {/* Acciones de Cabecera: Volver y Compartir */}
           <div className="flex items-center gap-3">
             <button
+              onClick={onNavigateToCatalog}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-carbon-900 border border-carbon-800 hover:border-gold-500/40 text-silver-300 hover:text-gold-400 text-xs font-semibold transition-all shadow-sm active:scale-95"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>{t.detail.backToCatalog}</span>
+            </button>
+
+            <button
               onClick={handleShare}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-carbon-900 border border-carbon-800 hover:border-gold-500/40 text-silver-300 hover:text-gold-400 text-xs font-semibold transition-all shadow-sm"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-carbon-900 border border-carbon-800 hover:border-gold-500/40 text-silver-300 hover:text-gold-400 text-xs font-semibold transition-all shadow-sm active:scale-95"
               title={t.detail.shareVehicle}
             >
               {copiedLink ? (
@@ -246,14 +254,6 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                 </>
               )}
             </button>
-
-            <button
-              onClick={onNavigateToCatalog}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-carbon-900 border border-carbon-800 hover:border-carbon-700 text-silver-400 hover:text-silver-200 text-xs font-semibold transition-all"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>{t.detail.backToCatalog}</span>
-            </button>
           </div>
         </div>
 
@@ -267,6 +267,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
             autoPlay={true}
             showControls={true}
             priority={true}
+            fitMode="contain"
           />
         </div>
 

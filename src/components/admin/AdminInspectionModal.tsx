@@ -15,6 +15,7 @@ import {
   compareInspections,
 } from '../../services/inspectionService';
 import { uploadVehiclePhoto } from '../../services/storageService';
+import { luxuryAlert } from '../../context/AlertContext';
 import {
   X,
   ClipboardCheck,
@@ -210,7 +211,10 @@ export const AdminInspectionModal: React.FC<AdminInspectionModalProps> = ({
       setTimeout(() => setFeedbackToast(null), 3500);
       if (onSaveSuccess) onSaveSuccess();
     } catch (err: any) {
-      alert(`Error al guardar inspección: ${err?.message || 'Fallo de red'}`);
+      luxuryAlert.error({
+        title: 'Error en Inspección',
+        message: err?.message || 'Fallo de red al guardar el acta de inspección.',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -231,8 +235,14 @@ export const AdminInspectionModal: React.FC<AdminInspectionModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-xl overflow-y-auto animate-fade-in"
       role="dialog"
       aria-modal="true"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className="relative w-full max-w-5xl rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[94vh]">
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-5xl rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[94vh]"
+      >
         
         {/* Cabecera del Modal */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:px-8 border-b border-carbon-800 bg-gradient-to-r from-carbon-900 via-carbon-850 to-carbon-900 gap-3">

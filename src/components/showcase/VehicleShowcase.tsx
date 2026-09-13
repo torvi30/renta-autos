@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, ImageOff } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, ImageOff, Maximize2 } from 'lucide-react';
 
 interface VehicleShowcaseProps {
   videoUrl?: string;
@@ -11,6 +11,7 @@ interface VehicleShowcaseProps {
   className?: string;
   lazyLoad?: boolean;
   priority?: boolean;
+  fitMode?: 'cover' | 'contain';
 }
 
 export const VehicleShowcase: React.FC<VehicleShowcaseProps> = ({
@@ -23,25 +24,27 @@ export const VehicleShowcase: React.FC<VehicleShowcaseProps> = ({
   className = '',
   lazyLoad = true,
   priority = false,
+  fitMode = 'cover',
 }) => {
   const [videoError, setVideoError] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [isVisible, setIsVisible] = useState(priority);
+  const [currentFit, setCurrentFit] = useState<'cover' | 'contain'>(fitMode);
+
+  useEffect(() => {
+    setCurrentFit(fitMode);
+  }, [fitMode]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Lazy loading con IntersectionObserver para ahorrar ancho de banda (Reglas 8, 9, 11)
+  // Lazy loading con IntersectionObserver
   useEffect(() => {
-    if (priority) {
-      setIsVisible(true);
-      return;
-    }
-
-    if (!lazyLoad) {
+    if (priority || !lazyLoad) {
       setIsVisible(true);
       return;
     }
@@ -75,7 +78,6 @@ export const VehicleShowcase: React.FC<VehicleShowcaseProps> = ({
         playPromise
           .then(() => setIsPlaying(true))
           .catch(() => {
-            // Navegador bloqueó autoplay con sonido o en ahorro de datos; mantener mute
             if (videoRef.current) {
               videoRef.current.muted = true;
               videoRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
@@ -105,13 +107,15 @@ export const VehicleShowcase: React.FC<VehicleShowcaseProps> = ({
   };
 
   const handleVideoLoaded = () => {
-    setIsLoaded(true);
+    setVideoLoaded(true);
   };
 
   const handleVideoError = () => {
-    // Caso 3: Video falla -> Fallback automático a fotografía principal
     setVideoError(true);
-    setIsLoaded(true);
+  };
+
+  const handleImageLoaded = () => {
+    setImageLoaded(true);
   };
 
   const aspectRatioClass = {
@@ -121,7 +125,6 @@ export const VehicleShowcase: React.FC<VehicleShowcaseProps> = ({
     'auto': '',
   }[aspectRatio];
 
-  // Detección adaptativa de modo ahorro de datos en conexiones móviles lentas
   const isDataSaver = typeof navigator !== 'undefined' &&
     'connection' in navigator &&
     Boolean((navigator as any).connection?.saveData || (navigator as any).connection?.effectiveType === '2g');
@@ -132,7 +135,7 @@ export const VehicleShowcase: React.FC<VehicleShowcaseProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full overflow-hidden rounded-xl bg-carbon-900 border border-carbon-750/70 group ${aspectRatioClass} ${className}`}
+      className={`relative w-full overflow-hidden rounded-xl bg-carbon-950 border border-carbon-750/70 group ${aspectRatioClass} ${className}`}
     >
       {/* Luz ambiente de showroom sutil */}
       <div className="absolute inset-0 pointer-events-none z-10 bg-gradient-to-t from-carbon-950/80 via-transparent to-carbon-950/20" />
@@ -149,28 +152,31 @@ export const VehicleShowcase: React.FC<VehicleShowcaseProps> = ({
           playsInline
           onLoadedData={handleVideoLoaded}
           onError={handleVideoError}
-          className={`w-full h-full object-cover transition-opacity duration-700 ${
-            isLoaded ? 'opacity-100' : 'opacity-0'
+          className={`w-full h-full ${currentFit === 'contain' ? 'object-contain p-1 sm:p-2' : 'object-cover'} transition-opacity duration-700 ${
+            videoLoaded ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
           aria-label={altText}
         />
       )}
 
-      {/* CASO 2 y 3: Fallback a imagen principal */}
-      {(!hasValidVideo || !isVisible || !isLoaded) && hasValidImage && (
+      {/* CASO 2: Fotografía principal del vehículo */}
+      {hasValidImage && (
         <img
           src={imageUrl}
           alt={altText}
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
+          onLoad={handleImageLoaded}
           onError={() => setImageError(true)}
-          className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03] ${
-            hasValidVideo && isLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          className={`absolute inset-0 w-full h-full ${
+            currentFit === 'contain' ? 'object-contain p-1 sm:p-2' : 'object-cover'
+          } transition-opacity duration-500 group-hover:scale-[1.02] ${
+            hasValidVideo && videoLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
         />
       )}
 
-      {/* CASO 4: Fallback definitivo si no hay ni video ni imagen (Regla 12) */}
+      {/* CASO 3: Fallback si no hay medio */}
       {!hasValidVideo && !hasValidImage && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-carbon-850 p-6 text-center text-silver-400">
           <div className="w-16 h-16 mb-3 rounded-full bg-carbon-800 flex items-center justify-center text-gold-500/80 border border-carbon-700">
@@ -181,38 +187,55 @@ export const VehicleShowcase: React.FC<VehicleShowcaseProps> = ({
         </div>
       )}
 
-      {/* Skeleton de carga mientras prepara el medio */}
-      {!isLoaded && isVisible && (hasValidVideo || hasValidImage) && (
-        <div className="absolute inset-0 bg-carbon-900 flex items-center justify-center animate-pulse">
-          <div className="w-10 h-10 border-2 border-gold-500/20 border-t-gold-500 rounded-full animate-spin" />
+      {/* Spinner sutil de primera carga SOLO si la imagen/video aún no han cargado (Sin parpadeo) */}
+      {isVisible && !imageLoaded && !videoLoaded && !imageError && (
+        <div className="absolute inset-0 bg-carbon-950 flex items-center justify-center pointer-events-none z-10">
+          <div className="w-8 h-8 border-2 border-gold-500/20 border-t-gold-500 rounded-full animate-spin" />
         </div>
       )}
 
-      {/* Badge de "360° SHOWROOM / VIDEO" en esquina superior */}
-      {hasValidVideo && (
+      {/* Badge de "SHOWROOM VIDEO" en esquina superior */}
+      {hasValidVideo && videoLoaded && (
         <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-carbon-950/70 border border-white/10 text-[11px] font-medium text-gold-400 backdrop-blur-md">
           <span className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-ping" />
           <span>SHOWROOM VIDEO</span>
         </div>
       )}
 
-      {/* Controles discretos en esquina inferior (Regla 3 & 9: no invasivos) */}
-      {showControls && hasValidVideo && isLoaded && (
-        <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      {/* Controles discretos en esquina inferior */}
+      {showControls && (
+        <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          {/* Botón de alternar ajuste para ver auto completo */}
           <button
-            onClick={togglePlay}
-            aria-label={isPlaying ? 'Pausar video' : 'Reproducir video'}
-            className="p-2 rounded-full bg-carbon-950/80 hover:bg-carbon-900 border border-white/10 text-silver-200 hover:text-gold-400 backdrop-blur-md transition-all active:scale-95"
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrentFit((f) => (f === 'cover' ? 'contain' : 'cover'));
+            }}
+            aria-label={currentFit === 'cover' ? 'Ver auto completo' : 'Llenar recuadro'}
+            title={currentFit === 'cover' ? 'Ver auto completo' : 'Llenar recuadro'}
+            className="p-2 rounded-full bg-carbon-950/85 hover:bg-carbon-900 border border-white/10 text-silver-200 hover:text-gold-400 backdrop-blur-md transition-all active:scale-95 shadow-md"
           >
-            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            <Maximize2 className="w-3.5 h-3.5" />
           </button>
-          <button
-            onClick={toggleMute}
-            aria-label={isMuted ? 'Activar sonido' : 'Silenciar video'}
-            className="p-2 rounded-full bg-carbon-950/80 hover:bg-carbon-900 border border-white/10 text-silver-200 hover:text-gold-400 backdrop-blur-md transition-all active:scale-95"
-          >
-            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </button>
+
+          {hasValidVideo && videoLoaded && (
+            <>
+              <button
+                onClick={togglePlay}
+                aria-label={isPlaying ? 'Pausar video' : 'Reproducir video'}
+                className="p-2 rounded-full bg-carbon-950/85 hover:bg-carbon-900 border border-white/10 text-silver-200 hover:text-gold-400 backdrop-blur-md transition-all active:scale-95 shadow-md"
+              >
+                {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+              </button>
+              <button
+                onClick={toggleMute}
+                aria-label={isMuted ? 'Activar sonido' : 'Silenciar video'}
+                className="p-2 rounded-full bg-carbon-950/85 hover:bg-carbon-900 border border-white/10 text-silver-200 hover:text-gold-400 backdrop-blur-md transition-all active:scale-95 shadow-md"
+              >
+                {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

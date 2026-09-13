@@ -19,6 +19,7 @@ import {
   deleteVehicle,
 } from '../../services/vehicleService';
 import { isFirebaseConfigured } from '../../services/firebase';
+import { luxuryAlert } from '../../context/AlertContext';
 import { AdminSidebar, AdminTab } from '../../components/admin/AdminSidebar';
 import { AdminMetricsGrid } from '../../components/admin/AdminMetricsGrid';
 import { AdminReservationsView } from '../../components/admin/AdminReservationsView';
@@ -96,9 +97,17 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
     try {
       const vehRes = await seedInitialVehiclesToFirestore();
       const resRes = await seedInitialReservationsToFirestore();
-      showToast(`${vehRes.message} (${resRes.message})`);
+      luxuryAlert.success({
+        title: '¡Sincronización Cloud Completada!',
+        message: `${vehRes.message}. ${resRes.message}. Todos los autos y contratos están respaldados en tiempo real.`,
+        confirmText: 'Entendido',
+        timer: 5000,
+      });
     } catch (err: any) {
-      showToast(`Error de sincronización: ${err?.message || 'Fallo de conexión'}`);
+      luxuryAlert.error({
+        title: 'Error de Sincronización',
+        message: err?.message || 'Fallo al conectar con Cloud Firestore.',
+      });
     } finally {
       setIsSeeding(false);
     }
@@ -117,7 +126,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
     showToast(`Estado de ${car?.model || 'Vehículo'} cambiado a ${newStatus}.`);
   };
 
-  // Handlers CRUD de Vehículos
+  // Handlers CRUD de Vehículos con Alertas VIP (Estilo SweetAlert Pro)
   const handleOpenCreateVehicle = () => {
     setVehicleToEdit(null);
     setIsVehicleModalOpen(true);
@@ -129,18 +138,54 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
   };
 
   const handleSaveVehicle = async (payload: Partial<Vehicle>) => {
-    if (vehicleToEdit) {
-      await updateVehicle(vehicleToEdit.id, payload);
-      showToast(`Vehículo ${payload.brand || ''} ${payload.model || ''} actualizado con éxito.`);
-    } else {
-      const created = await createVehicle(payload as any);
-      showToast(`Vehículo ${created.brand} ${created.model} registrado en la flota.`);
+    try {
+      if (vehicleToEdit) {
+        await updateVehicle(vehicleToEdit.id, payload);
+        const updatedVehicle = { ...vehicleToEdit, ...payload };
+        luxuryAlert.success({
+          title: '¡Vehículo Actualizado con Éxito!',
+          message: `La ficha técnica, tarifas y galería de ${payload.brand || vehicleToEdit.brand} ${payload.model || vehicleToEdit.model} han sido actualizadas.`,
+          vehicle: updatedVehicle,
+          confirmText: 'Excelente',
+          timer: 4500,
+        });
+      } else {
+        const created = await createVehicle(payload as any);
+        luxuryAlert.success({
+          title: '¡Vehículo Incorporado a la Flota!',
+          message: `El ${created.brand} ${created.model} (${created.year}) ya se encuentra activo en el showroom y disponible para reservas en línea.`,
+          vehicle: created,
+          confirmText: 'Ver en Flota',
+          timer: 5000,
+        });
+      }
+    } catch (err: any) {
+      luxuryAlert.error({
+        title: 'Error al Guardar Vehículo',
+        message: err?.message || 'Ocurrió un error inesperado al guardar los datos del auto.',
+      });
     }
   };
 
   const handleDeleteVehicle = async (vehicleId: string) => {
-    await deleteVehicle(vehicleId);
-    showToast('Vehículo retirado de la flota correctamente.');
+    const targetVeh = vehicles.find((v) => v.id === vehicleId);
+    const confirmed = await luxuryAlert.confirm({
+      title: '¿Retirar de la Flota?',
+      message: `¿Estás seguro de que deseas retirar el ${targetVeh?.brand || ''} ${targetVeh?.model || 'vehículo'} de la flota activa? Esta acción lo removerá del showroom y del catálogo.`,
+      vehicle: targetVeh,
+      confirmText: 'Sí, Retirar Vehículo',
+      cancelText: 'Conservar en Flota',
+      isDestructive: true,
+    });
+
+    if (confirmed) {
+      await deleteVehicle(vehicleId);
+      luxuryAlert.success({
+        title: 'Vehículo Retirado',
+        message: `El auto ha sido retirado de la flota activa satisfactoriamente.`,
+        timer: 3500,
+      });
+    }
   };
 
   const handleSaveDateBlock = async (
@@ -157,12 +202,23 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
         reason,
       });
       if (result.reservation) {
-        showToast(`Bloqueo de fechas guardado: ${result.reservation.id} (${reason})`);
+        luxuryAlert.success({
+          title: 'Bloqueo Programado',
+          message: `Fechas bloqueadas con éxito para ${vehicle.brand} ${vehicle.model}: ${startDate} a ${endDate} (${reason}).`,
+          vehicle,
+          timer: 4000,
+        });
       } else {
-        showToast(`No se pudo registrar bloqueo: ${result.error || 'Error'}`);
+        luxuryAlert.warning({
+          title: 'No se pudo Bloquear',
+          message: result.error || 'Verifica que no exista otra reserva en esas fechas.',
+        });
       }
     } catch (err: any) {
-      showToast(`Error al registrar bloqueo: ${err?.message || 'Fallo desconocido'}`);
+      luxuryAlert.error({
+        title: 'Error de Bloqueo',
+        message: err?.message || 'Fallo desconocido al registrar bloqueo.',
+      });
     }
   };
 
@@ -172,19 +228,42 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
       if (updated) {
         showToast(`Reserva ${id} actualizada con éxito.`);
       } else {
-        showToast('No se encontró la reserva.');
+        luxuryAlert.warning({
+          title: 'Reserva no Encontrada',
+          message: `No se pudo localizar el registro de la reserva #${id}.`,
+        });
       }
     } catch (err: any) {
-      showToast(`Error al actualizar reserva: ${err?.message || 'Fallo desconocido'}`);
+      luxuryAlert.error({
+        title: 'Error al Actualizar',
+        message: err?.message || 'Fallo desconocido.',
+      });
     }
   };
 
   const handleDeleteReservation = async (id: string) => {
+    const confirmed = await luxuryAlert.confirm({
+      title: '¿Eliminar Reserva?',
+      message: `¿Deseas cancelar y eliminar permanentemente el contrato #${id}? Esta acción no se puede revertir.`,
+      confirmText: 'Sí, Eliminar Registro',
+      cancelText: 'Conservar',
+      isDestructive: true,
+    });
+
+    if (!confirmed) return;
+
     try {
       await deleteReservation(id);
-      showToast(`Reserva ${id} eliminada permanentemente.`);
+      luxuryAlert.success({
+        title: 'Reserva Eliminada',
+        message: `El registro #${id} ha sido removido del sistema.`,
+        timer: 3500,
+      });
     } catch (err: any) {
-      showToast(`Error al eliminar reserva: ${err?.message || 'Fallo desconocido'}`);
+      luxuryAlert.error({
+        title: 'Error al Eliminar',
+        message: err?.message || 'Fallo desconocido al eliminar reserva.',
+      });
     }
   };
 

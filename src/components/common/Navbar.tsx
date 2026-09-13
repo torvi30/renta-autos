@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Menu, X, Sparkles, Compass, Globe } from 'lucide-react';
 import { Button } from './Button';
 import { useCurrency, CurrencyCode } from '../../context/CurrencyContext';
@@ -43,6 +44,49 @@ export const Navbar: React.FC<NavbarProps> = ({
       isManualScrollingRef.current = false;
     }, 1100); // Bloquea la sobreescritura durante el scroll suave
   };
+
+  // Referencias para detección de clics/toques fuera del cajón móvil
+  const mobileMenuRef = useRef<HTMLDivElement | null>(null);
+  const mobileToggleBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  // Cerrar menú móvil al hacer clic o touch fuera, o presionar Escape
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const handleOutsideInteraction = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+      // Si el toque/clic es dentro del cajón móvil o sobre el botón de abrir/cerrar (X), ignorar
+      if (
+        (mobileMenuRef.current && mobileMenuRef.current.contains(target)) ||
+        (mobileToggleBtnRef.current && mobileToggleBtnRef.current.contains(target))
+      ) {
+        return;
+      }
+      // Tocar o cliquear afuera cierra el menú inmediatamente
+      setIsMobileMenuOpen(false);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    // Bloquear scroll de la página de fondo mientras el menú está abierto
+    document.body.style.overflow = 'hidden';
+
+    // Escuchar tanto mousedown (escritorio) como touchstart (móvil) para respuesta táctil instantánea
+    document.addEventListener('mousedown', handleOutsideInteraction);
+    document.addEventListener('touchstart', handleOutsideInteraction, { passive: true });
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = 'unset';
+      document.removeEventListener('mousedown', handleOutsideInteraction);
+      document.removeEventListener('touchstart', handleOutsideInteraction);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMobileMenuOpen]);
 
   const { currency, setCurrency } = useCurrency();
   const { language, setLanguage, t } = useLanguage();
@@ -191,43 +235,43 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* TIER 1: MICRO-TOPBAR VIP (Estándar Oficial Concesionario de Superlujo)   */}
       {/* Aloja utilidades (Divisas, Idioma, Estado Showroom y Portal Staff)        */}
       {/* ========================================================================= */}
-      <div className="bg-carbon-950/80 backdrop-blur-md transition-all">
+      <div className="bg-carbon-950/90 backdrop-blur-md border-b border-carbon-800/40 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-7.5 text-[10px] font-medium text-silver-400 tracking-wider">
+          <div className="flex items-center justify-between py-2 sm:py-2.5 min-h-[38px] text-xs font-medium text-silver-400 tracking-wider">
             
             {/* Lado Izquierdo: Telemetría de Ubicación & Servicio VIP */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5">
-                <span className="relative flex h-1.5 w-1.5">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                 </span>
-                <span className="font-semibold text-silver-300 uppercase tracking-widest text-[9.5px]">
+                <span className="font-bold text-silver-200 uppercase tracking-widest text-xs sm:text-[12.5px]">
                   {settings.city.includes('Medellín')
                     ? (language === 'ES' ? 'Showroom Medellín' : 'Medellín Showroom')
                     : settings.city}
                 </span>
               </div>
-              <span className="hidden sm:inline text-carbon-700">·</span>
-              <span className="hidden sm:inline text-silver-400 font-mono text-[9.5px]">
+              <span className="hidden sm:inline text-carbon-600 font-bold">·</span>
+              <span className="hidden sm:inline text-silver-300 font-mono text-xs sm:text-[12px]">
                 {language === 'ES' ? 'Aeropuerto JMC & Entrega VIP' : 'JMC Airport & VIP Delivery'}
               </span>
-              <span className="hidden md:inline text-carbon-700">·</span>
-              <span className="hidden md:inline text-gold-400/90 font-mono font-semibold text-[9.5px]">
+              <span className="hidden md:inline text-carbon-600 font-bold">·</span>
+              <span className="hidden md:inline text-gold-400 font-mono font-bold text-xs sm:text-[12px]">
                 {language === 'ES' ? 'Atención 24/7' : '24/7 Concierge'}
               </span>
             </div>
 
             {/* Lado Derecho: Utilidades Operativas (Moneda, Idioma) */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               
               {/* Selector de Moneda Satinado */}
-              <div className="flex items-center bg-carbon-900/90 border border-carbon-800/80 rounded-full p-0.5 text-[9.5px] font-mono font-bold shadow-inner">
+              <div className="flex items-center bg-carbon-900/90 border border-carbon-800/90 rounded-full p-1 text-xs font-mono font-bold shadow-inner">
                 {(['USD', 'EUR', 'COP'] as CurrencyCode[]).map((c) => (
                   <button
                     key={c}
                     onClick={() => setCurrency(c)}
-                    className={`px-2 py-0.5 rounded-full transition-all ${
+                    className={`px-2.5 py-0.5 sm:px-3 sm:py-0.5 rounded-full text-xs font-bold transition-all ${
                       currency === c
                         ? 'bg-gradient-to-r from-gold-400 to-gold-300 text-carbon-950 font-black shadow-sm'
                         : 'text-silver-400 hover:text-white'
@@ -239,15 +283,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 ))}
               </div>
 
-              <div className="h-2.5 w-px bg-carbon-800" />
+              <div className="h-3.5 w-px bg-carbon-800" />
 
               {/* Selector de Idioma */}
               <button
                 onClick={() => setLanguage(language === 'ES' ? 'EN' : 'ES')}
-                className="flex items-center gap-1 text-[10px] font-mono text-silver-300 hover:text-gold-300 transition-colors px-1.5 py-0.5 rounded hover:bg-carbon-900/80"
+                className="flex items-center gap-1.5 text-xs font-mono font-bold text-silver-300 hover:text-gold-300 transition-colors px-2 py-0.5 rounded hover:bg-carbon-900/80"
                 title="Cambiar idioma / Switch language"
               >
-                <Globe className="w-3 h-3 text-gold-400" />
+                <Globe className="w-3.5 h-3.5 text-gold-400" />
                 <span className="font-bold">{language === 'ES' ? 'ES' : 'EN'}</span>
               </button>
             </div>
@@ -392,8 +436,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             </div>
 
-            {/* Botón Hamburguesa para Móvil */}
+            {/* Botón Hamburguesa para Móvil (con ref para evitar conflicto de click) */}
             <button
+              ref={mobileToggleBtnRef}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="lg:hidden p-2 rounded-xl bg-carbon-900 border border-carbon-800 text-silver-300 hover:text-gold-400 focus:outline-none"
               aria-label="Abrir menú de navegación"
@@ -406,11 +451,26 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
+      {/* Backdrop de pantalla completa para cerrar al tocar/hacer clic afuera (Móvil & PC) */}
+      {isMobileMenuOpen &&
+        createPortal(
+          <div
+            onClick={() => setIsMobileMenuOpen(false)}
+            onTouchStart={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-30 lg:hidden animate-fade-in cursor-pointer"
+            aria-hidden="true"
+          />,
+          document.body
+        )}
+
       {/* ========================================================================= */}
       {/* CAJÓN DE NAVEGACIÓN MÓVIL (Responsive & Touch-Friendly)                   */}
       {/* ========================================================================= */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-carbon-950/98 border-b border-carbon-800 px-6 py-6 space-y-5 shadow-2xl animate-fade-in backdrop-blur-2xl">
+        <div
+          ref={mobileMenuRef}
+          className="relative z-40 lg:hidden bg-carbon-950/98 border-b border-carbon-800 px-6 py-6 space-y-5 shadow-2xl animate-fade-in backdrop-blur-2xl"
+        >
           
           {/* Fila de Utilidades en Móvil: Moneda + Idioma */}
           <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-carbon-900 border border-carbon-800">

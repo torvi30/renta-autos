@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
+import { luxuryAlert } from '../../context/AlertContext';
 import { CompanySettings } from '../../types/settings';
 
 type SettingsTab = 'brand' | 'contact' | 'hero' | 'social' | 'policies';
@@ -28,10 +29,10 @@ export const AdminSettingsView: React.FC = () => {
   const [formData, setFormData] = useState<CompanySettings>({
     ...settings,
     hero: settings.hero || {
-      badge: 'CONCESIONARIO SHOWROOM VIP 360° • FLOTA 2026',
+      badge: 'CONCESIONARIO SHOWROOM VIP • FLOTA 2026',
       titleLine1: 'TU VIAJE.',
       titleLine2: 'TU VEHÍCULO.',
-      description: 'Gira cada vehículo en 360° sobre nuestro plato giratorio de exhibición. Usa las flechas o la barra inferior para pasar de un auto a otro, y haz clic para ver su ficha técnica y galería completa.',
+      description: 'Explora nuestra exclusiva flota de vehículos de alta gama. Usa las flechas o la barra inferior para seleccionar cualquier auto, ver sus detalles y reservar.',
     },
     socialLinks: settings.socialLinks || {
       instagram: '',
@@ -94,7 +95,10 @@ export const AdminSettingsView: React.FC = () => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert('Por favor selecciona un archivo de imagen válido (PNG, JPG o WebP).');
+      luxuryAlert.warning(
+        'Formato de Imagen No Válido',
+        'Por favor selecciona un archivo de imagen compatible (PNG, JPG o WebP).'
+      );
       return;
     }
 
@@ -128,9 +132,12 @@ export const AdminSettingsView: React.FC = () => {
     e.preventDefault();
     await updateSettings(formData);
     setShowSuccessToast(true);
-    setTimeout(() => {
-      setShowSuccessToast(false);
-    }, 4000);
+    setTimeout(() => setShowSuccessToast(false), 4000);
+    luxuryAlert.success({
+      title: '¡Configuración Guardada!',
+      message: 'Los parámetros comerciales, multimedia y políticas de alquiler se han actualizado con éxito.',
+      timer: 3500,
+    });
   };
 
   const testWhatsAppUrl = getWhatsAppLink({

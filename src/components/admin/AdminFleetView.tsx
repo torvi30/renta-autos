@@ -490,8 +490,14 @@ export const AdminFleetView: React.FC<AdminFleetViewProps> = ({
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-carbon-950/85 backdrop-blur-xl animate-fade-in"
           role="dialog"
           aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setVehicleToDelete(null);
+          }}
         >
-          <div className="relative w-full max-w-md rounded-3xl bg-carbon-900 border border-carbon-750 p-6 sm:p-7 shadow-2xl space-y-5">
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-md rounded-3xl bg-carbon-900 border border-carbon-750 p-6 sm:p-7 shadow-2xl space-y-5"
+          >
             <div className="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto border border-rose-500/30 shadow-inner">
               <AlertTriangle className="w-6 h-6" />
             </div>

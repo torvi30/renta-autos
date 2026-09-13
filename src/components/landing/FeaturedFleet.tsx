@@ -34,7 +34,7 @@ export const FeaturedFleet: React.FC<FeaturedFleetProps> = ({
   }, [vehicles, selectedCategory]);
 
   return (
-    <section id="showroom" className="py-20 bg-carbon-950 relative">
+    <section id="showroom" className="pt-8 sm:pt-12 pb-20 bg-carbon-950 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Encabezado de Sección */}

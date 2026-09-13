@@ -39,6 +39,21 @@ export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
     }
   }, [initialVehicle]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = 'unset';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, handleClose]);
+
   const currentVehicle = vehicles.find((v) => v.id === selectedVehicleId) || initialVehicle || vehicles[0];
 
   const handleOpenWhatsApp = (e: React.FormEvent) => {
@@ -75,9 +90,20 @@ export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
 
       {/* Modal / Dialog para estructurar el mensaje antes de enviarlo */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-carbon-950/80 backdrop-blur-md animate-fade-in">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+        >
+          {/* Backdrop con captura de toque y clic para cerrar afuera */}
           <div
-            className="relative w-full max-w-md rounded-2xl bg-carbon-900 border border-carbon-750 p-6 sm:p-8 shadow-2xl"
+            className="fixed inset-0 bg-carbon-950/80 backdrop-blur-md transition-opacity cursor-pointer -z-10"
+            onClick={handleClose}
+            onTouchStart={handleClose}
+            aria-hidden="true"
+          />
+
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-md rounded-2xl bg-carbon-900 border border-carbon-750 p-6 sm:p-8 shadow-2xl z-10"
             role="dialog"
             aria-modal="true"
             aria-labelledby="whatsapp-title"

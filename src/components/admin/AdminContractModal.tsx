@@ -47,8 +47,14 @@ export const AdminContractModal: React.FC<AdminContractModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-xl overflow-y-auto animate-fade-in print:p-0 print:bg-white print:static print:inset-auto"
       role="dialog"
       aria-modal="true"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className="relative w-full max-w-4xl rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[95vh] print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:bg-white">
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-4xl rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[95vh] print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:bg-white"
+      >
         
         {/* Cabecera Interactiva del Modal (Oculta en Impresión) */}
         <div className="flex items-center justify-between p-5 border-b border-carbon-800 bg-carbon-850 print:hidden">

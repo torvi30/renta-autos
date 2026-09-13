@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Compass, Play, Pause, Hand, Sliders, ExternalLink, Sparkles } from 'lucide-react';
+import { Compass, Play, Pause, Hand, Sliders, ExternalLink, Sparkles, Eye } from 'lucide-react';
 import { Vehicle } from '../../types/vehicle';
 
 interface VehicleTurntable360Props {
@@ -17,6 +17,7 @@ export const VehicleTurntable360: React.FC<VehicleTurntable360Props> = ({
   const [rotationAngle, setRotationAngle] = useState(0); // 0 a 359.9 grados
   const [isHovered, setIsHovered] = useState(false);
   const [speed, setSpeed] = useState<'slow' | 'normal' | 'fast'>('normal');
+  const [viewMode, setViewMode] = useState<'contain' | 'cover'>('contain');
 
   const containerRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number>();
@@ -202,30 +203,34 @@ export const VehicleTurntable360: React.FC<VehicleTurntable360Props> = ({
         </div>
       </div>
 
-      {/* 3. FOTO PRINCIPAL DEL AUTO EN GIRO 3D PRO */}
+      {/* 3. FOTO PRINCIPAL DEL AUTO EN GIRO 3D PRO (Muestra el vehículo completo sin recortar) */}
       <div className="relative aspect-[16/9] sm:aspect-[21/9] w-full flex items-center justify-center overflow-hidden z-20">
         
         {/* Contenedor del vehículo con perspectiva 3D realista y reflejo de estudio */}
         <div
-          className="relative w-full h-full flex items-center justify-center transition-transform duration-100 ease-out"
+          className="relative w-full h-full flex items-center justify-center"
           style={{
             perspective: '1200px',
-            transform: `perspective(1200px) rotateY(${yawDegrees}deg) rotateX(${pitchDegrees}deg) scale(1.02)`,
+            transform: `perspective(1200px) rotateY(${yawDegrees}deg) rotateX(${pitchDegrees}deg) scale(1.01)`,
           }}
         >
-          {/* FOTO PRINCIPAL DEL VEHÍCULO (Nítida, fiel al modelo, sin deformaciones) */}
+          {/* FOTO PRINCIPAL DEL VEHÍCULO (Nítida, completa, sin recortes ni deformaciones) */}
           <img
             src={vehicle.mainImage}
             alt={`${vehicle.brand} ${vehicle.model} - Foto Oficial`}
-            className="w-full h-full object-cover object-center select-none filter contrast-[1.03] brightness-[0.98] group-hover:brightness-105 transition-all duration-500"
+            className={`w-full h-full ${
+              viewMode === 'contain'
+                ? 'object-contain max-h-[85%] sm:max-h-[92%] p-2 sm:p-4 drop-shadow-[0_20px_35px_rgba(0,0,0,0.85)]'
+                : 'object-cover'
+            } object-center select-none filter contrast-[1.02] brightness-[0.99] group-hover:brightness-105 transition-all duration-300`}
             draggable={false}
           />
 
-          {/* Destello de luz especular dinámica que barre la carrocería al girar el plato */}
+          {/* Destello de luz especular dinámica sutil (sin parpadeos) */}
           <div
-            className="absolute inset-0 pointer-events-none opacity-40 mix-blend-overlay transition-all duration-75"
+            className="absolute inset-0 pointer-events-none opacity-20"
             style={{
-              background: `linear-gradient(105deg, transparent ${lightPositionPercent - 25}%, rgba(255,255,255,0.45) ${lightPositionPercent}%, rgba(212,175,55,0.3) ${lightPositionPercent + 10}%, transparent ${lightPositionPercent + 25}%)`,
+              background: `linear-gradient(105deg, transparent ${lightPositionPercent - 30}%, rgba(255,255,255,0.25) ${lightPositionPercent}%, rgba(212,175,55,0.2) ${lightPositionPercent + 10}%, transparent ${lightPositionPercent + 30}%)`,
             }}
           />
 
@@ -313,6 +318,16 @@ export const VehicleTurntable360: React.FC<VehicleTurntable360Props> = ({
               Rápido
             </button>
           </div>
+
+          {/* Botón de Ajuste Completo vs Expandir */}
+          <button
+            onClick={() => setViewMode((v) => (v === 'contain' ? 'cover' : 'contain'))}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-carbon-950/90 hover:bg-carbon-900 border border-white/10 text-[11px] font-semibold text-silver-300 hover:text-gold-400 backdrop-blur-md transition-all active:scale-95 shadow-lg"
+            title={viewMode === 'contain' ? 'Expandir para llenar' : 'Ajustar para ver auto completo'}
+          >
+            <Eye className="w-3.5 h-3.5 text-gold-400" />
+            <span className="hidden sm:inline">{viewMode === 'contain' ? 'Auto Completo' : 'Expandir'}</span>
+          </button>
 
           {/* Botón de Pausa / Reanudación */}
           <button

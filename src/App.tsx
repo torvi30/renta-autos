@@ -17,9 +17,11 @@ import { VehicleModal } from './components/showcase/VehicleModal';
 import { QuickReservationModal } from './components/landing/QuickReservationModal';
 import { ProtectedRoute } from './components/admin/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './hooks/useAuth';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { SettingsProvider } from './context/SettingsContext';
+import { AlertProvider } from './context/AlertContext';
 
 
 // Code-Splitting dinámico para máxima velocidad de carga (Fase 11)
@@ -85,6 +87,7 @@ const parseRouteFromLocation = (): RouteState => {
 };
 
 const AppContent: React.FC = () => {
+  const { isAuthenticated } = useAuth();
   const [vehicles, setVehicles] = useState<Vehicle[]>(getLocalVehicles);
   const [routeState, setRouteState] = useState<RouteState>(parseRouteFromLocation);
   const [selectedVehicleForModal, setSelectedVehicleForModal] = useState<Vehicle | null>(null);
@@ -163,6 +166,14 @@ const AppContent: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  const handleNavigateToAdmin = useCallback(() => {
+    if (isAuthenticated) {
+      navigateToAdminDashboard();
+    } else {
+      navigateToAdminLogin();
+    }
+  }, [isAuthenticated, navigateToAdminDashboard, navigateToAdminLogin]);
+
   const handleOpenVehicleModal = (vehicle: Vehicle) => {
     navigateToVehicle(vehicle.slug);
   };
@@ -204,6 +215,10 @@ const AppContent: React.FC = () => {
 
   // 1. Ruta de Acceso Administrativo (/admin/login) - Fase 5
   if (currentRoute === 'admin_login') {
+    if (isAuthenticated) {
+      navigateToAdminDashboard();
+      return null;
+    }
     return (
       <React.Suspense fallback={<ShowroomLoadingFallback />}>
         <AdminLoginPage
@@ -242,7 +257,7 @@ const AppContent: React.FC = () => {
         onNavigateToCatalog={navigateToCatalog}
         onNavigateToFleet={() => scrollToSection('showroom')}
         onNavigateToBooking={() => handleOpenBooking()}
-        onNavigateToAdmin={navigateToAdminLogin}
+        onNavigateToAdmin={handleNavigateToAdmin}
       />
 
       <main className="flex-grow">
@@ -298,7 +313,7 @@ const AppContent: React.FC = () => {
       </main>
 
       {/* Pie de Página con acceso a Portal Corporativo */}
-      <Footer onNavigateToAdmin={navigateToAdminLogin} />
+      <Footer onNavigateToAdmin={handleNavigateToAdmin} />
 
       {/* Modal de Detalle con Video y 12 fotos (Fallback/modal directo) */}
       <VehicleModal
@@ -333,7 +348,9 @@ export const App: React.FC = () => {
       <CurrencyProvider>
         <LanguageProvider>
           <AuthProvider>
-            <AppContent />
+            <AlertProvider>
+              <AppContent />
+            </AlertProvider>
           </AuthProvider>
         </LanguageProvider>
       </CurrencyProvider>

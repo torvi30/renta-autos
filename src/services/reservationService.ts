@@ -84,6 +84,24 @@ export const SEED_RESERVATIONS: Reservation[] = [
 ];
 
 /**
+ * Limpia recursivamente objetos para garantizar que ningún campo sea `undefined`,
+ * previniendo errores de validación síncrona en Firebase Firestore.
+ */
+export const sanitizeForFirestore = <T extends Record<string, any>>(obj: T): T => {
+  const sanitized: any = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === undefined) {
+      continue;
+    } else if (value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
+      sanitized[key] = sanitizeForFirestore(value);
+    } else {
+      sanitized[key] = value;
+    }
+  }
+  return sanitized;
+};
+
+/**
  * Obtener todas las reservas persistidas en localStorage
  */
 export const getStoredReservations = (): Reservation[] => {
@@ -94,7 +112,20 @@ export const getStoredReservations = (): Reservation[] => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_RESERVATIONS));
       return SEED_RESERVATIONS;
     }
-    return JSON.parse(raw) as Reservation[];
+    const list = JSON.parse(raw) as Reservation[];
+    // Limpiar reservas fantasmas fallidas por error de undefined en Firestore
+    const cleaned = list
+      .filter((r) => r.id !== 'RES-2026-G89M' && r.id !== 'RES-2026-00VH')
+      .map((r) => ({
+        ...r,
+        deliveryAddress: r.deliveryAddress || '',
+        notes: r.notes || '',
+      }));
+
+    if (cleaned.length !== list.length) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+    }
+    return cleaned;
   } catch (error) {
     console.warn('Error al leer reservas de localStorage:', error);
     return SEED_RESERVATIONS;
@@ -195,7 +226,8 @@ export const checkAvailability = (
   vehicle: Vehicle,
   startDate: string,
   endDate: string,
-  excludeReservationId?: string
+  excludeReservationId?: string,
+  clientContact?: string
 ): AvailabilityCheckResult => {
   // 1. Estado operativo del vehículo
   if (vehicle.status === 'MAINTENANCE') {
@@ -237,12 +269,31 @@ export const checkAvailability = (
 
   // 3. Validación de solapamiento de fechas con reservas existentes activas
   const allReservations = getStoredReservations();
-  const vehicleReservations = allReservations.filter(
-    (res) =>
-      res.vehicleId === vehicle.id &&
-      res.id !== excludeReservationId &&
-      (res.status === 'PENDING' || res.status === 'CONFIRMED' || res.status === 'ACTIVE' || res.status === 'MAINTENANCE')
-  );
+  const vehicleReservations = allReservations.filter((res) => {
+    if (res.vehicleId !== vehicle.id) return false;
+    if (res.id === excludeReservationId) return false;
+    if (
+      res.status !== 'PENDING' &&
+      res.status !== 'CONFIRMED' &&
+      res.status !== 'ACTIVE' &&
+      res.status !== 'MAINTENANCE'
+    ) {
+      return false;
+    }
+
+    // Si es un reintento del mismo cliente (mismo email o teléfono en una reserva PENDING),
+    // no generar un falso conflicto contra sí mismo
+    if (
+      clientContact &&
+      res.status === 'PENDING' &&
+      ((res.client.email && res.client.email.toLowerCase() === clientContact.toLowerCase()) ||
+        (res.client.phone && res.client.phone.trim() === clientContact.trim()))
+    ) {
+      return false;
+    }
+
+    return true;
+  });
 
   // Verificación de intervalo: (startA <= endB) && (endA >= startB)
   for (const existing of vehicleReservations) {
@@ -266,6 +317,32 @@ export const checkAvailability = (
 };
 
 /**
+ * Obtener todos los rangos de fechas bloqueados/reservados para un vehículo específico
+ */
+export const getVehicleBlockedDateRanges = (
+  vehicleId: string,
+  excludeReservationId?: string
+): Array<{ startDate: string; endDate: string; id: string; status: ReservationStatus }> => {
+  const allReservations = getStoredReservations();
+  return allReservations
+    .filter(
+      (res) =>
+        res.vehicleId === vehicleId &&
+        res.id !== excludeReservationId &&
+        (res.status === 'PENDING' ||
+          res.status === 'CONFIRMED' ||
+          res.status === 'ACTIVE' ||
+          res.status === 'MAINTENANCE')
+    )
+    .map((res) => ({
+      startDate: res.startDate,
+      endDate: res.endDate,
+      id: res.id,
+      status: res.status,
+    }));
+};
+
+/**
  * Crear una nueva solicitud de reserva con código único RES-2026-XXXX y persistencia dual (Cloud Firestore + Local)
  */
 export const createReservation = (params: {
@@ -280,7 +357,8 @@ export const createReservation = (params: {
   notes?: string;
 }): { reservation: Reservation; error?: string } => {
   // Validación de disponibilidad obligatoria antes de guardar
-  const availability = checkAvailability(params.vehicle, params.startDate, params.endDate);
+  const clientContact = params.client.email || params.client.phone;
+  const availability = checkAvailability(params.vehicle, params.startDate, params.endDate, undefined, clientContact);
   if (!availability.isAvailable) {
     return {
       reservation: null as unknown as Reservation,
@@ -309,25 +387,48 @@ export const createReservation = (params: {
     pickupTime: params.pickupTime || '10:00',
     returnTime: params.returnTime || '10:00',
     deliveryLocation: params.deliveryLocation,
-    deliveryAddress: params.deliveryAddress,
-    client: params.client,
+    deliveryAddress: params.deliveryAddress || '',
+    client: {
+      fullName: params.client.fullName || '',
+      email: params.client.email || '',
+      phone: params.client.phone || '',
+      documentId: params.client.documentId || '',
+      driverLicense: params.client.driverLicense || '',
+      ageConfirmation: Boolean(params.client.ageConfirmation),
+    },
     pricing,
-    notes: params.notes,
+    notes: params.notes || '',
     status: 'PENDING' as ReservationStatus,
     createdAt: new Date().toISOString(),
   };
 
-  // 1. Guardar de inmediato en local cache
-  const currentList = getStoredReservations();
-  saveReservations([newReservation, ...currentList]);
-
-  // 2. Persistir en Cloud Firestore de manera desacoplada y asíncrona
+  // 1. Persistir en Cloud Firestore de manera segura, sanitizada y asíncrona
   if (db && isFirebaseConfigured()) {
-    const docRef = doc(db, RESERVATIONS_COLLECTION, newReservation.id);
-    setDoc(docRef, newReservation).catch((err) => {
-      console.warn('Aviso: la reserva se guardó localmente pero falló el envío a Firestore:', err);
-    });
+    try {
+      const docRef = doc(db, RESERVATIONS_COLLECTION, newReservation.id);
+      const cleanData = sanitizeForFirestore(newReservation);
+      setDoc(docRef, cleanData).catch((err) => {
+        console.warn('Aviso: la reserva se guardó localmente pero falló el envío a Firestore:', err);
+      });
+    } catch (err) {
+      console.warn('Advertencia al preparar setDoc en Firestore:', err);
+    }
   }
+
+  // 2. Guardar en caché local (reemplazando cualquier intento pendiente previo del mismo cliente)
+  const currentList = getStoredReservations();
+  const filteredList = currentList.filter(
+    (r) =>
+      !(
+        r.vehicleId === newReservation.vehicleId &&
+        r.status === 'PENDING' &&
+        (r.client.email.toLowerCase() === newReservation.client.email.toLowerCase() ||
+          r.client.phone === newReservation.client.phone) &&
+        r.startDate === newReservation.startDate &&
+        r.endDate === newReservation.endDate
+      )
+  );
+  saveReservations([newReservation, ...filteredList]);
 
   return { reservation: newReservation };
 };
@@ -354,7 +455,8 @@ export const createReservationAsync = async (params: {
   if (db && isFirebaseConfigured()) {
     try {
       const docRef = doc(db, RESERVATIONS_COLLECTION, syncResult.reservation.id);
-      await setDoc(docRef, syncResult.reservation);
+      const cleanData = sanitizeForFirestore(syncResult.reservation);
+      await setDoc(docRef, cleanData);
     } catch (error: any) {
       console.warn('La reserva se completó con respaldo local, Firestore arrojó advertencia:', error);
     }
@@ -381,7 +483,7 @@ export const getDeliveryLocationLabel = (location: DeliveryLocationType): string
  */
 export const generateWhatsAppReservationLink = (
   reservation: Reservation,
-  conciergePhone: string = '1234567890'
+  conciergePhone: string = '573009115898'
 ): string => {
   const locationLabel = getDeliveryLocationLabel(reservation.deliveryLocation);
 

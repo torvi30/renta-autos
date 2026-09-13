@@ -58,10 +58,10 @@ export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
     'Entrega a Hotel o Residencia Privada'
   ],
   hero: {
-    badge: 'CONCESIONARIO SHOWROOM VIP 360° • FLOTA 2026',
+    badge: 'CONCESIONARIO SHOWROOM VIP • FLOTA 2026',
     titleLine1: 'TU VIAJE.',
     titleLine2: 'TU VEHÍCULO.',
-    description: 'Gira cada vehículo en 360° sobre nuestro plato giratorio de exhibición. Usa las flechas o la barra inferior para pasar de un auto a otro, y haz clic para ver su ficha técnica y galería completa.',
+    description: 'Explora nuestra exclusiva flota de vehículos de alta gama. Usa las flechas o la barra inferior para seleccionar cualquier auto, ver sus detalles y reservar.',
   },
   socialLinks: {
     instagram: '',

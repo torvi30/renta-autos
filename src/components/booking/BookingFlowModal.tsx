@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   X,
   Calendar,
-  Clock,
   MapPin,
   CheckCircle2,
   AlertTriangle,
@@ -32,10 +31,20 @@ import {
   createReservation,
   generateWhatsAppReservationLink,
   getDeliveryLocationLabel,
+  getStoredReservations,
+  subscribeReservations,
 } from '../../services/reservationService';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useSettings } from '../../context/SettingsContext';
 import { Button } from '../common/Button';
+import { ShowroomDatePicker } from './ShowroomDatePicker';
+
+const WhatsAppIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+  </svg>
+);
 
 export interface BookingFlowModalProps {
   vehicle: Vehicle | null;
@@ -56,6 +65,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
 }) => {
   const { formatPrice } = useCurrency();
   const { language } = useLanguage();
+  const { settings } = useSettings();
   // Pasos: 1 = Fechas & Vehículo, 2 = Conductor KYC, 3 = Confirmación & Voucher
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
 
@@ -89,6 +99,17 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
   const [createdReservation, setCreatedReservation] = useState<Reservation | null>(null);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // Lista viva de reservas para detección reactiva de conflictos en tiempo real
+  const [allReservations, setAllReservations] = useState<Reservation[]>(getStoredReservations);
+
+  useEffect(() => {
+    const unsubscribe = subscribeReservations((updatedList) => {
+      setAllReservations(updatedList);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Sincronizar selección de vehículo y fechas externas cuando se abre el modal
   useEffect(() => {
@@ -109,15 +130,22 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
     }
   }, [isOpen, initialVehicle, initialStartDate, initialEndDate]);
 
-  // Cerrar con tecla Escape
+  // Cerrar con tecla Escape y bloquear scroll de fondo
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape') {
         onClose();
       }
     };
+
+    document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = 'unset';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isOpen, onClose]);
 
   // Vehículo activo
@@ -125,11 +153,31 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
     return vehicles.find((v) => v.id === selectedVehicleId) || initialVehicle || vehicles[0];
   }, [vehicles, selectedVehicleId, initialVehicle]);
 
+  // Rangos de fechas bloqueados para el vehículo activo (para el calendario interactivo)
+  const vehicleBlockedRanges = useMemo(() => {
+    if (!activeVehicle) return [];
+    return allReservations
+      .filter(
+        (res) =>
+          res.vehicleId === activeVehicle.id &&
+          (res.status === 'PENDING' ||
+            res.status === 'CONFIRMED' ||
+            res.status === 'ACTIVE' ||
+            res.status === 'MAINTENANCE')
+      )
+      .map((res) => ({
+        startDate: res.startDate,
+        endDate: res.endDate,
+        id: res.id,
+        reason: res.status === 'MAINTENANCE' ? 'Mantenimiento' : 'Reserva existente',
+      }));
+  }, [activeVehicle, allReservations]);
+
   // Regla 14: Verificación reactiva de disponibilidad del vehículo
   const availabilityResult = useMemo(() => {
     if (!activeVehicle) return { isAvailable: false, reason: 'Vehículo no seleccionado' };
     return checkAvailability(activeVehicle, startDate, endDate);
-  }, [activeVehicle, startDate, endDate]);
+  }, [activeVehicle, startDate, endDate, allReservations]);
 
   // Cálculo de cotización
   const pricing = useMemo(() => {
@@ -157,7 +205,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
 
   const handleConfirmReservation = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeVehicle) return;
+    if (!activeVehicle || isSubmitting) return;
 
     if (!clientInfo.ageConfirmation) {
       setSubmissionError(
@@ -168,32 +216,40 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
       return;
     }
 
+    setIsSubmitting(true);
     setSubmissionError(null);
 
-    const result = createReservation({
-      vehicle: activeVehicle,
-      startDate,
-      endDate,
-      pickupTime,
-      returnTime,
-      deliveryLocation,
-      deliveryAddress: deliveryLocation === 'HOTEL_RESIDENCE' ? deliveryAddress : undefined,
-      client: clientInfo,
-      notes: notes.trim() || undefined,
-    });
+    try {
+      const result = createReservation({
+        vehicle: activeVehicle,
+        startDate,
+        endDate,
+        pickupTime,
+        returnTime,
+        deliveryLocation,
+        deliveryAddress: deliveryLocation === 'HOTEL_RESIDENCE' ? deliveryAddress : undefined,
+        client: clientInfo,
+        notes: notes.trim() || undefined,
+      });
 
-    if (result.error || !result.reservation) {
-      setSubmissionError(
-        result.error ||
-          (language === 'ES'
-            ? 'Ocurrió un error al procesar la reserva.'
-            : 'An error occurred while processing the reservation.')
-      );
-      return;
+      if (result.error || !result.reservation) {
+        setSubmissionError(
+          result.error ||
+            (language === 'ES'
+              ? 'Ocurrió un error al procesar la reserva.'
+              : 'An error occurred while processing the reservation.')
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      setCreatedReservation(result.reservation);
+      setCurrentStep(3);
+    } catch (err: any) {
+      setSubmissionError(err?.message || 'Error al procesar la reserva');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setCreatedReservation(result.reservation);
-    setCurrentStep(3);
   };
 
   const getDeliveryLabel = (loc: DeliveryLocationType) => {
@@ -214,9 +270,16 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
 
   const handleOpenWhatsApp = useCallback(() => {
     if (!createdReservation) return;
-    const url = generateWhatsAppReservationLink(createdReservation);
+    try {
+      navigator.clipboard.writeText(createdReservation.id);
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 3000);
+    } catch (_) {}
+
+    const targetPhone = settings.whatsappPhone || '573009115898';
+    const url = generateWhatsAppReservationLink(createdReservation, targetPhone);
     window.open(url, '_blank', 'noopener,noreferrer');
-  }, [createdReservation]);
+  }, [createdReservation, settings.whatsappPhone]);
 
   const handleCopyReservationCode = useCallback(() => {
     if (!createdReservation) return;
@@ -229,12 +292,23 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-carbon-950/85 backdrop-blur-xl animate-fade-in overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="booking-modal-title"
     >
-      <div className="relative w-full max-w-3xl rounded-2xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden my-auto flex flex-col max-h-[92vh]">
+      {/* Backdrop explícito con soporte de toque móvil y clic para cerrar afuera */}
+      <div
+        className="fixed inset-0 bg-carbon-950/85 backdrop-blur-xl transition-opacity cursor-pointer -z-10"
+        onClick={onClose}
+        onTouchStart={onClose}
+        aria-hidden="true"
+      />
+
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-3xl rounded-2xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden my-auto flex flex-col max-h-[92vh] z-10"
+      >
         
         {/* Encabezado Superior con Stepper */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 border-b border-carbon-800 bg-carbon-850/90 gap-4">
@@ -302,11 +376,39 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
           </div>
         </div>
 
-        {/* Mensaje de Error General */}
+        {/* Mensaje de Error General / Conflicto */}
         {submissionError && (
-          <div className="mx-5 sm:mx-6 mt-4 p-3.5 rounded-xl bg-rose-950/50 border border-rose-800/60 flex items-start gap-3 text-rose-300 text-xs animate-shake">
-            <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
-            <span>{submissionError}</span>
+          <div className="mx-5 sm:mx-6 mt-4 p-4 rounded-xl bg-rose-950/70 border border-rose-800/80 flex flex-col gap-3 text-rose-300 text-xs animate-shake">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 leading-relaxed">
+                <span className="font-bold text-rose-200 block mb-0.5">
+                  {language === 'ES' ? 'Aviso de Disponibilidad / Conflicto' : 'Availability / Conflict Notice'}
+                </span>
+                <span>{submissionError}</span>
+              </div>
+            </div>
+
+            {currentStep === 2 && (
+              <div className="pt-2 border-t border-rose-800/50 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-[11px] text-rose-300/80">
+                  {language === 'ES'
+                    ? 'Revisa las fechas libres directamente en el calendario.'
+                    : 'Check open dates directly on the calendar.'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSubmissionError(null);
+                    setCurrentStep(1);
+                  }}
+                  className="px-3.5 py-1.5 rounded-lg bg-gold-500 hover:bg-gold-400 text-carbon-950 font-bold text-xs transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>{language === 'ES' ? 'Cambiar Fechas en Calendario' : 'Change Dates in Calendar'}</span>
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -366,83 +468,24 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                 )}
               </div>
 
-              {/* Selector de Fechas y Horarios */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                {/* Recogida */}
-                <div className="p-4 rounded-xl bg-carbon-850/60 border border-carbon-800 space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-silver-200 uppercase tracking-wider">
-                    <Calendar className="w-4 h-4 text-gold-400" />
-                    <span>{language === 'ES' ? 'Fecha & Hora de Recogida' : 'Pick-up Date & Time'}</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="col-span-2">
-                      <label htmlFor="flow-pickup-date" className="block text-[11px] text-silver-400 mb-1">
-                        {language === 'ES' ? 'Fecha' : 'Date'}
-                      </label>
-                      <input
-                        id="flow-pickup-date"
-                        type="date"
-                        required
-                        min={todayStr}
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg bg-carbon-800 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="flow-pickup-time" className="block text-[11px] text-silver-400 mb-1">
-                        {language === 'ES' ? 'Hora' : 'Time'}
-                      </label>
-                      <input
-                        id="flow-pickup-time"
-                        type="time"
-                        required
-                        value={pickupTime}
-                        onChange={(e) => setPickupTime(e.target.value)}
-                        className="w-full px-2 py-2 rounded-lg bg-carbon-800 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Devolución */}
-                <div className="p-4 rounded-xl bg-carbon-850/60 border border-carbon-800 space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-silver-200 uppercase tracking-wider">
-                    <Clock className="w-4 h-4 text-gold-400" />
-                    <span>{language === 'ES' ? 'Fecha & Hora de Devolución' : 'Return Date & Time'}</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="col-span-2">
-                      <label htmlFor="flow-return-date" className="block text-[11px] text-silver-400 mb-1">
-                        {language === 'ES' ? 'Fecha' : 'Date'}
-                      </label>
-                      <input
-                        id="flow-return-date"
-                        type="date"
-                        required
-                        min={startDate || todayStr}
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg bg-carbon-800 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="flow-return-time" className="block text-[11px] text-silver-400 mb-1">
-                        {language === 'ES' ? 'Hora' : 'Time'}
-                      </label>
-                      <input
-                        id="flow-return-time"
-                        type="time"
-                        required
-                        value={returnTime}
-                        onChange={(e) => setReturnTime(e.target.value)}
-                        className="w-full px-2 py-2 rounded-lg bg-carbon-800 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-
+              {/* Selector de Fechas y Horarios Boutique Showroom (integrado, sin popups desalineados) */}
+              <div className="space-y-2">
+                <ShowroomDatePicker
+                  startDate={startDate}
+                  endDate={endDate}
+                  onChange={(newStart, newEnd) => {
+                    setStartDate(newStart);
+                    setEndDate(newEnd);
+                    setSubmissionError(null);
+                  }}
+                  blockedRanges={vehicleBlockedRanges}
+                  pickupTime={pickupTime}
+                  returnTime={returnTime}
+                  onPickupTimeChange={setPickupTime}
+                  onReturnTimeChange={setReturnTime}
+                  language={language}
+                  minDate={todayStr}
+                />
               </div>
 
               {/* Indicador de Disponibilidad en Tiempo Real (Regla 14) */}
@@ -790,8 +833,16 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                   variant="primary"
                   size="md"
                   className="sm:w-2/3"
+                  disabled={isSubmitting}
                 >
-                  {language === 'ES' ? 'CONFIRMAR & GENERAR VOUCHER' : 'CONFIRM & GENERATE VOUCHER'}
+                  {isSubmitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="w-3.5 h-3.5 border-2 border-carbon-950 border-t-transparent rounded-full animate-spin" />
+                      <span>{language === 'ES' ? 'PROCESANDO RESERVA...' : 'PROCESSING BOOKING...'}</span>
+                    </span>
+                  ) : (
+                    language === 'ES' ? 'CONFIRMAR & GENERAR VOUCHER' : 'CONFIRM & GENERATE VOUCHER'
+                  )}
                 </Button>
               </div>
 
@@ -810,25 +861,44 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
               </div>
 
               <div>
-                <span className="px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-400 text-xs font-mono font-semibold uppercase tracking-widest inline-flex items-center gap-1.5 mb-2">
-                  <span>{language === 'ES' ? 'Código Oficial:' : 'Official Code:'}</span>
-                  <strong className="text-silver-100">{createdReservation.id}</strong>
-                </span>
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-carbon-800/90 border border-gold-500/40 text-gold-400 text-xs font-mono shadow-md mb-2">
+                  <span className="text-silver-400 uppercase tracking-wider text-[10px]">
+                    {language === 'ES' ? 'Código Oficial:' : 'Official Code:'}
+                  </span>
+                  <strong className="text-silver-100 font-mono tracking-widest text-sm">
+                    {createdReservation.id}
+                  </strong>
+                  <button
+                    type="button"
+                    onClick={handleCopyReservationCode}
+                    title={language === 'ES' ? 'Copiar código' : 'Copy code'}
+                    className="ml-1 p-1 hover:bg-gold-500/20 rounded text-silver-300 hover:text-gold-300 transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    {copiedCode ? (
+                      <span className="flex items-center gap-1 text-emerald-400 font-sans font-medium text-[11px]">
+                        <Check className="w-3.5 h-3.5" /> {language === 'ES' ? 'Copiado' : 'Copied'}
+                      </span>
+                    ) : (
+                      <Copy className="w-3.5 h-3.5 opacity-80 hover:opacity-100" />
+                    )}
+                  </button>
+                </div>
+
                 <h3 className="text-2xl font-bold text-silver-100 font-display">
                   {language === 'ES' ? '¡Solicitud Registrada con Éxito!' : 'Booking Request Confirmed!'}
                 </h3>
                 <p className="text-xs sm:text-sm text-silver-400 mt-1.5 max-w-md mx-auto">
                   {language === 'ES' ? (
                     <>
-                      Tu reserva ha sido ingresada al sistema con estado{' '}
-                      <span className="text-amber-400 font-semibold">PENDING (En Verificación)</span>.
-                      Un Concierge asignado validará los documentos y coordinará la entrega inmediata.
+                      Tu reserva ya quedó registrada en el sistema. Para{' '}
+                      <strong className="text-emerald-400 font-semibold">validar tus documentos y coordinar la entrega</strong>,
+                      continúa a WhatsApp con nuestro Concierge oficial.
                     </>
                   ) : (
                     <>
-                      Your reservation has been recorded with status{' '}
-                      <span className="text-amber-400 font-semibold">PENDING (Under Review)</span>.
-                      An assigned Concierge will review your credentials and arrange handover.
+                      Your reservation has been recorded in our system. To{' '}
+                      <strong className="text-emerald-400 font-semibold">verify documents and coordinate handover</strong>,
+                      continue to WhatsApp with our VIP Concierge.
                     </>
                   )}
                 </p>
@@ -937,48 +1007,41 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
 
               </div>
 
-              {/* Botones de Acción (Regla 30) */}
+              {/* Botones de Acción (Nivel Pro & Máxima Conversión) */}
               <div className="space-y-3 max-w-lg mx-auto pt-2">
-                <Button
-                  variant="primary"
-                  size="lg"
+                {/* Botón Principal: WhatsApp Oficial Verde Concierge */}
+                <button
+                  type="button"
                   onClick={handleOpenWhatsApp}
-                  icon={<Send className="w-4 h-4" />}
-                  fullWidth
+                  className="w-full group relative flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#20ba5a] hover:to-[#0f776a] text-carbon-950 font-bold shadow-xl shadow-[#25D366]/20 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
                 >
-                  {language === 'ES'
-                    ? 'ENVIAR SOLICITUD A WHATSAPP CONCIERGE'
-                    : 'SEND INQUIRY TO WHATSAPP CONCIERGE'}
-                </Button>
+                  <div className="w-10 h-10 rounded-lg bg-black/10 flex items-center justify-center text-carbon-950 flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <WhatsAppIcon className="w-6 h-6" />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-sm sm:text-base font-extrabold uppercase tracking-wide text-carbon-950 flex items-center gap-2">
+                      <span>{language === 'ES' ? 'CONTINUAR A WHATSAPP CON MI RESERVA' : 'CONTINUE TO WHATSAPP CONCIERGE'}</span>
+                      <Send className="w-4 h-4 opacity-80 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                    <div className="text-[11px] font-medium text-carbon-900/90">
+                      {language === 'ES'
+                        ? 'Coordinar entrega y validar documentos inmediatamente'
+                        : 'Coordinate handover & review credentials now'}
+                    </div>
+                  </div>
+                </button>
 
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCopyReservationCode}
-                    icon={copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    fullWidth
-                  >
-                    {copiedCode
-                      ? language === 'ES'
-                        ? '¡CÓDIGO COPIADO!'
-                        : 'CODE COPIED!'
-                      : language === 'ES'
-                      ? 'COPIAR CÓDIGO'
-                      : 'COPY CODE'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setCurrentStep(1);
-                      onClose();
-                    }}
-                    fullWidth
-                  >
-                    {language === 'ES' ? 'FINALIZAR Y CERRAR' : 'FINISH & CLOSE'}
-                  </Button>
-                </div>
+                {/* Botón Secundario: Finalizar y Volver sin fricción */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCurrentStep(1);
+                    onClose();
+                  }}
+                  className="w-full py-2.5 px-4 text-xs font-semibold text-silver-400 hover:text-silver-100 transition-colors cursor-pointer text-center"
+                >
+                  {language === 'ES' ? 'Finalizar y volver al showroom' : 'Finish and return to showroom'}
+                </button>
               </div>
 
             </div>

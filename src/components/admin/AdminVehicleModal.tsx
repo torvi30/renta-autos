@@ -255,6 +255,40 @@ const LUXURY_PRESETS: VehiclePreset[] = [
       'https://images.unsplash.com/photo-1592198084033-aade902d1aae?auto=format&fit=crop&w=1000&q=80',
     ],
   },
+  {
+    id: 'toyota-lc300',
+    name: 'Toyota Land Cruiser 300 GR-Sport',
+    brand: 'Toyota',
+    model: 'Land Cruiser 300 GR-Sport',
+    year: 2024,
+    plate: 'TOY-300',
+    category: 'SUV_LUJO',
+    pricePerDay: 750,
+    horsepower: 409,
+    acceleration: '6.7s',
+    topSpeed: 210,
+    transmission: 'AUTOMATICA',
+    fuel: 'GASOLINA',
+    seats: 7,
+    doors: 5,
+    features: [
+      'Suspensión electrónica cinética adaptativa E-KDSS',
+      'Tracción 4WD con Bloqueo de Diferencial Triple',
+      'Sistema de Audio Premium JBL Synthesis 14 Altavoces',
+      'Pantallas multimedia traseras VIP de 11.6 pulgadas',
+      'Refrigerador de consola central Cool Box integrado',
+      'Paquete de Seguridad Activa Toyota Safety Sense 3.0',
+    ],
+    description:
+      'El legendario ícono todoterreno elevado a la cúspide del confort VIP y protección ejecutiva. Con motor V6 3.5L Twin-Turbo de 409 HP, suspensión adaptativa E-KDSS, tracción total permanente y un habitáculo de máxima insonorización.',
+    mainImage:
+      'https://images.unsplash.com/photo-1594502184342-2e12f877aa73?auto=format&fit=crop&w=1200&q=85',
+    galleryImages: [
+      'https://images.unsplash.com/photo-1594502184342-2e12f877aa73?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1000&q=80',
+    ],
+  },
 ];
 
 // Banco de Fotografías de Stock HD para atajos rápidos
@@ -264,6 +298,7 @@ const STOCK_PHOTOS = [
   { label: 'Lamborghini Urus', url: 'https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1200&q=85' },
   { label: 'Rolls-Royce Ghost', url: 'https://images.unsplash.com/photo-1631295868223-63265840d001?auto=format&fit=crop&w=1200&q=85' },
   { label: 'McLaren 720S', url: 'https://images.unsplash.com/photo-1621135802920-133df287f89c?auto=format&fit=crop&w=1200&q=85' },
+  { label: 'Toyota Land Cruiser', url: 'https://images.unsplash.com/photo-1594502184342-2e12f877aa73?auto=format&fit=crop&w=1200&q=85' },
   { label: 'Cockpit & Volante VIP', url: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=85' },
   { label: 'Rines & Frenos Cerámicos', url: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=1200&q=85' },
   { label: 'Mercedes-AMG G63', url: 'https://images.unsplash.com/photo-1520031441872-265e4ff70366?auto=format&fit=crop&w=1200&q=85' },
@@ -422,7 +457,17 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Vista previa instantánea local para UX sin latencia
+    // Convertir a DataURL base64 persistente para garantizar que la imagen nunca se pierda
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      if (base64) {
+        setMainImage((current) => (current.startsWith('blob:') || !current ? base64 : current));
+      }
+    };
+    reader.readAsDataURL(file);
+
+    // Vista previa instantánea
     const localUrl = URL.createObjectURL(file);
     setMainImage(localUrl);
 
@@ -433,8 +478,7 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
       const result = await uploadVehiclePhoto(tempId, file, 0);
       setMainImage(result.url);
     } catch (err: any) {
-      console.warn('Fallo subida a nube, manteniendo vista previa local:', err);
-      // Mantiene localUrl para no romper la experiencia si se está offline
+      console.warn('Fallo subida a storage, el archivo se conserva como base64 persistente:', err);
     } finally {
       setIsUploadingPhoto(false);
     }
@@ -613,7 +657,7 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
         `Exclusivo ${brand} ${model} año ${year}. Rendimiento superdeportivo, confort boutique y acabados de lujo para clientes VIP.`,
       features: features.length > 0 ? features : ['Transmisión Automática', 'Audio Premium', 'Interior de Lujo'],
       mainImage: mainImage.trim(),
-      videoUrl: videoUrl.trim() || undefined,
+      ...(videoUrl.trim() ? { videoUrl: videoUrl.trim() } : {}),
       specs: {
         horsepower: Number(horsepower),
         acceleration0to100: acceleration.trim(),
@@ -648,8 +692,14 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-xl overflow-y-auto animate-fade-in"
       role="dialog"
       aria-modal="true"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className="relative w-full max-w-7xl rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-7xl rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[95vh]"
+      >
         
         {/* ======================================================== */}
         {/* CABECERA MAESTRA (ESTÁNDAR INGENIERÍA VIP)                */}

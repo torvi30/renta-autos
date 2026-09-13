@@ -486,5 +486,55 @@ export const MOCK_VEHICLES: Vehicle[] = [
     isFeatured: false,
     createdAt: '2026-02-05T09:00:00Z',
     updatedAt: '2026-02-05T09:00:00Z',
+  },
+  {
+    id: 'veh-toyota-lc300',
+    slug: 'toyota-land-cruiser-300-gr-sport-2024',
+    brand: 'Toyota',
+    model: 'Land Cruiser 300 GR-Sport',
+    year: 2024,
+    plate: 'TOY-300',
+    category: 'SUV_LUJO',
+    description: 'El legendario ícono todoterreno elevado a la cúspide del confort VIP y protección ejecutiva. Con motor V6 3.5L Twin-Turbo de 409 HP, suspensión adaptativa E-KDSS, tracción total permanente y un habitáculo de máxima insonorización con acabados en piel artesanal.',
+    pricePerDay: 750,
+    currency: 'USD',
+    transmission: 'AUTOMATICA',
+    fuel: 'GASOLINA',
+    seats: 7,
+    features: [
+      'Suspensión electrónica cinética adaptativa E-KDSS',
+      'Tracción 4WD con Bloqueo de Diferencial Triple',
+      'Sistema de Audio Premium JBL Synthesis de 14 altavoces',
+      'Pantallas multimedia traseras VIP de 11.6 pulgadas',
+      'Refrigerador de consola central Cool Box integrado',
+      'Paquete de Seguridad Activa Toyota Safety Sense 3.0 con visión 360°'
+    ],
+    status: 'AVAILABLE',
+    mainImage: 'https://images.unsplash.com/photo-1594502184342-2e12f877aa73?auto=format&fit=crop&w=1200&q=85',
+    specs: {
+      acceleration0to100: '6.7 s',
+      horsepower: 409,
+      topSpeed: 210,
+      doors: 5
+    },
+    gallery: {
+      exteriorImages: [
+        'https://images.unsplash.com/photo-1594502184342-2e12f877aa73?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=85'
+      ],
+      interiorImages: [
+        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1541348263662-e0c8666524e0?auto=format&fit=crop&w=1200&q=85'
+      ],
+      detailImages: [
+        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1619682817481-e994891cd1f5?auto=format&fit=crop&w=1200&q=85'
+      ]
+    },
+    isFeatured: true,
+    createdAt: '2026-03-01T10:00:00Z',
+    updatedAt: '2026-03-01T10:00:00Z'
   }
 ];

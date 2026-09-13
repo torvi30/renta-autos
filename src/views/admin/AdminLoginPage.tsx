@@ -18,8 +18,6 @@ import {
   RefreshCw,
   Clock,
   Send,
-  LogOut,
-  ChevronRight,
   ShieldCheck,
 } from 'lucide-react';
 import { onEmailTokenDispatched, EmailDispatchPayload } from '../../services/authService';
@@ -39,7 +37,6 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     user,
     isAuthenticated,
     login,
-    logout,
     requestRegistration,
     verifyRegistration,
     resendRegistration,
@@ -92,6 +89,13 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     return () => unsubscribe();
   }, []);
 
+  // Redirigir de inmediato al panel si ya hay sesión activa (sin esperas ni pantallas intermedias)
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      onLoginSuccess();
+    }
+  }, [isAuthenticated, user, onLoginSuccess]);
+
   // Temporizador regresivo para el código OTP
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -105,7 +109,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     };
   }, [authMode, timerSeconds]);
 
-  // Manejador de Login Formal
+  // Manejador de Login Maestro (Acceso directo e inmediato al Centro de Control)
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -122,10 +126,8 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
       if (!response.success) {
         setErrorMessage(response.error || 'Credenciales no autorizadas.');
       } else {
-        setSuccessMessage('Autenticación autorizada. Ingresando al Centro de Control...');
-        setTimeout(() => {
-          onLoginSuccess();
-        }, 600);
+        // Ingresar inmediatamente al panel de control sin demoras
+        onLoginSuccess();
       }
     } catch {
       setErrorMessage('Error al verificar credenciales con el servidor corporativo.');
@@ -234,10 +236,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
       if (!response.success) {
         setErrorMessage(response.error || 'Código de seguridad no válido.');
       } else {
-        setSuccessMessage('¡Cuenta corporativa verificada y activada con éxito! Accediendo...');
-        setTimeout(() => {
-          onLoginSuccess();
-        }, 800);
+        onLoginSuccess();
       }
     } catch {
       setErrorMessage('Error al validar el token de activación.');
@@ -391,54 +390,8 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
         </span>
       </div>
 
-      {/* Si el usuario ya tiene sesión activa pero llegó a esta pantalla, mostrar card de reconfirmación */}
-      {isAuthenticated && user && authMode === 'LOGIN' ? (
-        <div className="relative w-full max-w-md rounded-2xl bg-carbon-900 border border-carbon-750 shadow-showroom overflow-hidden p-6 sm:p-8 z-10 animate-fade-in text-center space-y-5">
-          <div className="w-16 h-16 rounded-2xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center mx-auto text-gold-400 shadow-glow">
-            <Shield className="w-8 h-8" />
-          </div>
-          <div>
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-gold-400">
-              Sesión Activa Detectada
-            </span>
-            <h2 className="text-xl font-bold text-silver-100 font-display mt-1">
-              {user.name}
-            </h2>
-            <p className="text-xs text-silver-400 mt-1 font-mono">
-              {user.email} • Rol: <span className="text-gold-400 font-semibold">{user.role}</span>
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-carbon-850/80 border border-carbon-750 text-left text-xs text-silver-300 space-y-1">
-            <p className="text-[11px] text-silver-400">Tienes una sesión ejecutiva abierta en este dispositivo.</p>
-            <p className="text-[11px] text-silver-400">Puedes continuar al panel o cerrar sesión para ingresar con otra cuenta.</p>
-          </div>
-
-          <div className="flex flex-col gap-2.5 pt-2">
-            <button
-              onClick={onLoginSuccess}
-              className="w-full py-3 px-4 rounded-xl bg-gold-500 hover:bg-gold-400 text-carbon-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-glow"
-            >
-              <span>CONTINUAR AL CENTRO DE CONTROL</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={async () => {
-                await logout();
-                setLoginEmail('');
-                setLoginPassword('');
-              }}
-              className="w-full py-2.5 px-4 rounded-xl bg-carbon-850 hover:bg-carbon-800 text-silver-300 hover:text-rose-400 text-xs font-semibold border border-carbon-750 transition-colors flex items-center justify-center gap-2"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Cerrar Sesión Actual</span>
-            </button>
-          </div>
-        </div>
-      ) : (
-        /* Tarjeta Principal de Autenticación / Registro / OTP */
-        <div className="relative w-full max-w-md rounded-2xl bg-carbon-900 border border-carbon-750 shadow-showroom overflow-hidden p-6 sm:p-8 z-10 animate-fade-in">
+      {/* Tarjeta Principal de Autenticación / Registro / OTP */}
+      <div className="relative w-full max-w-md rounded-2xl bg-carbon-900 border border-carbon-750 shadow-showroom overflow-hidden p-6 sm:p-8 z-10 animate-fade-in">
           
           {/* Selector de Pestañas de Modo */}
           {authMode !== 'VERIFY_OTP' && (
@@ -956,7 +909,6 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
           )}
 
         </div>
-      )}
 
       {/* NOTIFICACIÓN FLOTANTE EJECUTIVA: SERVIDOR DE CORREO CORPORATIVO (Showroom Mail Relay) */}
       {dispatchedEmail && (

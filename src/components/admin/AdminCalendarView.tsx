@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Vehicle } from '../../types/vehicle';
 import { Reservation, ReservationStatus } from '../../types/reservation';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, getCategoryLabel } from '../../utils/formatters';
 import { generateWhatsAppReservationLink } from '../../services/reservationService';
 import { AdminDateBlockModal } from './AdminDateBlockModal';
 import { AdminReservationEditModal } from './AdminReservationEditModal';
@@ -26,6 +26,7 @@ import {
   SlidersHorizontal,
   User,
   Phone,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface AdminCalendarViewProps {
@@ -125,6 +126,11 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
   const [inspectedReservation, setInspectedReservation] = useState<Reservation | null>(null);
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   const [isDeletingFromInspection, setIsDeletingFromInspection] = useState<boolean>(false);
+
+  const inspectedVehicle = useMemo(() => {
+    if (!inspectedReservation) return null;
+    return vehicles.find((v) => v.id === inspectedReservation.vehicleId) || null;
+  }, [inspectedReservation, vehicles]);
 
   // Navegación de mes
   const currentYear = currentDate.getFullYear();
@@ -880,6 +886,7 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
                                 setInspectedReservation(res);
                               }}
                               onMouseEnter={(e) => {
+                                if (window.matchMedia('(pointer: coarse)').matches) return;
                                 const rect = e.currentTarget.getBoundingClientRect();
                                 setHoveredReservation({
                                   res,
@@ -1026,10 +1033,11 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
 
       {/* 4. VISTA 2: CUADRÍCULA MENSUAL TRADICIONAL */}
       {viewMode === 'monthGrid' && (
-        <div className="rounded-3xl bg-carbon-900 border border-carbon-800 shadow-2xl overflow-hidden p-6 space-y-4">
-          
-          {/* Cabecera de 7 Días */}
-          <div className="grid grid-cols-7 gap-3 text-center border-b border-carbon-800 pb-3">
+        <div className="rounded-3xl bg-carbon-900 border border-carbon-800 shadow-2xl overflow-hidden p-4 sm:p-6 space-y-4">
+          <div className="overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-carbon-700">
+            <div className="min-w-[620px] sm:min-w-0 space-y-4">
+              {/* Cabecera de 7 Días */}
+              <div className="grid grid-cols-7 gap-2 sm:gap-3 text-center border-b border-carbon-800 pb-3">
             {WEEKDAY_NAMES.map((w) => (
               <div key={w} className="text-xs sm:text-sm font-extrabold uppercase text-silver-300 tracking-wider">
                 {w}
@@ -1121,7 +1129,8 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
               );
             })}
           </div>
-
+          </div>
+          </div>
         </div>
       )}
 
@@ -1259,25 +1268,37 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
       {/* 5. MODAL DE INSPECCIÓN RÁPIDA DE RESERVA / EXPEDIENTE */}
       {inspectedReservation && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-carbon-950/85 backdrop-blur-xl animate-fade-in overflow-y-auto"
+          className="fixed inset-0 z-50 overflow-y-auto bg-carbon-950/85 backdrop-blur-xl p-3 sm:p-6 flex items-center justify-center min-h-screen animate-fade-in"
           role="dialog"
           aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setInspectedReservation(null);
+              setIsDeletingFromInspection(false);
+            }
+          }}
         >
-          <div className="relative w-full max-w-xl rounded-3xl bg-carbon-900 border-2 border-gold-500/40 shadow-2xl overflow-hidden my-auto p-6 sm:p-7 space-y-5 text-silver-100">
-            
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-lg my-auto rounded-3xl bg-carbon-900 border-2 border-gold-500/40 shadow-2xl overflow-hidden p-5 sm:p-7 space-y-4 sm:space-y-5 text-silver-100"
+          >
             {/* Cabecera */}
-            <div className="flex items-center justify-between pb-4 border-b border-carbon-800">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between pb-3.5 border-b border-carbon-800">
+              <div className="flex items-center gap-2.5 flex-wrap">
                 <span className="text-xs font-mono font-bold text-gold-400 bg-carbon-800 px-3 py-1 rounded-lg border border-carbon-700">
                   {inspectedReservation.id}
                 </span>
                 <span
                   className={`text-xs font-bold px-3 py-1 rounded-full ${
-                    inspectedReservation.status === 'CONFIRMED'
-                      ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
+                    inspectedReservation.status === 'COMPLETED'
+                      ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-700'
+                      : inspectedReservation.status === 'CONFIRMED'
+                      ? 'bg-teal-950/80 text-teal-400 border border-teal-700'
+                      : inspectedReservation.status === 'ACTIVE'
+                      ? 'bg-cyan-950/80 text-cyan-400 border border-cyan-700'
                       : inspectedReservation.status === 'MAINTENANCE'
-                      ? 'bg-amber-950 text-amber-400 border border-amber-800'
-                      : 'bg-blue-950 text-blue-400 border border-blue-800'
+                      ? 'bg-rose-950/80 text-rose-400 border border-rose-700'
+                      : 'bg-amber-950/80 text-amber-400 border border-amber-700'
                   }`}
                 >
                   {inspectedReservation.status}
@@ -1285,56 +1306,82 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
               </div>
 
               <button
+                type="button"
                 onClick={() => {
                   setInspectedReservation(null);
                   setIsDeletingFromInspection(false);
                 }}
                 className="p-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-400 hover:text-white transition-colors cursor-pointer"
+                aria-label="Cerrar modal"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Vehículo */}
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-carbon-850 border border-carbon-800">
+            {/* Vehículo Asignado */}
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-carbon-850 border border-carbon-800">
               <img
                 src={inspectedReservation.vehicleImage}
                 alt={inspectedReservation.vehicleName}
                 className="w-20 h-14 object-cover rounded-xl border border-carbon-700 flex-shrink-0"
               />
-              <div>
-                <span className="text-xs font-bold text-gold-400 uppercase">Superdeportivo</span>
-                <h4 className="text-lg font-black text-white font-display">
+              <div className="min-w-0 flex-1">
+                <span className="text-[11px] font-bold text-gold-400 uppercase tracking-wider block truncate">
+                  {inspectedVehicle ? getCategoryLabel(inspectedVehicle.category) : 'Vehículo VIP'}
+                </span>
+                <h4 className="text-base sm:text-lg font-black text-white font-display truncate">
                   {inspectedReservation.vehicleName}
                 </h4>
                 <div className="text-xs font-mono text-silver-300 font-bold mt-0.5">
-                  Placa: {inspectedReservation.vehiclePlate}
+                  Placa: <span className="text-white">{inspectedReservation.vehiclePlate}</span>
                 </div>
               </div>
             </div>
 
             {/* Fechas y Cliente */}
-            <div className="space-y-2.5 text-sm p-4 rounded-2xl bg-carbon-850/60 border border-carbon-800">
-              <div className="flex justify-between">
-                <span className="text-silver-400 font-medium">Titular:</span>
-                <span className="text-white font-extrabold">{inspectedReservation.client.fullName}</span>
+            <div className="space-y-3 text-sm p-4 rounded-2xl bg-carbon-850/60 border border-carbon-800">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4 text-silver-500 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <span className="text-[10px] text-silver-400 font-bold uppercase block">Titular</span>
+                    <span className="text-white font-extrabold truncate block">{inspectedReservation.client.fullName}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-silver-500 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <span className="text-[10px] text-silver-400 font-bold uppercase block">Teléfono</span>
+                    <span className="text-white font-mono font-bold block">{inspectedReservation.client.phone}</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-silver-400 font-medium">Teléfono:</span>
-                <span className="text-white font-mono">{inspectedReservation.client.phone}</span>
+
+              {/* Período de Renta con formato perfecto sin desbordes */}
+              <div className="p-3 rounded-xl bg-carbon-900/80 border border-carbon-800 space-y-1">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-silver-400 font-bold uppercase tracking-wider text-[10px]">
+                    Intervalo de Alquiler
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md bg-gold-500/15 border border-gold-500/25 text-gold-400 font-mono text-[10px] font-black">
+                    {inspectedReservation.pricing?.days || 1} {(inspectedReservation.pricing?.days || 1) === 1 ? 'DÍA' : 'DÍAS'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs sm:text-sm font-mono font-bold text-white pt-0.5">
+                  <span>{inspectedReservation.startDate}</span>
+                  <span className="text-gold-400 text-xs px-1">al</span>
+                  <span>{inspectedReservation.endDate}</span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-silver-400 font-medium">Intervalo:</span>
-                <span className="text-white font-bold font-mono">
-                  {inspectedReservation.startDate} al {inspectedReservation.endDate} ({inspectedReservation.pricing?.days || 1} días)
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-silver-400 font-medium">Total Renta:</span>
-                <span className="text-gold-400 font-mono font-black text-base">
+
+              {/* Total Facturado */}
+              <div className="flex items-center justify-between p-3 rounded-xl bg-gold-500/10 border border-gold-500/20">
+                <span className="text-xs sm:text-sm font-bold text-silver-300">Total Renta:</span>
+                <span className="text-base sm:text-lg font-mono font-black text-gold-400">
                   {formatCurrency(inspectedReservation.pricing?.rentalTotal || 0)}
                 </span>
               </div>
+
               {inspectedReservation.notes && (
                 <div className="pt-2 border-t border-carbon-800 text-xs text-silver-300">
                   <span className="text-silver-400 font-bold">Notas:</span> {inspectedReservation.notes}
@@ -1350,12 +1397,14 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
                 </p>
                 <div className="flex items-center gap-2 justify-end">
                   <button
+                    type="button"
                     onClick={() => setIsDeletingFromInspection(false)}
                     className="px-3.5 py-1.5 rounded-lg bg-carbon-800 text-silver-300 text-xs font-bold"
                   >
                     Cancelar
                   </button>
                   <button
+                    type="button"
                     onClick={async () => {
                       await onDeleteReservation(inspectedReservation.id);
                       setInspectedReservation(null);
@@ -1370,99 +1419,115 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
               </div>
             ) : null}
 
-            {/* Botones de Acción Completos: Editar, Eliminar, WhatsApp y Estado */}
-            <div className="pt-2 space-y-3">
+            {/* Botones de Acción Completos y Equilibrados */}
+            <div className="pt-1 space-y-2.5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {/* Botón Editar Reserva */}
                 <button
+                  type="button"
                   onClick={() => {
                     const target = inspectedReservation;
                     setInspectedReservation(null);
                     setEditingReservation(target);
                   }}
-                  className="py-3 px-4 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-gold-400 hover:text-gold-300 border border-gold-500/40 text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                  className="py-3 px-4 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-gold-400 hover:text-gold-300 border border-gold-500/40 text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-98"
                 >
                   <Pencil className="w-4 h-4" />
                   <span>Editar Ficha de Reserva</span>
                 </button>
 
                 {/* Botón WhatsApp Concierge */}
-                {inspectedReservation.status !== 'MAINTENANCE' && (
+                {inspectedReservation.status !== 'MAINTENANCE' ? (
                   <button
+                    type="button"
                     onClick={() => {
                       const url = generateWhatsAppReservationLink(inspectedReservation);
                       window.open(url, '_blank', 'noopener,noreferrer');
                     }}
-                    className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-carbon-950 font-black text-xs sm:text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 cursor-pointer"
+                    className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-carbon-950 font-black text-xs sm:text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md active:scale-98 cursor-pointer"
                   >
                     <Send className="w-4 h-4" />
                     <span>WhatsApp Concierge</span>
                   </button>
+                ) : (
+                  <div className="py-3 px-4 rounded-xl bg-carbon-850 text-silver-400 text-xs font-bold text-center border border-carbon-800 flex items-center justify-center">
+                    Bloqueo Interno Taller
+                  </div>
                 )}
               </div>
 
-              {/* Fila Inferior: Cambio de Estado y Eliminar */}
-              <div className="flex items-center gap-2 pt-2 border-t border-carbon-800">
-                {inspectedReservation.status === 'PENDING' && (
-                  <button
-                    onClick={() => {
-                      onUpdateReservationStatus(inspectedReservation.id, 'CONFIRMED');
-                      setInspectedReservation(null);
-                    }}
-                    className="flex-1 py-2.5 px-4 rounded-xl bg-gold-500 hover:bg-gold-400 text-carbon-950 font-black text-xs sm:text-sm uppercase transition-all shadow-md active:scale-95 cursor-pointer"
-                  >
-                    Aprobar Solicitud
-                  </button>
-                )}
+              {/* Botón de Transición de Estado Operativo */}
+              {inspectedReservation.status === 'PENDING' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onUpdateReservationStatus(inspectedReservation.id, 'CONFIRMED');
+                    setInspectedReservation(null);
+                  }}
+                  className="w-full py-2.5 px-4 rounded-xl bg-gold-500 hover:bg-gold-400 text-carbon-950 font-black text-xs sm:text-sm uppercase transition-all shadow-md active:scale-98 cursor-pointer"
+                >
+                  Aprobar Solicitud de Reserva
+                </button>
+              )}
 
-                {inspectedReservation.status === 'CONFIRMED' && (
-                  <button
-                    onClick={() => {
-                      onUpdateReservationStatus(inspectedReservation.id, 'ACTIVE');
-                      setInspectedReservation(null);
-                    }}
-                    className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm transition-all cursor-pointer"
-                  >
-                    Marcar en Entrega
-                  </button>
-                )}
+              {inspectedReservation.status === 'CONFIRMED' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onUpdateReservationStatus(inspectedReservation.id, 'ACTIVE');
+                    setInspectedReservation(null);
+                  }}
+                  className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm transition-all shadow-md active:scale-98 cursor-pointer"
+                >
+                  Marcar en Entrega al Cliente (Activa)
+                </button>
+              )}
 
-                {inspectedReservation.status === 'ACTIVE' && (
-                  <button
-                    onClick={() => {
-                      onUpdateReservationStatus(inspectedReservation.id, 'COMPLETED');
-                      setInspectedReservation(null);
-                    }}
-                    className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-carbon-950 font-black text-xs sm:text-sm transition-all cursor-pointer"
-                  >
-                    Finalizar y Recibir Vehículo
-                  </button>
-                )}
+              {inspectedReservation.status === 'ACTIVE' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onUpdateReservationStatus(inspectedReservation.id, 'COMPLETED');
+                    setInspectedReservation(null);
+                  }}
+                  className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-carbon-950 font-black text-xs sm:text-sm transition-all shadow-md active:scale-98 cursor-pointer"
+                >
+                  Finalizar Renta y Recibir Vehículo
+                </button>
+              )}
 
-                {inspectedReservation.status === 'MAINTENANCE' && (
-                  <button
-                    onClick={() => {
-                      onUpdateReservationStatus(inspectedReservation.id, 'COMPLETED');
-                      setInspectedReservation(null);
-                    }}
-                    className="flex-1 py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-carbon-950 font-bold text-xs sm:text-sm transition-all cursor-pointer"
-                  >
-                    Liberar Bloqueo
-                  </button>
-                )}
+              {inspectedReservation.status === 'MAINTENANCE' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onUpdateReservationStatus(inspectedReservation.id, 'COMPLETED');
+                    setInspectedReservation(null);
+                  }}
+                  className="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-carbon-950 font-bold text-xs sm:text-sm transition-all shadow-md active:scale-98 cursor-pointer"
+                >
+                  Liberar Bloqueo de Taller
+                </button>
+              )}
 
-                {/* Botón Eliminar Reserva */}
-                {!isDeletingFromInspection && (
-                  <button
-                    onClick={() => setIsDeletingFromInspection(true)}
-                    className="py-2.5 px-3.5 rounded-xl bg-carbon-850 hover:bg-rose-950/70 border border-carbon-750 hover:border-rose-500/50 text-silver-400 hover:text-rose-400 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
-                    title="Eliminar reserva permanentemente"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    <span className="hidden sm:inline">Eliminar</span>
-                  </button>
-                )}
-              </div>
+              {inspectedReservation.status === 'COMPLETED' && (
+                <div className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-emerald-950/50 border border-emerald-500/30 text-emerald-300 text-xs font-bold">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <span>Servicio Finalizado y Vehículo Recibido</span>
+                </div>
+              )}
+
+              {/* Botón Eliminar Reserva - Siempre alineado y proporcionado */}
+              {!isDeletingFromInspection && (
+                <button
+                  type="button"
+                  onClick={() => setIsDeletingFromInspection(true)}
+                  className="w-full py-2.5 px-4 rounded-xl bg-carbon-850 hover:bg-rose-950/60 border border-carbon-800 hover:border-rose-500/40 text-silver-400 hover:text-rose-400 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                  title="Eliminar reserva permanentemente"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Eliminar Registro de Reserva</span>
+                </button>
+              )}
             </div>
 
           </div>
@@ -1470,9 +1535,9 @@ export const AdminCalendarView: React.FC<AdminCalendarViewProps> = ({
       )}
 
       {/* 5. TOOLTIP FLOTANTE VIP (POPOVER HOVER) */}
-      {hoveredReservation && (
+      {hoveredReservation && !inspectedReservation && (
         <div
-          className="fixed z-50 pointer-events-none transition-all duration-150 transform -translate-x-1/2 shadow-2xl"
+          className="fixed z-50 pointer-events-none transition-all duration-150 transform -translate-x-1/2 shadow-2xl hidden md:block"
           style={{
             left: `${Math.min(Math.max(hoveredReservation.x, 190), window.innerWidth - 190)}px`,
             top: `${hoveredReservation.y < 300 ? hoveredReservation.y + 45 : hoveredReservation.y - 12}px`,

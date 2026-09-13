@@ -14,6 +14,39 @@ import {
 const LOCAL_CACHE_KEY = 'PREMIUM_RENTAL_VEHICLES_CACHE_V1';
 const VEHICLES_COLLECTION = 'vehicles';
 
+type VehicleChangeListener = (vehicles: Vehicle[]) => void;
+const vehicleListeners: Set<VehicleChangeListener> = new Set();
+
+export const notifyVehicleListeners = (vehicles: Vehicle[]) => {
+  vehicleListeners.forEach((listener) => {
+    try {
+      listener(vehicles);
+    } catch (err) {
+      console.warn('Error en vehicle listener:', err);
+    }
+  });
+};
+
+/**
+ * Limpia recursivamente propiedades undefined para evitar que setDoc falle en Firestore
+ */
+export const cleanFirestoreData = <T = any>(data: T): T => {
+  if (data === null || data === undefined) return null as any;
+  if (Array.isArray(data)) {
+    return data.map(cleanFirestoreData).filter((item) => item !== undefined) as any;
+  }
+  if (typeof data === 'object' && !(data instanceof Date)) {
+    const cleaned: Record<string, any> = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        cleaned[key] = cleanFirestoreData(value);
+      }
+    }
+    return cleaned as any;
+  }
+  return data;
+};
+
 /**
  * Obtener vehículos almacenados en la caché local / estado semilla
  */
@@ -25,7 +58,16 @@ export const getLocalVehicles = (): Vehicle[] => {
       localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(MOCK_VEHICLES));
       return MOCK_VEHICLES;
     }
-    return JSON.parse(raw) as Vehicle[];
+    const parsed = JSON.parse(raw) as Vehicle[];
+    // Asegurar que si agregamos vehículos semilla (como la Toyota), no se omitan si la caché vieja existe
+    const parsedIds = new Set(parsed.map((v) => v.id));
+    const missingMocks = MOCK_VEHICLES.filter((v) => !parsedIds.has(v.id));
+    if (missingMocks.length > 0) {
+      const merged = [...parsed, ...missingMocks];
+      localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(merged));
+      return merged;
+    }
+    return parsed;
   } catch (error) {
     console.warn('Error al leer vehículos de la caché local:', error);
     return MOCK_VEHICLES;
@@ -33,12 +75,13 @@ export const getLocalVehicles = (): Vehicle[] => {
 };
 
 /**
- * Guardar vehículos en la caché local
+ * Guardar vehículos en la caché local y notificar de inmediato a todos los componentes
  */
 export const saveLocalVehicles = (vehicles: Vehicle[]): void => {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(vehicles));
+    notifyVehicleListeners(vehicles);
   } catch (error) {
     console.error('Error al persistir vehículos en caché local:', error);
   }
@@ -57,7 +100,6 @@ export const fetchVehicles = async (): Promise<Vehicle[]> => {
     const snapshot = await getDocs(colRef);
 
     if (snapshot.empty) {
-      // Si la colección de la nube está vacía, entregamos el catálogo local
       return getLocalVehicles();
     }
 
@@ -66,8 +108,14 @@ export const fetchVehicles = async (): Promise<Vehicle[]> => {
       cloudVehicles.push(docSnap.data() as Vehicle);
     });
 
-    saveLocalVehicles(cloudVehicles);
-    return cloudVehicles;
+    // Preservar cualquier vehículo local no sincronizado aún
+    const localItems = getLocalVehicles();
+    const cloudIds = new Set(cloudVehicles.map((v) => v.id));
+    const localOnly = localItems.filter((v) => !cloudIds.has(v.id));
+    const combined = [...localOnly, ...cloudVehicles];
+
+    saveLocalVehicles(combined);
+    return combined;
   } catch (error) {
     console.warn('Error al consultar vehículos en Firestore, usando fallback local:', error);
     return getLocalVehicles();
@@ -75,16 +123,20 @@ export const fetchVehicles = async (): Promise<Vehicle[]> => {
 };
 
 /**
- * Suscripción reactiva en tiempo real a la colección de vehículos
+ * Suscripción reactiva en tiempo real a la colección de vehículos con fusión local segura
  */
 export const subscribeVehicles = (
   callback: (vehicles: Vehicle[]) => void
 ): (() => void) => {
+  vehicleListeners.add(callback);
+
   // Emitir de inmediato los datos de caché para carga instantánea
   callback(getLocalVehicles());
 
   if (!db || !isFirebaseConfigured()) {
-    return () => {};
+    return () => {
+      vehicleListeners.delete(callback);
+    };
   }
 
   try {
@@ -97,8 +149,15 @@ export const subscribeVehicles = (
           snapshot.forEach((docSnap) => {
             items.push(docSnap.data() as Vehicle);
           });
-          saveLocalVehicles(items);
-          callback(items);
+
+          // Mezclar con vehículos agregados localmente para no borrarlos
+          const localItems = getLocalVehicles();
+          const firestoreIds = new Set(items.map((v) => v.id));
+          const localOnly = localItems.filter((v) => !firestoreIds.has(v.id));
+          const merged = [...localOnly, ...items];
+
+          localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(merged));
+          callback(merged);
         }
       },
       (error) => {
@@ -106,10 +165,15 @@ export const subscribeVehicles = (
       }
     );
 
-    return unsubscribe;
+    return () => {
+      vehicleListeners.delete(callback);
+      unsubscribe();
+    };
   } catch (error) {
     console.warn('Error al configurar listener de Firestore para vehículos:', error);
-    return () => {};
+    return () => {
+      vehicleListeners.delete(callback);
+    };
   }
 };
 
@@ -230,17 +294,18 @@ export const createVehicle = async (
     updatedAt: now,
   };
 
-  // 1. Guardar en local cache inmediatamente
+  // 1. Guardar en local cache inmediatamente (al inicio de la lista para máxima visibilidad)
   const currentList = getLocalVehicles();
-  const updatedList = [newVehicle, ...currentList];
+  const updatedList = [newVehicle, ...currentList.filter((v) => v.id !== id)];
   saveLocalVehicles(updatedList);
 
-  // 2. Persistir en Cloud Firestore
+  // 2. Persistir en Cloud Firestore con limpieza estricta de undefined
   if (db && isFirebaseConfigured()) {
     try {
       const docRef = doc(db, VEHICLES_COLLECTION, newVehicle.id);
-      await setDoc(docRef, newVehicle);
-    } catch (error) {
+      const cleaned = cleanFirestoreData(newVehicle);
+      await setDoc(docRef, cleaned, { merge: true });
+    } catch (error: any) {
       console.warn('Advertencia al crear vehículo en Cloud Firestore:', error);
     }
   }
@@ -266,7 +331,7 @@ export const updateVehicle = async (
   const updatedVehicle: Vehicle = {
     ...existing,
     ...updates,
-    id: vehicleId, // Preservar ID
+    id: vehicleId,
     updatedAt: now,
   };
 
@@ -274,12 +339,13 @@ export const updateVehicle = async (
   const updatedList = currentList.map((v) => (v.id === vehicleId ? updatedVehicle : v));
   saveLocalVehicles(updatedList);
 
-  // 2. Actualizar en Cloud Firestore
+  // 2. Actualizar en Cloud Firestore con limpieza estricta de undefined
   if (db && isFirebaseConfigured()) {
     try {
       const docRef = doc(db, VEHICLES_COLLECTION, vehicleId);
-      await setDoc(docRef, updatedVehicle, { merge: true });
-    } catch (error) {
+      const cleaned = cleanFirestoreData(updatedVehicle);
+      await setDoc(docRef, cleaned, { merge: true });
+    } catch (error: any) {
       console.warn('Advertencia al actualizar vehículo en Cloud Firestore:', error);
     }
   }

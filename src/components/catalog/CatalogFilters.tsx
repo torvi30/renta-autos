@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import { VehicleFilterState } from '../../hooks/useVehicleFilters';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -41,6 +41,25 @@ export const CatalogFilters: React.FC<CatalogFiltersProps> = ({
 }) => {
   const { formatPrice } = useCurrency();
   const { t } = useLanguage();
+
+  // Bloquear scroll de fondo y soportar Escape cuando el drawer móvil está abierto
+  useEffect(() => {
+    if (!isMobileOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCloseMobile();
+      }
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = 'unset';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMobileOpen, onCloseMobile]);
 
   const categories = [
     { key: 'ALL', label: t.featured.allCollection },
@@ -286,10 +305,11 @@ export const CatalogFilters: React.FC<CatalogFiltersProps> = ({
       {/* Versión Mobile: Drawer deslizable con backdrop */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex justify-end">
-          {/* Backdrop blur */}
+          {/* Backdrop blur con respuesta táctil y click para cerrar afuera */}
           <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity cursor-pointer"
             onClick={onCloseMobile}
+            onTouchStart={onCloseMobile}
             aria-hidden="true"
           />
 
