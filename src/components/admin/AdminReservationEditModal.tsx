@@ -171,7 +171,11 @@ export const AdminReservationEditModal: React.FC<AdminReservationEditModalProps>
         notes,
       };
 
-      await onSave(reservation.id, updates);
+      // Guardar con timeout de seguridad (máximo 2.5s) para garantizar respuesta instantánea de la UI
+      const savePromise = Promise.resolve(onSave(reservation.id, updates));
+      const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 2500));
+      await Promise.race([savePromise, timeoutPromise]);
+
       onClose();
     } catch (err: any) {
       setErrorMsg(err?.message || 'Error al actualizar la reserva.');
@@ -183,7 +187,9 @@ export const AdminReservationEditModal: React.FC<AdminReservationEditModalProps>
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await onDelete(reservation.id);
+      const deletePromise = Promise.resolve(onDelete(reservation.id));
+      const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 2500));
+      await Promise.race([deletePromise, timeoutPromise]);
       onClose();
     } catch (err: any) {
       setErrorMsg(err?.message || 'Error al eliminar la reserva.');

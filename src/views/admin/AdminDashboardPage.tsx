@@ -116,6 +116,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
   const handleUpdateReservationStatus = (id: string, newStatus: ReservationStatus) => {
     const updated = updateReservationStatus(id, newStatus);
     if (updated) {
+      setReservations(getStoredReservations());
       showToast(`Reserva ${id} actualizada a estado ${newStatus}.`);
     }
   };
@@ -202,6 +203,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
         reason,
       });
       if (result.reservation) {
+        setReservations(getStoredReservations());
         luxuryAlert.success({
           title: 'Bloqueo Programado',
           message: `Fechas bloqueadas con éxito para ${vehicle.brand} ${vehicle.model}: ${startDate} a ${endDate} (${reason}).`,
@@ -226,6 +228,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
     try {
       const updated = await updateReservation(id, updates);
       if (updated) {
+        setReservations(getStoredReservations());
         showToast(`Reserva ${id} actualizada con éxito.`);
       } else {
         luxuryAlert.warning({
@@ -254,6 +257,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
 
     try {
       await deleteReservation(id);
+      setReservations(getStoredReservations());
       luxuryAlert.success({
         title: 'Reserva Eliminada',
         message: `El registro #${id} ha sido removido del sistema.`,

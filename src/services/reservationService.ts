@@ -605,12 +605,16 @@ export const updateReservation = async (
   updatedList[existingIndex] = updatedReservation;
   saveReservations(updatedList);
 
+  // Sincronización asíncrona segura con Firestore (no bloqueante para la UI)
   if (db && isFirebaseConfigured()) {
     try {
       const docRef = doc(db, RESERVATIONS_COLLECTION, reservationId);
-      await setDoc(docRef, updatedReservation, { merge: true });
+      const cleanData = sanitizeForFirestore(updatedReservation);
+      setDoc(docRef, cleanData, { merge: true }).catch((err) => {
+        console.warn('Advertencia al sincronizar reserva editada en Firestore:', err);
+      });
     } catch (err) {
-      console.warn('Advertencia al sincronizar reserva editada en Firestore:', err);
+      console.warn('Advertencia al preparar setDoc en Firestore:', err);
     }
   }
 
@@ -628,9 +632,11 @@ export const deleteReservation = async (reservationId: string): Promise<boolean>
   if (db && isFirebaseConfigured()) {
     try {
       const docRef = doc(db, RESERVATIONS_COLLECTION, reservationId);
-      await deleteDoc(docRef);
+      deleteDoc(docRef).catch((err) => {
+        console.warn('Advertencia al eliminar reserva en Firestore:', err);
+      });
     } catch (err) {
-      console.warn('Advertencia al eliminar reserva en Firestore:', err);
+      console.warn('Advertencia al preparar deleteDoc en Firestore:', err);
     }
   }
 

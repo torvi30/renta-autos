@@ -296,14 +296,16 @@ export const createVehicle = async (
   const updatedList = [newVehicle, ...currentList.filter((v) => v.id !== id)];
   saveLocalVehicles(updatedList);
 
-  // 2. Persistir en Cloud Firestore con limpieza estricta de undefined
+  // 2. Persistir en Cloud Firestore con limpieza estricta de undefined (asíncrono no bloqueante)
   if (db && isFirebaseConfigured()) {
     try {
       const docRef = doc(db, VEHICLES_COLLECTION, newVehicle.id);
       const cleaned = cleanFirestoreData(newVehicle);
-      await setDoc(docRef, cleaned, { merge: true });
+      setDoc(docRef, cleaned, { merge: true }).catch((error) => {
+        console.warn('Advertencia al crear vehículo en Cloud Firestore:', error);
+      });
     } catch (error: any) {
-      console.warn('Advertencia al crear vehículo en Cloud Firestore:', error);
+      console.warn('Advertencia al preparar setDoc de vehículo en Cloud Firestore:', error);
     }
   }
 
@@ -336,14 +338,16 @@ export const updateVehicle = async (
   const updatedList = currentList.map((v) => (v.id === vehicleId ? updatedVehicle : v));
   saveLocalVehicles(updatedList);
 
-  // 2. Actualizar en Cloud Firestore con limpieza estricta de undefined
+  // 2. Actualizar en Cloud Firestore con limpieza estricta de undefined (asíncrono no bloqueante)
   if (db && isFirebaseConfigured()) {
     try {
       const docRef = doc(db, VEHICLES_COLLECTION, vehicleId);
       const cleaned = cleanFirestoreData(updatedVehicle);
-      await setDoc(docRef, cleaned, { merge: true });
+      setDoc(docRef, cleaned, { merge: true }).catch((error) => {
+        console.warn('Advertencia al actualizar vehículo en Cloud Firestore:', error);
+      });
     } catch (error: any) {
-      console.warn('Advertencia al actualizar vehículo en Cloud Firestore:', error);
+      console.warn('Advertencia al preparar setDoc en Cloud Firestore:', error);
     }
   }
 
@@ -359,13 +363,15 @@ export const deleteVehicle = async (vehicleId: string): Promise<boolean> => {
   const filteredList = currentList.filter((v) => v.id !== vehicleId);
   saveLocalVehicles(filteredList);
 
-  // 2. Eliminar de Cloud Firestore
+  // 2. Eliminar de Cloud Firestore (asíncrono no bloqueante)
   if (db && isFirebaseConfigured()) {
     try {
       const docRef = doc(db, VEHICLES_COLLECTION, vehicleId);
-      await deleteDoc(docRef);
+      deleteDoc(docRef).catch((error) => {
+        console.warn('Advertencia al eliminar vehículo en Cloud Firestore:', error);
+      });
     } catch (error) {
-      console.warn('Advertencia al eliminar vehículo en Cloud Firestore:', error);
+      console.warn('Advertencia al preparar deleteDoc en Cloud Firestore:', error);
     }
   }
 

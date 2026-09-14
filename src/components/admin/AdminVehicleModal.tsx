@@ -684,7 +684,9 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
     };
 
     try {
-      await onSave(vehiclePayload);
+      const savePromise = Promise.resolve(onSave(vehiclePayload));
+      const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 2500));
+      await Promise.race([savePromise, timeoutPromise]);
       onClose();
     } catch (err: any) {
       setErrorMessage(err?.message || 'Error al guardar los datos del vehículo.');
