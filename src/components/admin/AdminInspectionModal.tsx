@@ -250,8 +250,10 @@ export const AdminInspectionModal: React.FC<AdminInspectionModalProps> = ({
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-5xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh] animate-slide-up sm:animate-fade-in"
+        className="relative w-full max-w-5xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[88dvh] sm:max-h-[90vh] animate-slide-up sm:animate-fade-in"
       >
+        {/* Indicador de Arrastre para Móvil */}
+        <div className="w-10 h-1 rounded-full bg-carbon-600/70 mx-auto mt-2.5 sm:hidden flex-shrink-0" />
         
         {/* Cabecera del Modal */}
         <div className="flex items-center justify-between p-3.5 sm:p-6 sm:px-8 border-b border-carbon-800 bg-gradient-to-r from-carbon-900 via-carbon-850 to-carbon-900 gap-3">

@@ -495,10 +495,10 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
               </div>
 
               {/* Grilla Principal: Reservas VIP Recientes & Supervisión de Flota */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-7">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-7">
                 
                 {/* 2 Cols: Actividad y Solicitudes Recientes con Estilo VIP Grande y Legible */}
-                <div className="lg:col-span-2 p-6 sm:p-7 rounded-2xl bg-carbon-900 border border-carbon-800 space-y-5 shadow-2xl flex flex-col justify-between">
+                <div className="lg:col-span-2 p-4 sm:p-6 lg:p-7 rounded-2xl bg-carbon-900 border border-carbon-800 space-y-5 shadow-2xl flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between pb-4 border-b border-carbon-800">
                       <div>
@@ -678,21 +678,22 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-carbon-800 flex items-center justify-between text-xs sm:text-sm text-silver-300">
-                    <span className="font-mono text-xs font-semibold">
+                  <div className="pt-4 border-t border-carbon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs sm:text-sm text-silver-300">
+                    <span className="font-mono text-xs font-semibold text-silver-400">
                       Sincronización bidireccional automática en tiempo real.
                     </span>
                     <button
                       onClick={() => setCurrentTab('reservations')}
-                      className="text-gold-400 hover:text-gold-300 font-bold"
+                      className="text-gold-400 hover:text-gold-300 font-bold inline-flex items-center gap-1.5 self-start sm:self-auto hover:underline"
                     >
-                      Ir al Administrador Completo de Reservas ➔
+                      <span>Ir al Administrador Completo de Reservas</span>
+                      <span>➔</span>
                     </button>
                   </div>
                 </div>
 
                 {/* 1 Col: Supervisión de Flota Boutique en Tiempo Real */}
-                <div className="p-6 sm:p-7 rounded-2xl bg-carbon-900 border border-carbon-800 space-y-5 flex flex-col justify-between shadow-2xl">
+                <div className="p-4 sm:p-6 lg:p-7 rounded-2xl bg-carbon-900 border border-carbon-800 space-y-4 sm:space-y-5 flex flex-col justify-between shadow-2xl">
                   <div>
                     <div className="flex items-center justify-between pb-4 border-b border-carbon-800">
                       <div>
@@ -717,7 +718,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
                       </button>
                     </div>
 
-                    {/* Lista de Vehículos con Diseño Ejecutivo y Letras Grandes */}
+                    {/* Lista de Vehículos con Diseño Ejecutivo y 100% Adaptativo */}
                     <div className="divide-y divide-carbon-800/80 pt-1">
                       {vehicles.slice(0, 6).map((veh) => {
                         const statusConfig = getStatusConfig(veh.status);
@@ -726,36 +727,34 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
                         return (
                           <div
                             key={veh.id}
-                            className="py-3.5 flex items-center justify-between gap-3 text-xs sm:text-sm group hover:bg-carbon-850/60 px-3 rounded-2xl transition-colors"
+                            className="py-3 sm:py-3.5 px-2 sm:px-3 rounded-2xl hover:bg-carbon-850/60 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3"
                           >
                             <div className="flex items-center gap-3 min-w-0">
                               <img
                                 src={veh.mainImage || (veh.gallery?.exteriorImages && veh.gallery.exteriorImages[0]) || 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=400&q=80'}
                                 alt={veh.model}
-                                className="w-16 h-12 sm:w-18 sm:h-13 object-cover rounded-xl border border-carbon-700 flex-shrink-0 group-hover:scale-105 transition-transform"
+                                className="w-16 h-12 sm:w-18 sm:h-13 object-cover rounded-xl border border-carbon-700 flex-shrink-0"
                               />
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-white font-extrabold truncate text-sm sm:text-base">
-                                    {veh.brand} {veh.model}
-                                  </span>
-                                </div>
-                                <div className="text-xs text-silver-300 font-mono flex items-center gap-2 mt-1">
-                                  <span className="text-gold-400 font-extrabold text-sm">
+                              <div className="min-w-0 flex-1">
+                                <h4 className="text-white font-extrabold text-sm sm:text-base leading-snug break-words sm:truncate">
+                                  {veh.brand} {veh.model}
+                                </h4>
+                                <div className="text-xs text-silver-300 font-mono flex items-center gap-2 mt-1 flex-wrap">
+                                  <span className="text-gold-400 font-extrabold text-sm font-mono">
                                     {formatCurrency(veh.pricePerDay)}/d
                                   </span>
                                   <span className="text-carbon-600 font-bold">•</span>
-                                  <span className="bg-carbon-800 px-2 py-0.5 rounded font-bold text-silver-200">
+                                  <span className="bg-carbon-800 px-2 py-0.5 rounded font-bold text-silver-200 font-mono text-[11px] border border-carbon-750">
                                     {veh.plate}
                                   </span>
-                                </div>
-                                <div className="text-[11px] text-silver-400 font-medium mt-0.5">
-                                  {categoryLabel}
+                                  <span className="text-[11px] text-silver-400 font-sans">
+                                    {categoryLabel}
+                                  </span>
                                 </div>
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-2 flex-shrink-0">
+                            <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pt-2 sm:pt-0 border-t border-carbon-800/60 sm:border-t-0">
                               {/* Botón de Ciclo Rápido de Estado */}
                               <button
                                 onClick={() => {
@@ -773,23 +772,24 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
                                 {statusConfig.label}
                               </button>
 
-                              {/* Botón Editar Vehículo Directo */}
-                              <button
-                                onClick={() => handleOpenEditVehicle(veh)}
-                                className="p-2 rounded-xl bg-carbon-800 hover:bg-carbon-700 text-silver-300 hover:text-gold-400 transition-colors shadow-sm"
-                                title="Editar ficha técnica y tarifas de este vehículo"
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </button>
+                              {/* Botones de Acción */}
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={() => handleOpenEditVehicle(veh)}
+                                  className="p-2 rounded-xl bg-carbon-800 hover:bg-carbon-700 text-silver-300 hover:text-gold-400 transition-colors shadow-sm cursor-pointer"
+                                  title="Editar ficha técnica y tarifas de este vehículo"
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </button>
 
-                              {/* Botón Ver en Showroom */}
-                              <button
-                                onClick={() => onNavigateToVehicleDetail(veh.slug)}
-                                className="p-2 rounded-xl bg-carbon-800 hover:bg-carbon-700 text-silver-300 hover:text-white transition-colors shadow-sm"
-                                title="Ver en showroom público"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
+                                <button
+                                  onClick={() => onNavigateToVehicleDetail(veh.slug)}
+                                  className="p-2 rounded-xl bg-carbon-800 hover:bg-carbon-700 text-silver-300 hover:text-white transition-colors shadow-sm cursor-pointer"
+                                  title="Ver en showroom público"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
                           </div>
                         );

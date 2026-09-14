@@ -417,6 +417,18 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
     setMobilePreviewOpen(false);
   }, [vehicleToEdit, isOpen]);
 
+  // Bloquear scroll de la página de fondo cuando el modal esté abierto
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   // Cargar plantilla predefinida en 1 clic
   const handleApplyPreset = (preset: VehiclePreset) => {
     setBrand(preset.brand);
@@ -689,7 +701,7 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-xl overflow-y-auto animate-fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-xl overflow-hidden animate-fade-in"
       role="dialog"
       aria-modal="true"
       onClick={(e) => {
@@ -698,8 +710,10 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-7xl rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[95vh]"
+        className="relative w-full max-w-7xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[90dvh] sm:max-h-[95vh] animate-slide-up sm:animate-fade-in"
       >
+        {/* Indicador de Arrastre para Móvil */}
+        <div className="w-10 h-1 rounded-full bg-carbon-600/70 mx-auto mt-2.5 sm:hidden flex-shrink-0" />
         
         {/* ======================================================== */}
         {/* CABECERA MAESTRA (ESTÁNDAR INGENIERÍA VIP)                */}

@@ -899,8 +899,10 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-2xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[88vh] animate-slide-up sm:animate-fade-in"
+            className="relative w-full max-w-2xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[85dvh] sm:max-h-[88vh] animate-slide-up sm:animate-fade-in"
           >
+            {/* Indicador de Arrastre para Móvil */}
+            <div className="w-10 h-1 rounded-full bg-carbon-600/70 mx-auto mt-2.5 sm:hidden flex-shrink-0" />
             
             {/* Cabecera Modal Fija al Tope */}
             <div className="p-4 sm:p-5 border-b border-carbon-800 bg-carbon-850/95 flex items-center justify-between flex-shrink-0 z-10">

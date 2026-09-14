@@ -96,6 +96,18 @@ export const AdminReservationEditModal: React.FC<AdminReservationEditModalProps>
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  // Bloquear scroll de la página de fondo cuando el modal esté abierto
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   if (!isOpen || !reservation) return null;
 
   // Vehículo seleccionado actualmente en el modal
@@ -147,21 +159,22 @@ export const AdminReservationEditModal: React.FC<AdminReservationEditModalProps>
           driverLicense: driverLicense.trim(),
         },
         status,
-        notes: notes.trim(),
         pricing: {
-          dailyRate,
+          ...reservation.pricing,
           days: calculatedDays,
+          dailyRate,
           rentalTotal: calculatedRentalTotal,
           securityDeposit: calculatedDeposit,
           insuranceIncluded: true,
           currency: 'USD',
         },
+        notes,
       };
 
       await onSave(reservation.id, updates);
       onClose();
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Error al guardar los cambios.');
+      setErrorMsg(err?.message || 'Error al actualizar la reserva.');
     } finally {
       setIsSaving(false);
     }
@@ -181,12 +194,14 @@ export const AdminReservationEditModal: React.FC<AdminReservationEditModalProps>
 
   return (
     <div 
-      className="fixed inset-0 z-50 overflow-y-auto bg-carbon-950/90 backdrop-blur-md p-3 sm:p-6 flex justify-center items-start min-h-screen"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-md overflow-hidden animate-fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-3xl my-4 sm:my-8 rounded-3xl bg-carbon-900 border-2 border-gold-500/40 shadow-2xl shadow-black/90 flex flex-col max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] overflow-hidden text-silver-100 animate-fade-in">
+      <div className="relative w-full max-w-3xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border-2 border-gold-500/40 shadow-2xl shadow-black/90 flex flex-col max-h-[88dvh] sm:max-h-[88vh] overflow-hidden text-silver-100 animate-slide-up sm:animate-fade-in">
+        {/* Indicador de Arrastre para Móvil */}
+        <div className="w-10 h-1 rounded-full bg-carbon-600/70 mx-auto mt-2.5 sm:hidden flex-shrink-0" />
         
         {/* Encabezado del Modal (Siempre visible, nunca cortado) */}
         <div className="p-4 sm:p-5 border-b border-carbon-800 bg-carbon-850/95 backdrop-blur-md flex items-center justify-between gap-4 flex-shrink-0 z-20 shadow-md">

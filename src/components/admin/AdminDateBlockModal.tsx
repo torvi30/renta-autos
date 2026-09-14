@@ -58,6 +58,17 @@ export const AdminDateBlockModal: React.FC<AdminDateBlockModalProps> = ({
     }
   }, [isOpen, initialVehicleId, initialStartDate, vehicles]);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -97,7 +108,7 @@ export const AdminDateBlockModal: React.FC<AdminDateBlockModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-carbon-950/85 backdrop-blur-xl animate-fade-in overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-carbon-950/85 backdrop-blur-xl overflow-hidden animate-fade-in"
       role="dialog"
       aria-modal="true"
       onClick={(e) => {
@@ -106,8 +117,10 @@ export const AdminDateBlockModal: React.FC<AdminDateBlockModalProps> = ({
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-xl rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden my-auto"
+        className="relative w-full max-w-xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[88dvh] sm:max-h-[90vh] animate-slide-up sm:animate-fade-in"
       >
+        {/* Indicador de Arrastre para Móvil */}
+        <div className="w-10 h-1 rounded-full bg-carbon-600/70 mx-auto mt-2.5 sm:hidden flex-shrink-0" />
         
         {/* Cabecera del Modal */}
         <div className="p-6 border-b border-carbon-800 bg-carbon-850/95 flex items-center justify-between">
