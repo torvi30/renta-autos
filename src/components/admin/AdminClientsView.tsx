@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Reservation } from '../../types/reservation';
 import { formatCurrency } from '../../utils/formatters';
 import {
@@ -40,6 +40,17 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
   const [kycFilter, setKycFilter] = useState<'ALL' | 'VERIFIED'>('ALL');
   const [sortByRevenue, setSortByRevenue] = useState<boolean>(false);
   const [minSpentFilter, setMinSpentFilter] = useState<boolean>(false);
+
+  // Bloquear scroll de la página de fondo cuando el modal esté abierto
+  useEffect(() => {
+    if (selectedClient) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [selectedClient]);
 
   // Extraer cartera única de clientes a partir de las reservas registradas
   const clientsList: ClientProfile[] = useMemo(() => {
@@ -553,7 +564,7 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
       {/* 4. Modal / Expediente Completo de Cliente */}
       {selectedClient && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-carbon-950/85 backdrop-blur-xl animate-fade-in overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-carbon-950/85 backdrop-blur-xl animate-fade-in overflow-hidden"
           role="dialog"
           aria-modal="true"
           onClick={(e) => {
@@ -562,20 +573,20 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-2xl rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden my-auto"
+            className="relative w-full max-w-2xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[88vh] animate-slide-up sm:animate-fade-in"
           >
             
-            {/* Cabecera del Expediente */}
-            <div className="p-6 border-b border-carbon-800 bg-carbon-850/95 flex items-center justify-between">
-              <div className="flex items-center gap-3.5">
-                <div className="w-14 h-14 rounded-2xl bg-gold-500/15 border border-gold-500/35 text-gold-400 flex items-center justify-center font-bold text-xl font-display shadow-inner">
+            {/* Cabecera del Expediente Fija al Tope */}
+            <div className="p-4 sm:p-5 border-b border-carbon-800 bg-carbon-850/95 flex items-center justify-between flex-shrink-0 z-10">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gold-500/15 border border-gold-500/35 text-gold-400 flex items-center justify-center font-bold text-lg sm:text-xl font-display shadow-inner flex-shrink-0">
                   {selectedClient.fullName.charAt(0)}
                 </div>
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-widest text-gold-400">
+                <div className="min-w-0">
+                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gold-400 block truncate">
                     Expediente KYC Conductor
                   </span>
-                  <h3 className="text-xl font-black text-white font-display mt-0.5">
+                  <h3 className="text-base sm:text-xl font-black text-white font-display mt-0.5 truncate">
                     {selectedClient.fullName}
                   </h3>
                 </div>
@@ -583,39 +594,39 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
 
               <button
                 onClick={() => setSelectedClient(null)}
-                className="p-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-400 hover:text-white transition-colors"
+                className="p-2 sm:p-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-400 hover:text-white transition-colors cursor-pointer flex-shrink-0 ml-2"
                 aria-label="Cerrar expediente"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Contenido del Expediente */}
-            <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto text-sm">
+            {/* Contenido del Expediente Desplazable */}
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto flex-1 text-sm overscroll-contain">
               
               {/* Resumen Comercial */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 rounded-2xl bg-carbon-850 border border-carbon-800 text-center">
-                  <span className="text-xs text-silver-400 uppercase font-semibold block">Reservas Contratadas</span>
-                  <div className="text-3xl font-black font-mono text-gold-400 mt-1">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-carbon-850 border border-carbon-800 text-center">
+                  <span className="text-[11px] sm:text-xs text-silver-400 uppercase font-semibold block">Reservas Contratadas</span>
+                  <div className="text-2xl sm:text-3xl font-black font-mono text-gold-400 mt-1">
                     {selectedClient.totalReservations}
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-carbon-850 border border-carbon-800 text-center">
-                  <span className="text-xs text-silver-400 uppercase font-semibold block">Inversión Facturada</span>
-                  <div className="text-3xl font-black font-mono text-white mt-1">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-carbon-850 border border-carbon-800 text-center">
+                  <span className="text-[11px] sm:text-xs text-silver-400 uppercase font-semibold block">Inversión Facturada</span>
+                  <div className="text-2xl sm:text-3xl font-black font-mono text-white mt-1">
                     {formatCurrency(selectedClient.totalSpent)}
                   </div>
                 </div>
               </div>
 
               {/* Ficha Documental KYC */}
-              <div className="p-5 rounded-2xl bg-carbon-850/60 border border-carbon-800 space-y-3">
-                <span className="text-xs font-bold uppercase text-silver-400 block tracking-wider">
+              <div className="p-4 sm:p-5 rounded-2xl bg-carbon-850/60 border border-carbon-800 space-y-2.5 sm:space-y-3">
+                <span className="text-[11px] sm:text-xs font-bold uppercase text-silver-400 block tracking-wider">
                   Documentación Legal & Contacto
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 text-xs sm:text-sm">
                   <div><strong className="text-silver-400">ID / Pasaporte:</strong> <span className="text-white font-mono font-bold">{selectedClient.documentId}</span></div>
                   <div><strong className="text-silver-400">Licencia:</strong> <span className="text-white font-mono font-bold">{selectedClient.driverLicense}</span></div>
                   <div><strong className="text-silver-400">Teléfono:</strong> <span className="text-white font-mono font-bold">{selectedClient.phone}</span></div>
@@ -628,53 +639,53 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
               </div>
 
               {/* Historial de Reservas del Cliente */}
-              <div className="space-y-3">
-                <span className="text-xs font-bold uppercase text-silver-400 block tracking-wider">
+              <div className="space-y-2.5 sm:space-y-3">
+                <span className="text-[11px] sm:text-xs font-bold uppercase text-silver-400 block tracking-wider">
                   Historial de Alquileres ({selectedClient.reservationsList.length})
                 </span>
 
-                <div className="space-y-2.5">
+                <div className="space-y-2">
                   {selectedClient.reservationsList.map((res) => (
                     <div
                       key={res.id}
-                      className="p-4 rounded-2xl bg-carbon-850 border border-carbon-800 flex items-center justify-between gap-3 text-xs sm:text-sm"
+                      className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-carbon-850 border border-carbon-800 flex items-center justify-between gap-3 text-xs sm:text-sm"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                         <img
                           src={res.vehicleImage}
                           alt={res.vehicleName}
-                          className="w-14 h-10 object-cover rounded-lg border border-carbon-700 flex-shrink-0"
+                          className="w-12 h-9 sm:w-14 sm:h-10 object-cover rounded-lg border border-carbon-700 flex-shrink-0"
                         />
-                        <div>
-                          <strong className="text-white font-bold block">{res.vehicleName}</strong>
-                          <span className="text-silver-400 text-xs font-mono">
+                        <div className="min-w-0">
+                          <strong className="text-white font-bold block truncate">{res.vehicleName}</strong>
+                          <span className="text-silver-400 text-[11px] sm:text-xs font-mono">
                             {res.startDate} al {res.endDate}
                           </span>
                         </div>
                       </div>
 
-                      <div className="text-right">
-                        <div className="font-mono font-black text-gold-400 text-sm sm:text-base">
+                      <div className="text-right flex-shrink-0">
+                        <div className="font-mono font-black text-gold-400 text-xs sm:text-base">
                           {formatCurrency(res.pricing?.rentalTotal || 0)}
                         </div>
-                        <span className="text-xs font-mono uppercase text-silver-400">{res.status}</span>
+                        <span className="text-[10px] sm:text-xs font-mono uppercase text-silver-400">{res.status}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Botón WhatsApp */}
-              <div className="pt-2">
-                <button
-                  onClick={() => handleOpenWhatsApp(selectedClient.phone, selectedClient.fullName)}
-                  className="w-full py-3.5 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-carbon-950 font-black text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md active:scale-95"
-                >
-                  <Send className="w-5 h-5" />
-                  <span>Contactar vía WhatsApp Concierge</span>
-                </button>
-              </div>
+            </div>
 
+            {/* Botonera Fija al Pie */}
+            <div className="p-3.5 sm:p-4 border-t border-carbon-800 bg-carbon-850/95 flex-shrink-0 z-10">
+              <button
+                onClick={() => handleOpenWhatsApp(selectedClient.phone, selectedClient.fullName)}
+                className="w-full py-3 sm:py-3.5 px-4 sm:px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-carbon-950 font-black text-xs sm:text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 cursor-pointer"
+              >
+                <Send className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <span>Contactar vía WhatsApp Concierge</span>
+              </button>
             </div>
 
           </div>

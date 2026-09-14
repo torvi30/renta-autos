@@ -230,9 +230,18 @@ export const AdminInspectionModal: React.FC<AdminInspectionModalProps> = ({
         )
       : null;
 
+  // Bloquear scroll de la página de fondo mientras la inspección esté abierta
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-xl overflow-y-auto animate-fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-xl overflow-hidden animate-fade-in"
       role="dialog"
       aria-modal="true"
       onClick={(e) => {
@@ -241,7 +250,7 @@ export const AdminInspectionModal: React.FC<AdminInspectionModalProps> = ({
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-5xl rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[94vh]"
+        className="relative w-full max-w-5xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh] animate-slide-up sm:animate-fade-in"
       >
         
         {/* Cabecera del Modal */}

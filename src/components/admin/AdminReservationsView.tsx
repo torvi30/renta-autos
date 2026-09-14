@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Reservation, ReservationStatus } from '../../types/reservation';
 import {
   Search,
@@ -56,6 +56,17 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
   const [contractReservation, setContractReservation] = useState<Reservation | null>(null);
   const [inspectionReservation, setInspectionReservation] = useState<Reservation | null>(null);
 
+  // Bloquear scroll de la página de fondo cuando cualquier modal esté abierto
+  useEffect(() => {
+    const isAnyModalOpen = selectedReservation || editingReservation || contractReservation || inspectionReservation;
+    if (isAnyModalOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [selectedReservation, editingReservation, contractReservation, inspectionReservation]);
 
   const filteredReservations = useMemo(() => {
     return reservations.filter((r) => {
@@ -879,7 +890,7 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
       {/* 4. Modal / Expediente Completo de Reserva */}
       {selectedReservation && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-6 bg-carbon-950/85 backdrop-blur-xl animate-fade-in overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-carbon-950/85 backdrop-blur-xl animate-fade-in overflow-hidden"
           role="dialog"
           aria-modal="true"
           onClick={(e) => {
@@ -888,34 +899,34 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-2xl rounded-2xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden my-auto"
+            className="relative w-full max-w-2xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[88vh] animate-slide-up sm:animate-fade-in"
           >
             
-            {/* Cabecera Modal */}
-            <div className="p-4 sm:p-6 border-b border-carbon-800 bg-carbon-850/95 flex items-center justify-between">
-              <div>
+            {/* Cabecera Modal Fija al Tope */}
+            <div className="p-4 sm:p-5 border-b border-carbon-800 bg-carbon-850/95 flex items-center justify-between flex-shrink-0 z-10">
+              <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs font-mono font-bold uppercase px-2.5 py-0.5 rounded-lg bg-carbon-800 text-gold-400 border border-carbon-750">
                     {selectedReservation.id}
                   </span>
                   {getStatusBadge(selectedReservation.status)}
                 </div>
-                <h3 className="text-base sm:text-xl font-black text-white font-display">
+                <h3 className="text-base sm:text-xl font-black text-white font-display truncate">
                   Expediente de Reserva
                 </h3>
               </div>
 
               <button
                 onClick={() => setSelectedReservation(null)}
-                className="p-2 sm:p-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-400 hover:text-white transition-colors cursor-pointer"
+                className="p-2 sm:p-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-400 hover:text-white transition-colors cursor-pointer flex-shrink-0 ml-2"
                 aria-label="Cerrar expediente"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Contenido Modal */}
-            <div className="p-4 sm:p-6 space-y-4 max-h-[80vh] overflow-y-auto text-sm">
+            {/* Contenido Desplazable en Medio (Comienza siempre en la parte superior) */}
+            <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 text-sm overscroll-contain">
               
               {/* Vehículo Asignado */}
               <div className="p-3.5 sm:p-5 rounded-2xl bg-carbon-850 border border-carbon-800 flex items-center gap-3 sm:gap-4">
@@ -1000,87 +1011,87 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
                 </div>
               </div>
 
-              {/* Botones de Acción Organizados */}
-              <div className="pt-2 space-y-2">
-                {/* Acciones principales */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <button
-                    onClick={() => handleOpenClientWhatsApp(selectedReservation)}
-                    className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-carbon-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 cursor-pointer"
-                  >
-                    <Send className="w-4 h-4 flex-shrink-0" />
-                    <span>WhatsApp Oficial</span>
-                  </button>
+            </div>
 
-                  {selectedReservation.status === 'PENDING' && (
-                    <button
-                      onClick={() => {
-                        onUpdateStatus(selectedReservation.id, 'CONFIRMED');
-                        setSelectedReservation(null);
-                      }}
-                      className="py-3 px-5 rounded-xl bg-gold-500 hover:bg-gold-400 text-carbon-950 font-black text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <Check className="w-4 h-4 flex-shrink-0" />
-                      <span>Aprobar Reserva</span>
-                    </button>
-                  )}
-                </div>
+            {/* Botonera de Acciones Fija al Pie (Siempre accesible al pulgar) */}
+            <div className="p-3.5 sm:p-4 border-t border-carbon-800 bg-carbon-850/95 flex-shrink-0 space-y-2 z-10">
+              {/* Acciones principales */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  onClick={() => handleOpenClientWhatsApp(selectedReservation)}
+                  className="py-2.5 sm:py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-carbon-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 cursor-pointer"
+                >
+                  <Send className="w-4 h-4 flex-shrink-0" />
+                  <span>WhatsApp Oficial</span>
+                </button>
 
-                {/* Acciones operativas secundarias */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {selectedReservation.status === 'PENDING' && (
                   <button
                     onClick={() => {
-                      const target = selectedReservation;
+                      onUpdateStatus(selectedReservation.id, 'CONFIRMED');
                       setSelectedReservation(null);
-                      setContractReservation(target);
                     }}
-                    className="py-2.5 px-3 rounded-xl bg-carbon-800 hover:bg-gold-500/20 border border-gold-500/40 text-gold-400 font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
-                    title="Generar e Imprimir Contrato Oficial"
+                    className="py-2.5 sm:py-3 px-5 rounded-xl bg-gold-500 hover:bg-gold-400 text-carbon-950 font-black text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    <FileCheck className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span>Contrato</span>
+                    <Check className="w-4 h-4 flex-shrink-0" />
+                    <span>Aprobar Reserva</span>
                   </button>
-
-                  <button
-                    onClick={() => {
-                      const target = selectedReservation;
-                      setSelectedReservation(null);
-                      setInspectionReservation(target);
-                    }}
-                    className="py-2.5 px-3 rounded-xl bg-carbon-800 hover:bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
-                    title="Acta de Inspección Check-in / Check-out"
-                  >
-                    <ClipboardCheck className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span>Inspección</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      const target = selectedReservation;
-                      setSelectedReservation(null);
-                      setEditingReservation(target);
-                    }}
-                    className="py-2.5 px-3 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-silver-200 hover:text-white font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <Pencil className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
-                    <span>Editar</span>
-                  </button>
-
-                  <button
-                    onClick={async () => {
-                      if (window.confirm(`¿Seguro que deseas eliminar permanentemente la reserva ${selectedReservation.id}?`)) {
-                        await onDeleteReservation(selectedReservation.id);
-                        setSelectedReservation(null);
-                      }
-                    }}
-                    className="py-2.5 px-3 rounded-xl bg-carbon-850 hover:bg-rose-950/80 border border-rose-500/40 text-rose-400 hover:text-rose-300 font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span>Eliminar</span>
-                  </button>
-                </div>
+                )}
               </div>
 
+              {/* Acciones operativas secundarias */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2">
+                <button
+                  onClick={() => {
+                    const target = selectedReservation;
+                    setSelectedReservation(null);
+                    setContractReservation(target);
+                  }}
+                  className="py-2 px-2 rounded-xl bg-carbon-800 hover:bg-gold-500/20 border border-gold-500/40 text-gold-400 font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Generar e Imprimir Contrato Oficial"
+                >
+                  <FileCheck className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>Contrato</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    const target = selectedReservation;
+                    setSelectedReservation(null);
+                    setInspectionReservation(target);
+                  }}
+                  className="py-2 px-2 rounded-xl bg-carbon-800 hover:bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Acta de Inspección Check-in / Check-out"
+                >
+                  <ClipboardCheck className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>Inspección</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    const target = selectedReservation;
+                    setSelectedReservation(null);
+                    setEditingReservation(target);
+                  }}
+                  className="py-2 px-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-silver-200 hover:text-white font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Pencil className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
+                  <span>Editar</span>
+                </button>
+
+                <button
+                  onClick={async () => {
+                    if (window.confirm(`¿Seguro que deseas eliminar permanentemente la reserva ${selectedReservation.id}?`)) {
+                      await onDeleteReservation(selectedReservation.id);
+                      setSelectedReservation(null);
+                    }
+                  }}
+                  className="py-2 px-2 rounded-xl bg-carbon-850 hover:bg-rose-950/80 border border-rose-500/40 text-rose-400 hover:text-rose-300 font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>Eliminar</span>
+                </button>
+              </div>
             </div>
 
           </div>

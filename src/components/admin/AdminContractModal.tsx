@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Reservation } from '../../types/reservation';
 import { Vehicle } from '../../types/vehicle';
 import {
@@ -42,9 +42,18 @@ export const AdminContractModal: React.FC<AdminContractModalProps> = ({
     window.print();
   };
 
+  // Bloquear scroll de la página de fondo mientras el contrato esté abierto
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-xl overflow-y-auto animate-fade-in print:p-0 print:bg-white print:static print:inset-auto"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-xl overflow-hidden animate-fade-in print:p-0 print:bg-white print:static print:inset-auto"
       role="dialog"
       aria-modal="true"
       onClick={(e) => {
@@ -53,7 +62,7 @@ export const AdminContractModal: React.FC<AdminContractModalProps> = ({
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-4xl rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[95vh] print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:bg-white"
+        className="relative w-full max-w-4xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[92vh] animate-slide-up sm:animate-fade-in print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:bg-white"
       >
         
         {/* Cabecera Interactiva del Modal (Oculta en Impresión) */}
