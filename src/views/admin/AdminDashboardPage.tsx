@@ -437,61 +437,61 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
               />
 
               {/* Barra de Acciones Rápidas y Telemetría con Tamaños Cómodos */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-carbon-900 via-carbon-850 to-carbon-900 border border-carbon-800 flex flex-wrap items-center justify-between gap-4 shadow-xl">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono mr-1">
+              <div className="p-3 sm:p-5 rounded-2xl bg-gradient-to-r from-carbon-900 via-carbon-850 to-carbon-900 border border-carbon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl">
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none sm:flex-wrap w-full sm:w-auto">
+                  <span className="text-[11px] sm:text-sm font-bold text-silver-400 uppercase tracking-wider font-mono mr-1 flex-shrink-0">
                     Acceso Rápido:
                   </span>
 
                   <button
                     onClick={handleOpenCreateVehicle}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gold-500/20 hover:bg-gold-500/30 border border-gold-500/40 text-xs sm:text-sm font-black text-gold-400 transition-all active:scale-95 shadow-sm"
+                    className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gold-500/20 hover:bg-gold-500/30 border border-gold-500/40 text-xs sm:text-sm font-black text-gold-400 transition-all active:scale-95 shadow-sm flex-shrink-0 cursor-pointer"
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     <span>Registrar Vehículo</span>
                   </button>
 
                   <button
                     onClick={() => setCurrentTab('reservations')}
-                    className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-xs sm:text-sm font-bold text-silver-200 hover:text-gold-400 transition-colors shadow-sm"
+                    className="inline-flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-xs sm:text-sm font-bold text-silver-200 hover:text-gold-400 transition-colors shadow-sm flex-shrink-0 cursor-pointer"
                   >
-                    <Calendar className="w-4 h-4 text-gold-400" />
+                    <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold-400" />
                     <span>Reservas ({reservations.length})</span>
                     {pendingCount > 0 && (
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                     )}
                   </button>
 
                   <button
                     onClick={() => setCurrentTab('fleet')}
-                    className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-xs sm:text-sm font-bold text-silver-200 hover:text-gold-400 transition-colors shadow-sm"
+                    className="inline-flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-xs sm:text-sm font-bold text-silver-200 hover:text-gold-400 transition-colors shadow-sm flex-shrink-0 cursor-pointer"
                   >
-                    <Car className="w-4 h-4 text-gold-400" />
+                    <Car className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold-400" />
                     <span>Flota ({vehicles.length})</span>
-                    <span className="text-xs text-emerald-400 font-mono font-bold bg-emerald-500/10 px-2 py-0.5 rounded">
+                    <span className="text-[10px] sm:text-xs text-emerald-400 font-mono font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded">
                       {availableVehiclesCount} Disp.
                     </span>
                   </button>
 
                   <button
                     onClick={() => setCurrentTab('calendar')}
-                    className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-xs sm:text-sm font-bold text-silver-200 hover:text-gold-400 transition-colors shadow-sm"
+                    className="inline-flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-xs sm:text-sm font-bold text-silver-200 hover:text-gold-400 transition-colors shadow-sm flex-shrink-0 cursor-pointer"
                   >
-                    <CalendarDays className="w-4 h-4 text-gold-400" />
-                    <span>Cronograma Gantt</span>
+                    <CalendarDays className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold-400" />
+                    <span>Calendario</span>
                   </button>
 
                   <button
                     onClick={() => setCurrentTab('clients')}
-                    className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-xs sm:text-sm font-bold text-silver-200 hover:text-gold-400 transition-colors shadow-sm"
+                    className="inline-flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-xs sm:text-sm font-bold text-silver-200 hover:text-gold-400 transition-colors shadow-sm flex-shrink-0 cursor-pointer"
                   >
-                    <Users className="w-4 h-4 text-gold-400" />
-                    <span>Directorio KYC</span>
+                    <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold-400" />
+                    <span>Clientes KYC</span>
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2.5 text-xs sm:text-sm text-silver-300 font-mono font-semibold">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                <div className="flex items-center gap-2 text-[11px] sm:text-xs text-silver-300 font-mono font-semibold pt-1 sm:pt-0 border-t sm:border-t-0 border-carbon-800/60">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                   <span className="text-white font-bold">Telemetría: 100% Operativa</span>
                   <span className="text-carbon-600 hidden sm:inline">•</span>
                   <span className="text-gold-400 hidden sm:inline">Medellín VIP Showroom</span>
