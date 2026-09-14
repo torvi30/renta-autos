@@ -270,8 +270,8 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
             </button>
           ))}
 
-          {/* Switcher Tabla / Tarjetas */}
-          <div className="flex items-center bg-carbon-850 p-1.5 rounded-xl border border-carbon-750 ml-2">
+          {/* Switcher Tabla / Tarjetas (Solo visible en pantallas medianas y grandes) */}
+          <div className="hidden md:flex items-center bg-carbon-850 p-1.5 rounded-xl border border-carbon-750 ml-2">
             <button
               onClick={() => setViewMode('table')}
               title="Vista de Tabla Ejecutiva"
@@ -299,7 +299,7 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
 
       </div>
 
-      {/* 3. Contenedor de Listado: Tabla Ejecutiva o Tarjetas */}
+      {/* 3. Contenedor de Listado: Tarjetas Automáticas en Móvil y Vista Dual en Escritorio */}
       {filteredReservations.length === 0 ? (
         <div className="p-16 text-center rounded-2xl bg-carbon-900 border border-carbon-800 space-y-3">
           <AlertCircle className="w-12 h-12 text-silver-600 mx-auto" />
@@ -312,358 +312,568 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
               : 'Aún no hay solicitudes de reserva registradas en este estado.'}
           </p>
         </div>
-      ) : viewMode === 'table' ? (
-        /* ================= VISTA TABLA EJECUTIVA ================= */
-        <div className="rounded-2xl bg-carbon-900 border border-carbon-800 overflow-hidden shadow-xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead>
-                <tr className="bg-carbon-850 border-b border-carbon-750 text-xs uppercase tracking-wider text-silver-300 font-extrabold">
-                  <th className="py-4 px-6">Código / Fecha</th>
-                  <th className="py-4 px-4">Vehículo</th>
-                  <th className="py-4 px-4">Conductor</th>
-                  <th className="py-4 px-4">Periodo de Renta</th>
-                  <th className="py-4 px-4">Entrega</th>
-                  <th className="py-4 px-4 text-right">Total Renta</th>
-                  <th className="py-4 px-4 text-center">Estado</th>
-                  <th className="py-4 px-6 text-center">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-carbon-800/80">
-                {filteredReservations.map((res) => (
-                  <tr
-                    key={res.id}
-                    className="hover:bg-carbon-850/60 transition-colors group cursor-pointer"
-                    onClick={() => setSelectedReservation(res)}
-                  >
-                    {/* Código */}
-                    <td className="py-4 px-6 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-sm text-gold-400 bg-carbon-800 px-2.5 py-1 rounded-lg border border-carbon-700">
-                          {res.id}
-                        </span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCopyCode(res.id);
-                          }}
-                          className="text-silver-400 hover:text-gold-400 transition-colors p-1"
-                          title="Copiar código"
-                        >
-                          {copiedId === res.id ? (
-                            <Check className="w-4 h-4 text-emerald-400" />
-                          ) : (
-                            <Copy className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
-                      <span className="text-xs text-silver-400 block mt-1 font-mono">
-                        {new Date(res.createdAt).toLocaleDateString()}
-                      </span>
-                    </td>
-
-                    {/* Vehículo */}
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-3.5 min-w-[200px]">
-                        <img
-                          src={res.vehicleImage}
-                          alt={res.vehicleName}
-                          className="w-16 h-12 object-cover rounded-xl border border-carbon-700 flex-shrink-0 shadow-sm"
-                        />
-                        <div className="min-w-0">
-                          <strong className="text-white font-black text-sm sm:text-base block truncate">
-                            {res.vehicleName}
-                          </strong>
-                          <span className="text-xs text-silver-300 font-mono font-bold mt-0.5 block">
-                            {res.vehiclePlate}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Conductor */}
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <div className="font-extrabold text-sm sm:text-base text-white">{res.client.fullName}</div>
-                      <span className="text-xs text-silver-300 font-mono">{res.client.phone}</span>
-                    </td>
-
-                    {/* Periodo */}
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <div className="font-bold text-xs sm:text-sm text-white">
-                        {res.startDate} al {res.endDate}
-                      </div>
-                      <span className="text-xs text-silver-300 font-mono">
-                        {res.pricing?.days} día(s) • {res.pickupTime}
-                      </span>
-                    </td>
-
-                    {/* Entrega */}
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <span className="text-xs sm:text-sm text-silver-200 font-medium">
-                        {getDeliveryLocationLabel(res.deliveryLocation)}
-                      </span>
-                    </td>
-
-                    {/* Monto */}
-                    <td className="py-4 px-4 text-right whitespace-nowrap">
-                      <div className="font-mono font-black text-gold-400 text-base sm:text-lg">
-                        {formatCurrency(res.pricing?.rentalTotal || 0)}
-                      </div>
-                      <span className="text-xs text-silver-400 font-mono">
-                        + {formatCurrency(res.pricing?.securityDeposit || 0)} dep.
-                      </span>
-                    </td>
-
-                    {/* Estado */}
-                    <td className="py-4 px-4 text-center whitespace-nowrap">
-                      {getStatusBadge(res.status)}
-                    </td>
-
-                    {/* Acciones */}
-                    <td className="py-4 px-6 text-center" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-center gap-1.5 flex-wrap">
-                        <button
-                          onClick={() => setContractReservation(res)}
-                          title="Ver Contrato y Voucher Oficial (PDF / Imprimir)"
-                          className="p-2 rounded-xl bg-carbon-800 hover:bg-gold-500/20 border border-gold-500/40 text-gold-400 transition-all shadow-sm cursor-pointer hover:scale-105"
-                        >
-                          <FileCheck className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setInspectionReservation(res)}
-                          title="Acta de Inspección Check-in / Check-out"
-                          className="p-2 rounded-xl bg-carbon-800 hover:bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 transition-all shadow-sm cursor-pointer hover:scale-105"
-                        >
-                          <ClipboardCheck className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleOpenClientWhatsApp(res)}
-                          title="Enviar WhatsApp Concierge"
-                          className="p-2 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 transition-colors shadow-sm cursor-pointer"
-                        >
-                          <Send className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setEditingReservation(res)}
-                          title="Editar Reserva"
-                          className="p-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-gold-500/30 text-gold-400 hover:text-gold-300 transition-colors shadow-sm cursor-pointer"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={async () => {
-                            if (window.confirm(`¿Seguro que deseas eliminar permanentemente la reserva ${res.id}?`)) {
-                              await onDeleteReservation(res.id);
-                            }
-                          }}
-                          title="Eliminar Reserva"
-                          className="p-2 rounded-xl bg-carbon-800 hover:bg-rose-950/60 border border-rose-500/30 text-silver-400 hover:text-rose-400 transition-colors shadow-sm cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setSelectedReservation(res)}
-                          title="Ver Expediente de Solicitud"
-                          className="p-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-silver-200 hover:text-white transition-colors shadow-sm cursor-pointer"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
       ) : (
-        /* ================= VISTA TARJETAS DETALLADAS ================= */
-        <div className="space-y-5">
-          {filteredReservations.map((res) => (
-            <div
-              key={res.id}
-              onClick={() => setSelectedReservation(res)}
-              className="p-6 rounded-2xl bg-carbon-900 border border-carbon-800 hover:border-gold-500/50 transition-all shadow-xl space-y-4 cursor-pointer group"
-            >
-              {/* Cabecera */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-carbon-800">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs sm:text-sm font-mono font-bold text-gold-400 bg-carbon-800 px-3 py-1 rounded-xl border border-carbon-750 flex items-center gap-2">
-                    <span>{res.id}</span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCopyCode(res.id);
-                      }}
-                      className="text-silver-400 hover:text-gold-400 transition-colors"
-                      title="Copiar código"
-                    >
-                      {copiedId === res.id ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                  </span>
-                  <span className="text-xs sm:text-sm text-silver-400 font-mono">
-                    Registrada el {new Date(res.createdAt).toLocaleDateString()}
-                  </span>
+        <>
+          {/* ================= VISTA MÓVIL (< md): SIEMPRE TARJETAS (CERO SCROLL HORIZONTAL) ================= */}
+          <div className="block md:hidden space-y-4">
+            {filteredReservations.map((res) => (
+              <div
+                key={`mobile-${res.id}`}
+                onClick={() => setSelectedReservation(res)}
+                className="p-4 rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-gold-500/50 shadow-xl space-y-3.5 cursor-pointer group active:scale-[0.99] transition-all"
+              >
+                {/* 1. Cabecera: Código + Fecha + Estado en la misma pantalla */}
+                <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-carbon-800">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono font-black text-gold-400 bg-carbon-800 px-2.5 py-1 rounded-lg border border-carbon-700 flex items-center gap-1.5 shadow-sm">
+                      <span>{res.id}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopyCode(res.id);
+                        }}
+                        className="text-silver-400 hover:text-gold-300 p-0.5"
+                        title="Copiar código"
+                      >
+                        {copiedId === res.id ? (
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </span>
+                    <span className="text-[11px] text-silver-400 font-mono">
+                      {new Date(res.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  <div className="flex-shrink-0">
+                    {getStatusBadge(res.status)}
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  {getStatusBadge(res.status)}
-                </div>
-              </div>
-
-              {/* Contenido */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-sm">
-                
-                {/* Vehículo */}
-                <div className="flex items-start gap-4">
+                {/* 2. Auto Asignado */}
+                <div className="flex items-start gap-3">
                   <img
                     src={res.vehicleImage}
                     alt={res.vehicleName}
-                    className="w-24 h-18 object-cover rounded-xl border-2 border-carbon-700 shadow-md group-hover:scale-105 transition-transform flex-shrink-0"
+                    className="w-20 h-14 object-cover rounded-xl border border-carbon-700 shadow-md flex-shrink-0"
                   />
-                  <div>
-                    <span className="text-xs uppercase text-gold-400 font-bold block">
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] uppercase text-gold-400 font-bold block tracking-wider">
                       Vehículo Asignado
                     </span>
-                    <strong className="text-white text-base sm:text-lg font-black block mt-0.5">
+                    <h4 className="text-white text-sm font-black truncate mt-0.5">
                       {res.vehicleName}
-                    </strong>
-                    <span className="text-xs text-silver-300 font-mono font-bold mt-1 block">
-                      Placa: {res.vehiclePlate}
-                    </span>
+                    </h4>
+                    <div className="flex items-center gap-2 mt-1 text-[11px]">
+                      <span className="px-1.5 py-0.5 rounded bg-carbon-800 text-silver-300 font-mono font-bold border border-carbon-700">
+                        {res.vehiclePlate}
+                      </span>
+                      <span className="text-silver-400 flex items-center gap-1 truncate">
+                        <MapPin className="w-3 h-3 text-blue-400 flex-shrink-0" />
+                        <span className="truncate">{getDeliveryLocationLabel(res.deliveryLocation)}</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Cliente */}
-                <div className="space-y-1.5">
-                  <span className="text-xs uppercase text-silver-400 font-bold block tracking-wider">
-                    Conductor Titular
-                  </span>
-                  <div className="font-extrabold text-white text-base">{res.client.fullName}</div>
-                  <div className="text-silver-300 flex items-center gap-2 text-xs">
-                    <FileText className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
-                    <span>Licencia: {res.client.driverLicense}</span>
+                {/* 3. Conductor & Periodo & Finanzas */}
+                <div className="p-3 rounded-xl bg-carbon-900/95 border border-carbon-800/80 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] uppercase text-silver-400 font-bold block">Conductor</span>
+                      <strong className="text-white text-xs sm:text-sm block">{res.client.fullName}</strong>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] uppercase text-silver-400 font-bold block">Teléfono</span>
+                      <a
+                        href={`tel:${res.client.phone}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-gold-400 font-mono text-xs hover:underline"
+                      >
+                        {res.client.phone}
+                      </a>
+                    </div>
                   </div>
-                  <div className="text-silver-300 flex items-center gap-2 text-xs">
-                    <Phone className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
-                    <span className="font-mono">{res.client.phone}</span>
+
+                  <div className="pt-2 border-t border-carbon-800 flex items-baseline justify-between">
+                    <div>
+                      <span className="text-[10px] text-silver-400 block">Periodo</span>
+                      <span className="text-white font-medium text-xs">
+                        {res.startDate} al {res.endDate} ({res.pricing?.days} d)
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-silver-400 block">Total Renta</span>
+                      <div className="text-base font-black font-mono text-gold-400">
+                        {formatCurrency(res.pricing?.rentalTotal || 0)}
+                        <span className="text-[10px] text-silver-400 font-normal ml-1">
+                          (+ {formatCurrency(res.pricing?.securityDeposit || 0)} dep.)
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Agenda */}
-                <div className="space-y-1.5 md:text-right">
-                  <span className="text-xs uppercase text-silver-400 font-bold block tracking-wider">
-                    Agenda & Finanzas
-                  </span>
-                  <div className="font-bold text-white text-sm sm:text-base">
-                    {res.startDate} al {res.endDate} ({res.pricing?.days} d)
+                {/* 4. Deck de Botones de Acción en Móvil */}
+                <div className="pt-1 flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
+                  {/* Botón Principal para ver todo el expediente con un click */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setSelectedReservation(res)}
+                      className="py-2.5 px-3 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-white border border-carbon-700 text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                    >
+                      <Eye className="w-4 h-4 text-gold-400" />
+                      <span>Ver Expediente</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleOpenClientWhatsApp(res)}
+                      className="py-2.5 px-3 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>WhatsApp</span>
+                    </button>
                   </div>
-                  <div className="text-silver-300 flex md:justify-end items-center gap-1.5 text-xs">
-                    <MapPin className="w-3.5 h-3.5 text-blue-400" />
-                    <span>{getDeliveryLocationLabel(res.deliveryLocation)}</span>
-                  </div>
-                  <div className="text-xl font-black font-mono text-gold-400 pt-1">
-                    Total: {formatCurrency((res.pricing?.rentalTotal || 0) + (res.pricing?.securityDeposit || 0))}
-                  </div>
-                </div>
 
-              </div>
-
-              {/* Botones */}
-              <div className="pt-3.5 border-t border-carbon-800/80 flex flex-wrap items-center justify-between gap-3" onClick={(e) => e.stopPropagation()}>
-                <button
-                  onClick={() => handleOpenClientWhatsApp(res)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 text-xs sm:text-sm font-bold transition-colors shadow-sm"
-                >
-                  <Send className="w-4 h-4" />
-                  <span>WhatsApp Concierge</span>
-                </button>
-
-                <div className="flex items-center gap-2 flex-wrap">
-                  <button
-                    onClick={() => setContractReservation(res)}
-                    className="px-3 py-2 rounded-xl bg-carbon-800 hover:bg-gold-500/20 text-gold-400 border border-gold-500/40 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer"
-                    title="Ver Contrato y Voucher Oficial (PDF)"
-                  >
-                    <FileCheck className="w-4 h-4" />
-                    <span className="hidden sm:inline">Contrato</span>
-                  </button>
-
-                  <button
-                    onClick={() => setInspectionReservation(res)}
-                    className="px-3 py-2 rounded-xl bg-carbon-800 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer"
-                    title="Acta de Inspección Check-in / Check-out"
-                  >
-                    <ClipboardCheck className="w-4 h-4" />
-                    <span className="hidden sm:inline">Inspección</span>
-                  </button>
-
-                  <button
-                    onClick={() => setEditingReservation(res)}
-                    className="px-3 py-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-gold-400 border border-gold-500/30 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                    <span>Editar</span>
-                  </button>
-
-                  <button
-                    onClick={async () => {
-                      if (window.confirm(`¿Seguro que deseas eliminar permanentemente la reserva ${res.id}?`)) {
-                        await onDeleteReservation(res.id);
-                      }
-                    }}
-                    className="p-2 rounded-xl bg-carbon-800 hover:bg-rose-950/60 text-silver-400 hover:text-rose-400 border border-rose-500/30 transition-colors cursor-pointer"
-                    title="Eliminar reserva"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-
-
+                  {/* Acciones de Estado Inmediato */}
                   {res.status === 'PENDING' && (
-                    <>
+                    <div className="grid grid-cols-2 gap-2">
                       <button
                         onClick={() => onUpdateStatus(res.id, 'CONFIRMED')}
-                        className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-carbon-950 text-xs sm:text-sm font-black transition-all shadow-md active:scale-95"
+                        className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-400 text-carbon-950 text-xs font-black shadow-md active:scale-95 transition-all text-center"
                       >
                         Aprobar Reserva
                       </button>
                       <button
                         onClick={() => onUpdateStatus(res.id, 'CANCELLED')}
-                        className="px-4 py-2 rounded-xl bg-rose-950 hover:bg-rose-900 border border-rose-800/60 text-rose-300 text-xs sm:text-sm font-bold transition-colors"
+                        className="py-2.5 px-3 rounded-xl bg-rose-950/90 text-rose-300 border border-rose-800/60 text-xs font-bold active:scale-95 transition-all text-center"
                       >
                         Rechazar
                       </button>
-                    </>
+                    </div>
                   )}
 
                   {res.status === 'CONFIRMED' && (
                     <button
                       onClick={() => onUpdateStatus(res.id, 'ACTIVE')}
-                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold transition-colors"
+                      className="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold active:scale-95 transition-all text-center"
                     >
-                      Iniciar Entrega
+                      Iniciar Entrega del Auto
                     </button>
                   )}
 
                   {res.status === 'ACTIVE' && (
                     <button
                       onClick={() => onUpdateStatus(res.id, 'COMPLETED')}
-                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold transition-colors"
+                      className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold active:scale-95 transition-all text-center"
                     >
-                      Completar Devolución
+                      Completar Devolución del Auto
                     </button>
                   )}
+
+                  {/* Barra de Herramientas Compactas: Contrato, Inspección, Editar, Eliminar */}
+                  <div className="flex items-center justify-between pt-1 border-t border-carbon-800/80 text-xs">
+                    <button
+                      onClick={() => setContractReservation(res)}
+                      className="p-2 rounded-lg bg-carbon-850 text-gold-400 hover:bg-gold-500/20 border border-carbon-700 flex items-center gap-1 font-semibold"
+                      title="Contrato PDF"
+                    >
+                      <FileCheck className="w-3.5 h-3.5" />
+                      <span className="text-[11px]">Contrato</span>
+                    </button>
+
+                    <button
+                      onClick={() => setInspectionReservation(res)}
+                      className="p-2 rounded-lg bg-carbon-850 text-emerald-400 hover:bg-emerald-500/20 border border-carbon-700 flex items-center gap-1 font-semibold"
+                      title="Acta Inspección"
+                    >
+                      <ClipboardCheck className="w-3.5 h-3.5" />
+                      <span className="text-[11px]">Inspección</span>
+                    </button>
+
+                    <button
+                      onClick={() => setEditingReservation(res)}
+                      className="p-2 rounded-lg bg-carbon-850 text-silver-300 hover:text-gold-300 border border-carbon-700 flex items-center gap-1 font-semibold"
+                      title="Editar"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      <span className="text-[11px]">Editar</span>
+                    </button>
+
+                    <button
+                      onClick={async () => {
+                        if (window.confirm(`¿Seguro que deseas eliminar permanentemente la reserva ${res.id}?`)) {
+                          await onDeleteReservation(res.id);
+                        }
+                      }}
+                      className="p-2 rounded-lg bg-carbon-850 text-rose-400 hover:bg-rose-950/50 border border-rose-500/30"
+                      title="Eliminar"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            ))}
+          </div>
+
+          {/* ================= VISTA ESCRITORIO (>= md): TABLA O TARJETAS SEGÚN SELECCIÓN ================= */}
+          <div className="hidden md:block">
+            {viewMode === 'table' ? (
+              /* TABLA EJECUTIVA EN ESCRITORIO */
+              <div className="rounded-2xl bg-carbon-900 border border-carbon-800 overflow-hidden shadow-xl">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm border-collapse">
+                    <thead>
+                      <tr className="bg-carbon-850 border-b border-carbon-750 text-xs uppercase tracking-wider text-silver-300 font-extrabold">
+                        <th className="py-4 px-6">Código / Fecha</th>
+                        <th className="py-4 px-4">Vehículo</th>
+                        <th className="py-4 px-4">Conductor</th>
+                        <th className="py-4 px-4">Periodo de Renta</th>
+                        <th className="py-4 px-4">Entrega</th>
+                        <th className="py-4 px-4 text-right">Total Renta</th>
+                        <th className="py-4 px-4 text-center">Estado</th>
+                        <th className="py-4 px-6 text-center">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-carbon-800/80">
+                      {filteredReservations.map((res) => (
+                        <tr
+                          key={res.id}
+                          className="hover:bg-carbon-850/60 transition-colors group cursor-pointer"
+                          onClick={() => setSelectedReservation(res)}
+                        >
+                          {/* Código */}
+                          <td className="py-4 px-6 whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-bold text-sm text-gold-400 bg-carbon-800 px-2.5 py-1 rounded-lg border border-carbon-700">
+                                {res.id}
+                              </span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopyCode(res.id);
+                                }}
+                                className="text-silver-400 hover:text-gold-400 transition-colors p-1"
+                                title="Copiar código"
+                              >
+                                {copiedId === res.id ? (
+                                  <Check className="w-4 h-4 text-emerald-400" />
+                                ) : (
+                                  <Copy className="w-4 h-4" />
+                                )}
+                              </button>
+                            </div>
+                            <span className="text-xs text-silver-400 block mt-1 font-mono">
+                              {new Date(res.createdAt).toLocaleDateString()}
+                            </span>
+                          </td>
+
+                          {/* Vehículo */}
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-3.5 min-w-[200px]">
+                              <img
+                                src={res.vehicleImage}
+                                alt={res.vehicleName}
+                                className="w-16 h-12 object-cover rounded-xl border border-carbon-700 flex-shrink-0 shadow-sm"
+                              />
+                              <div className="min-w-0">
+                                <strong className="text-white font-black text-sm sm:text-base block truncate">
+                                  {res.vehicleName}
+                                </strong>
+                                <span className="text-xs text-silver-300 font-mono font-bold mt-0.5 block">
+                                  {res.vehiclePlate}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Conductor */}
+                          <td className="py-4 px-4 whitespace-nowrap">
+                            <div className="font-extrabold text-sm sm:text-base text-white">{res.client.fullName}</div>
+                            <span className="text-xs text-silver-300 font-mono">{res.client.phone}</span>
+                          </td>
+
+                          {/* Periodo */}
+                          <td className="py-4 px-4 whitespace-nowrap">
+                            <div className="font-bold text-xs sm:text-sm text-white">
+                              {res.startDate} al {res.endDate}
+                            </div>
+                            <span className="text-xs text-silver-300 font-mono">
+                              {res.pricing?.days} día(s) • {res.pickupTime}
+                            </span>
+                          </td>
+
+                          {/* Entrega */}
+                          <td className="py-4 px-4 whitespace-nowrap">
+                            <span className="text-xs sm:text-sm text-silver-200 font-medium">
+                              {getDeliveryLocationLabel(res.deliveryLocation)}
+                            </span>
+                          </td>
+
+                          {/* Monto */}
+                          <td className="py-4 px-4 text-right whitespace-nowrap">
+                            <div className="font-mono font-black text-gold-400 text-base sm:text-lg">
+                              {formatCurrency(res.pricing?.rentalTotal || 0)}
+                            </div>
+                            <span className="text-xs text-silver-400 font-mono">
+                              + {formatCurrency(res.pricing?.securityDeposit || 0)} dep.
+                            </span>
+                          </td>
+
+                          {/* Estado */}
+                          <td className="py-4 px-4 text-center whitespace-nowrap">
+                            {getStatusBadge(res.status)}
+                          </td>
+
+                          {/* Acciones */}
+                          <td className="py-4 px-6 text-center" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                              <button
+                                onClick={() => setContractReservation(res)}
+                                title="Ver Contrato y Voucher Oficial (PDF / Imprimir)"
+                                className="p-2 rounded-xl bg-carbon-800 hover:bg-gold-500/20 border border-gold-500/40 text-gold-400 transition-all shadow-sm cursor-pointer hover:scale-105"
+                              >
+                                <FileCheck className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => setInspectionReservation(res)}
+                                title="Acta de Inspección Check-in / Check-out"
+                                className="p-2 rounded-xl bg-carbon-800 hover:bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 transition-all shadow-sm cursor-pointer hover:scale-105"
+                              >
+                                <ClipboardCheck className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleOpenClientWhatsApp(res)}
+                                title="Enviar WhatsApp Concierge"
+                                className="p-2 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 transition-colors shadow-sm cursor-pointer"
+                              >
+                                <Send className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => setEditingReservation(res)}
+                                title="Editar Reserva"
+                                className="p-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-gold-500/30 text-gold-400 hover:text-gold-300 transition-colors shadow-sm cursor-pointer"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (window.confirm(`¿Seguro que deseas eliminar permanentemente la reserva ${res.id}?`)) {
+                                    await onDeleteReservation(res.id);
+                                  }
+                                }}
+                                title="Eliminar Reserva"
+                                className="p-2 rounded-xl bg-carbon-800 hover:bg-rose-950/60 border border-rose-500/30 text-silver-400 hover:text-rose-400 transition-colors shadow-sm cursor-pointer"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => setSelectedReservation(res)}
+                                title="Ver Expediente de Solicitud"
+                                className="p-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-silver-200 hover:text-white transition-colors shadow-sm cursor-pointer"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
+            ) : (
+              /* TARJETAS DETALLADAS EN ESCRITORIO */
+              <div className="space-y-5">
+                {filteredReservations.map((res) => (
+                  <div
+                    key={`desktop-${res.id}`}
+                    onClick={() => setSelectedReservation(res)}
+                    className="p-6 rounded-2xl bg-carbon-900 border border-carbon-800 hover:border-gold-500/50 transition-all shadow-xl space-y-4 cursor-pointer group"
+                  >
+                    {/* Cabecera */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-carbon-800">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs sm:text-sm font-mono font-bold text-gold-400 bg-carbon-800 px-3 py-1 rounded-xl border border-carbon-750 flex items-center gap-2">
+                          <span>{res.id}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCopyCode(res.id);
+                            }}
+                            className="text-silver-400 hover:text-gold-400 transition-colors"
+                            title="Copiar código"
+                          >
+                            {copiedId === res.id ? (
+                              <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </span>
+                        <span className="text-xs sm:text-sm text-silver-400 font-mono">
+                          Registrada el {new Date(res.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
 
-            </div>
-          ))}
-        </div>
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(res.status)}
+                      </div>
+                    </div>
+
+                    {/* Contenido */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-sm">
+                      {/* Vehículo */}
+                      <div className="flex items-start gap-4">
+                        <img
+                          src={res.vehicleImage}
+                          alt={res.vehicleName}
+                          className="w-24 h-18 object-cover rounded-xl border-2 border-carbon-700 shadow-md group-hover:scale-105 transition-transform flex-shrink-0"
+                        />
+                        <div>
+                          <span className="text-xs uppercase text-gold-400 font-bold block">
+                            Vehículo Asignado
+                          </span>
+                          <strong className="text-white text-base sm:text-lg font-black block mt-0.5">
+                            {res.vehicleName}
+                          </strong>
+                          <span className="text-xs text-silver-300 font-mono font-bold mt-1 block">
+                            Placa: {res.vehiclePlate}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Cliente */}
+                      <div className="space-y-1.5">
+                        <span className="text-xs uppercase text-silver-400 font-bold block tracking-wider">
+                          Conductor Titular
+                        </span>
+                        <div className="font-extrabold text-white text-base">{res.client.fullName}</div>
+                        <div className="text-silver-300 flex items-center gap-2 text-xs">
+                          <FileText className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
+                          <span>Licencia: {res.client.driverLicense}</span>
+                        </div>
+                        <div className="text-silver-300 flex items-center gap-2 text-xs">
+                          <Phone className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
+                          <span className="font-mono">{res.client.phone}</span>
+                        </div>
+                      </div>
+
+                      {/* Agenda */}
+                      <div className="space-y-1.5 md:text-right">
+                        <span className="text-xs uppercase text-silver-400 font-bold block tracking-wider">
+                          Agenda & Finanzas
+                        </span>
+                        <div className="font-bold text-white text-sm sm:text-base">
+                          {res.startDate} al {res.endDate} ({res.pricing?.days} d)
+                        </div>
+                        <div className="text-silver-300 flex md:justify-end items-center gap-1.5 text-xs">
+                          <MapPin className="w-3.5 h-3.5 text-blue-400" />
+                          <span>{getDeliveryLocationLabel(res.deliveryLocation)}</span>
+                        </div>
+                        <div className="text-xl font-black font-mono text-gold-400 pt-1">
+                          Total: {formatCurrency((res.pricing?.rentalTotal || 0) + (res.pricing?.securityDeposit || 0))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Botones */}
+                    <div className="pt-3.5 border-t border-carbon-800/80 flex flex-wrap items-center justify-between gap-3" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => handleOpenClientWhatsApp(res)}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 text-xs sm:text-sm font-bold transition-colors shadow-sm"
+                      >
+                        <Send className="w-4 h-4" />
+                        <span>WhatsApp Concierge</span>
+                      </button>
+
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          onClick={() => setContractReservation(res)}
+                          className="px-3 py-2 rounded-xl bg-carbon-800 hover:bg-gold-500/20 text-gold-400 border border-gold-500/40 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                          title="Ver Contrato y Voucher Oficial (PDF)"
+                        >
+                          <FileCheck className="w-4 h-4" />
+                          <span className="hidden sm:inline">Contrato</span>
+                        </button>
+
+                        <button
+                          onClick={() => setInspectionReservation(res)}
+                          className="px-3 py-2 rounded-xl bg-carbon-800 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                          title="Acta de Inspección Check-in / Check-out"
+                        >
+                          <ClipboardCheck className="w-4 h-4" />
+                          <span className="hidden sm:inline">Inspección</span>
+                        </button>
+
+                        <button
+                          onClick={() => setEditingReservation(res)}
+                          className="px-3 py-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-gold-400 border border-gold-500/30 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                          <span>Editar</span>
+                        </button>
+
+                        <button
+                          onClick={async () => {
+                            if (window.confirm(`¿Seguro que deseas eliminar permanentemente la reserva ${res.id}?`)) {
+                              await onDeleteReservation(res.id);
+                            }
+                          }}
+                          className="p-2 rounded-xl bg-carbon-800 hover:bg-rose-950/60 text-silver-400 hover:text-rose-400 border border-rose-500/30 transition-colors cursor-pointer"
+                          title="Eliminar reserva"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+
+                        {res.status === 'PENDING' && (
+                          <>
+                            <button
+                              onClick={() => onUpdateStatus(res.id, 'CONFIRMED')}
+                              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-carbon-950 text-xs sm:text-sm font-black transition-all shadow-md active:scale-95"
+                            >
+                              Aprobar Reserva
+                            </button>
+                            <button
+                              onClick={() => onUpdateStatus(res.id, 'CANCELLED')}
+                              className="px-4 py-2 rounded-xl bg-rose-950 hover:bg-rose-900 border border-rose-800/60 text-rose-300 text-xs sm:text-sm font-bold transition-colors"
+                            >
+                              Rechazar
+                            </button>
+                          </>
+                        )}
+
+                        {res.status === 'CONFIRMED' && (
+                          <button
+                            onClick={() => onUpdateStatus(res.id, 'ACTIVE')}
+                            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold transition-colors"
+                          >
+                            Iniciar Entrega
+                          </button>
+                        )}
+
+                        {res.status === 'ACTIVE' && (
+                          <button
+                            onClick={() => onUpdateStatus(res.id, 'COMPLETED')}
+                            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold transition-colors"
+                          >
+                            Completar Devolución
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {/* 4. Modal / Expediente Completo de Reserva */}

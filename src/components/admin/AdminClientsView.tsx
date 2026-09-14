@@ -125,6 +125,105 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
 
   const isAllSelected = kycFilter === 'ALL' && !sortByRevenue && !minSpentFilter;
 
+  const renderClientCards = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {filteredClients.map((client) => (
+        <div
+          key={client.documentId || client.email}
+          onClick={() => setSelectedClient(client)}
+          className="p-6 rounded-2xl bg-carbon-900 border border-carbon-800 hover:border-gold-500/50 transition-all shadow-xl space-y-4 flex flex-col justify-between cursor-pointer group"
+        >
+          <div>
+            {/* Cabecera */}
+            <div className="flex items-start justify-between gap-3 pb-3.5 border-b border-carbon-800">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-gold-500/15 border border-gold-500/30 text-gold-400 flex items-center justify-center font-bold text-base font-display">
+                  {client.fullName.charAt(0)}
+                </div>
+                <div>
+                  <h4 className="text-base font-extrabold text-white font-display group-hover:text-gold-400 transition-colors">
+                    {client.fullName}
+                  </h4>
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold mt-0.5">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Verificado +25 Años</span>
+                  </div>
+                </div>
+              </div>
+
+              <span className="px-3 py-1 rounded-xl text-xs font-mono font-bold bg-carbon-800 text-silver-200 border border-carbon-700">
+                {client.totalReservations} reserva(s)
+              </span>
+            </div>
+
+            {/* Detalles KYC */}
+            <div className="space-y-2.5 pt-4 text-sm">
+              <div className="flex items-center justify-between text-silver-300">
+                <span className="flex items-center gap-2 text-silver-400">
+                  <FileText className="w-4 h-4 text-gold-400" />
+                  ID / Pasaporte:
+                </span>
+                <strong className="text-white font-mono">{client.documentId}</strong>
+              </div>
+
+              <div className="flex items-center justify-between text-silver-300">
+                <span className="flex items-center gap-2 text-silver-400">
+                  <FileText className="w-4 h-4 text-gold-400" />
+                  Licencia:
+                </span>
+                <strong className="text-white font-mono">{client.driverLicense}</strong>
+              </div>
+
+              <div className="flex items-center justify-between text-silver-300">
+                <span className="flex items-center gap-2 text-silver-400">
+                  <Phone className="w-4 h-4 text-gold-400" />
+                  Teléfono:
+                </span>
+                <span className="text-white font-mono font-semibold">{client.phone}</span>
+              </div>
+
+              <div className="flex items-center justify-between text-silver-300">
+                <span className="flex items-center gap-2 text-silver-400">
+                  <Mail className="w-4 h-4 text-gold-400" />
+                  Email:
+                </span>
+                <span className="text-white truncate max-w-[180px]" title={client.email}>
+                  {client.email}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Pie de Tarjeta */}
+          <div className="pt-4 border-t border-carbon-800 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
+            <div>
+              <span className="text-xs text-silver-400 uppercase font-medium block">Inversión Total</span>
+              <span className="text-base font-black font-mono text-gold-400">
+                {formatCurrency(client.totalSpent)}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleOpenWhatsApp(client.phone, client.fullName)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 text-xs sm:text-sm font-bold transition-colors shadow-sm"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>WhatsApp</span>
+              </button>
+              <button
+                onClick={() => setSelectedClient(client)}
+                className="px-3.5 py-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-200 text-xs sm:text-sm font-bold border border-carbon-700 transition-colors shadow-sm"
+              >
+                Ver
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="space-y-7 animate-fade-in">
       
@@ -302,8 +401,8 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto">
-          {/* Alternador de Vista Tabla / Tarjetas */}
-          <div className="flex items-center bg-carbon-850 p-1.5 rounded-xl border border-carbon-750">
+          {/* Alternador de Vista Tabla / Tarjetas (Solo visible en pantallas medianas y grandes) */}
+          <div className="hidden md:flex items-center bg-carbon-850 p-1.5 rounded-xl border border-carbon-750">
             <button
               onClick={() => setViewMode('table')}
               title="Vista de Tabla Ejecutiva"
@@ -345,196 +444,110 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
               : 'Los clientes que soliciten reservas en el showroom aparecerán catalogados automáticamente en este directorio.'}
           </p>
         </div>
-      ) : viewMode === 'table' ? (
-        /* ================= VISTA TABLA EJECUTIVA (FULL WIDTH) ================= */
-        <div className="rounded-2xl bg-carbon-900 border border-carbon-800 overflow-hidden shadow-xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead>
-                <tr className="bg-carbon-850 border-b border-carbon-750 text-xs uppercase tracking-wider text-silver-300 font-extrabold">
-                  <th className="py-4 px-6">Conductor Titular</th>
-                  <th className="py-4 px-4">Documento / ID</th>
-                  <th className="py-4 px-4">Licencia de Conducir</th>
-                  <th className="py-4 px-4">Contacto Directo</th>
-                  <th className="py-4 px-4 text-center">Reservas</th>
-                  <th className="py-4 px-4 text-right">Inversión Total</th>
-                  <th className="py-4 px-6 text-center">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-carbon-800/80">
-                {filteredClients.map((client) => (
-                  <tr
-                    key={client.documentId || client.email}
-                    className="hover:bg-carbon-850/60 transition-colors group cursor-pointer"
-                    onClick={() => setSelectedClient(client)}
-                  >
-                    {/* Cliente / Avatar */}
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-3.5">
-                        <div className="w-11 h-11 rounded-2xl bg-gold-500/15 border border-gold-500/30 text-gold-400 flex items-center justify-center font-bold text-base font-display flex-shrink-0 shadow-sm">
-                          {client.fullName.charAt(0)}
-                        </div>
-                        <div className="min-w-0">
-                          <strong className="text-white font-extrabold text-sm sm:text-base block group-hover:text-gold-400 transition-colors truncate">
-                            {client.fullName}
-                          </strong>
-                          <span className="text-xs text-silver-400 font-mono truncate block mt-0.5">
-                            {client.email}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Documento */}
-                    <td className="py-4 px-4 font-mono font-bold text-silver-200 whitespace-nowrap">
-                      {client.documentId}
-                    </td>
-
-                    {/* Licencia */}
-                    <td className="py-4 px-4 font-mono font-bold text-silver-200 whitespace-nowrap">
-                      {client.driverLicense}
-                    </td>
-
-                    {/* Teléfono */}
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <span className="text-white font-mono font-semibold">{client.phone}</span>
-                    </td>
-
-                    {/* Total Reservas */}
-                    <td className="py-4 px-4 text-center">
-                      <span className="inline-flex items-center justify-center px-3 py-1 rounded-xl font-mono text-xs font-bold bg-carbon-800 text-gold-400 border border-carbon-700">
-                        {client.totalReservations}
-                      </span>
-                    </td>
-
-                    {/* Inversión Total */}
-                    <td className="py-4 px-4 text-right font-mono font-black text-gold-400 text-base sm:text-lg whitespace-nowrap">
-                      {formatCurrency(client.totalSpent)}
-                    </td>
-
-                    {/* Acciones */}
-                    <td className="py-4 px-6 text-center" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => handleOpenWhatsApp(client.phone, client.fullName)}
-                          title="Contactar por WhatsApp"
-                          className="p-2.5 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 transition-colors shadow-sm"
-                        >
-                          <Send className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setSelectedClient(client)}
-                          className="px-4 py-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-silver-200 hover:text-gold-400 text-xs sm:text-sm font-bold transition-colors shadow-sm"
-                        >
-                          Expediente
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
       ) : (
-        /* ================= VISTA TARJETAS VIP ================= */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredClients.map((client) => (
-            <div
-              key={client.documentId || client.email}
-              onClick={() => setSelectedClient(client)}
-              className="p-6 rounded-2xl bg-carbon-900 border border-carbon-800 hover:border-gold-500/50 transition-all shadow-xl space-y-4 flex flex-col justify-between cursor-pointer group"
-            >
-              <div>
-                {/* Cabecera */}
-                <div className="flex items-start justify-between gap-3 pb-3.5 border-b border-carbon-800">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-12 h-12 rounded-2xl bg-gold-500/15 border border-gold-500/30 text-gold-400 flex items-center justify-center font-bold text-base font-display">
-                      {client.fullName.charAt(0)}
-                    </div>
-                    <div>
-                      <h4 className="text-base font-extrabold text-white font-display group-hover:text-gold-400 transition-colors">
-                        {client.fullName}
-                      </h4>
-                      <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold mt-0.5">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>Verificado +25 Años</span>
-                      </div>
-                    </div>
-                  </div>
+        <>
+          {/* ================= VISTA MÓVIL (< md): SIEMPRE TARJETAS VIP (CERO SCROLL HORIZONTAL) ================= */}
+          <div className="block md:hidden">
+            {renderClientCards()}
+          </div>
 
-                  <span className="px-3 py-1 rounded-xl text-xs font-mono font-bold bg-carbon-800 text-silver-200 border border-carbon-700">
-                    {client.totalReservations} reserva(s)
-                  </span>
-                </div>
+          {/* ================= VISTA ESCRITORIO (>= md): TABLA O TARJETAS ================= */}
+          <div className="hidden md:block">
+            {viewMode === 'table' ? (
+              <div className="rounded-2xl bg-carbon-900 border border-carbon-800 overflow-hidden shadow-xl">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm border-collapse">
+                    <thead>
+                      <tr className="bg-carbon-850 border-b border-carbon-750 text-xs uppercase tracking-wider text-silver-300 font-extrabold">
+                        <th className="py-4 px-6">Conductor Titular</th>
+                        <th className="py-4 px-4">Documento / ID</th>
+                        <th className="py-4 px-4">Licencia de Conducir</th>
+                        <th className="py-4 px-4">Contacto Directo</th>
+                        <th className="py-4 px-4 text-center">Reservas</th>
+                        <th className="py-4 px-4 text-right">Inversión Total</th>
+                        <th className="py-4 px-6 text-center">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-carbon-800/80">
+                      {filteredClients.map((client) => (
+                        <tr
+                          key={client.documentId || client.email}
+                          className="hover:bg-carbon-850/60 transition-colors group cursor-pointer"
+                          onClick={() => setSelectedClient(client)}
+                        >
+                          {/* Cliente / Avatar */}
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-3.5">
+                              <div className="w-11 h-11 rounded-2xl bg-gold-500/15 border border-gold-500/30 text-gold-400 flex items-center justify-center font-bold text-base font-display flex-shrink-0 shadow-sm">
+                                {client.fullName.charAt(0)}
+                              </div>
+                              <div className="min-w-0">
+                                <strong className="text-white font-extrabold text-sm sm:text-base block group-hover:text-gold-400 transition-colors truncate">
+                                  {client.fullName}
+                                </strong>
+                                <span className="text-xs text-silver-400 font-mono truncate block mt-0.5">
+                                  {client.email}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
 
-                {/* Detalles KYC */}
-                <div className="space-y-2.5 pt-4 text-sm">
-                  <div className="flex items-center justify-between text-silver-300">
-                    <span className="flex items-center gap-2 text-silver-400">
-                      <FileText className="w-4 h-4 text-gold-400" />
-                      ID / Pasaporte:
-                    </span>
-                    <strong className="text-white font-mono">{client.documentId}</strong>
-                  </div>
+                          {/* Documento */}
+                          <td className="py-4 px-4 font-mono font-bold text-silver-200 whitespace-nowrap">
+                            {client.documentId}
+                          </td>
 
-                  <div className="flex items-center justify-between text-silver-300">
-                    <span className="flex items-center gap-2 text-silver-400">
-                      <FileText className="w-4 h-4 text-gold-400" />
-                      Licencia:
-                    </span>
-                    <strong className="text-white font-mono">{client.driverLicense}</strong>
-                  </div>
+                          {/* Licencia */}
+                          <td className="py-4 px-4 font-mono font-bold text-silver-200 whitespace-nowrap">
+                            {client.driverLicense}
+                          </td>
 
-                  <div className="flex items-center justify-between text-silver-300">
-                    <span className="flex items-center gap-2 text-silver-400">
-                      <Phone className="w-4 h-4 text-gold-400" />
-                      Teléfono:
-                    </span>
-                    <span className="text-white font-mono font-semibold">{client.phone}</span>
-                  </div>
+                          {/* Teléfono */}
+                          <td className="py-4 px-4 whitespace-nowrap">
+                            <span className="text-white font-mono font-semibold">{client.phone}</span>
+                          </td>
 
-                  <div className="flex items-center justify-between text-silver-300">
-                    <span className="flex items-center gap-2 text-silver-400">
-                      <Mail className="w-4 h-4 text-gold-400" />
-                      Email:
-                    </span>
-                    <span className="text-white truncate max-w-[180px]" title={client.email}>
-                      {client.email}
-                    </span>
-                  </div>
+                          {/* Total Reservas */}
+                          <td className="py-4 px-4 text-center">
+                            <span className="inline-flex items-center justify-center px-3 py-1 rounded-xl font-mono text-xs font-bold bg-carbon-800 text-gold-400 border border-carbon-700">
+                              {client.totalReservations}
+                            </span>
+                          </td>
+
+                          {/* Inversión Total */}
+                          <td className="py-4 px-4 text-right font-mono font-black text-gold-400 text-base sm:text-lg whitespace-nowrap">
+                            {formatCurrency(client.totalSpent)}
+                          </td>
+
+                          {/* Acciones */}
+                          <td className="py-4 px-6 text-center" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => handleOpenWhatsApp(client.phone, client.fullName)}
+                                title="Contactar por WhatsApp"
+                                className="p-2.5 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 transition-colors shadow-sm"
+                              >
+                                <Send className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => setSelectedClient(client)}
+                                className="px-4 py-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-silver-200 hover:text-gold-400 text-xs sm:text-sm font-bold transition-colors shadow-sm"
+                              >
+                                Expediente
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-
-              {/* Pie de Tarjeta */}
-              <div className="pt-4 border-t border-carbon-800 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
-                <div>
-                  <span className="text-xs text-silver-400 uppercase font-medium block">Inversión Total</span>
-                  <span className="text-base font-black font-mono text-gold-400">
-                    {formatCurrency(client.totalSpent)}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleOpenWhatsApp(client.phone, client.fullName)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 text-xs sm:text-sm font-bold transition-colors shadow-sm"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>WhatsApp</span>
-                  </button>
-                  <button
-                    onClick={() => setSelectedClient(client)}
-                    className="px-3.5 py-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-200 text-xs sm:text-sm font-bold border border-carbon-700 transition-colors shadow-sm"
-                  >
-                    Ver
-                  </button>
-                </div>
-              </div>
-
-            </div>
-          ))}
-        </div>
+            ) : (
+              renderClientCards()
+            )}
+          </div>
+        </>
       )}
 
       {/* 4. Modal / Expediente Completo de Cliente */}
