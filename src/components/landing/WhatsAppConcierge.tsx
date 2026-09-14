@@ -96,11 +96,10 @@ export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
         >
-          {/* Backdrop con captura de toque y clic para cerrar afuera */}
+          {/* Backdrop con captura de clic para cerrar afuera */}
           <div
             className="fixed inset-0 bg-carbon-950/80 backdrop-blur-md transition-opacity cursor-pointer -z-10"
             onClick={handleClose}
-            onTouchStart={handleClose}
             aria-hidden="true"
           />
 

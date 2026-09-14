@@ -302,51 +302,53 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-gradient-to-b from-carbon-950 via-carbon-900/30 to-carbon-950">
         
         {/* Cabecera Superior Ejecutiva con Mayor Presencia y Letra Grande */}
-        <header className="border-b border-carbon-800/80 bg-carbon-900/95 backdrop-blur-2xl sticky top-0 z-30 px-5 sm:px-8 lg:px-10 py-4 sm:py-5 flex items-center justify-between shadow-xl">
-          <div className="flex items-center gap-4">
+        <header className="border-b border-carbon-800/80 bg-carbon-900/95 backdrop-blur-2xl sticky top-0 z-30 px-3.5 sm:px-8 lg:px-10 py-3 sm:py-5 flex items-center justify-between shadow-xl">
+          <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
             {/* Botón Hamburguesa en Móvil */}
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
-              className="p-2.5 rounded-xl bg-carbon-850 hover:bg-carbon-800 text-silver-400 hover:text-white border border-carbon-750 lg:hidden transition-colors"
+              className="p-2 sm:p-2.5 rounded-xl bg-carbon-850 hover:bg-carbon-800 text-silver-400 hover:text-white border border-carbon-750 lg:hidden transition-colors flex-shrink-0"
               aria-label="Abrir menú lateral"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs sm:text-sm font-bold uppercase tracking-widest text-gold-400 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  PORTAL EJECUTIVO VIP
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-widest text-gold-400 flex items-center gap-1 truncate">
+                  <Sparkles className="w-3 h-3 text-gold-400 flex-shrink-0" />
+                  <span>PORTAL VIP</span>
                 </span>
                 <span className="text-carbon-600 font-bold">•</span>
-                <span className="text-xs sm:text-sm text-silver-300 font-mono uppercase font-bold">
+                <span className="text-[10px] sm:text-xs md:text-sm text-silver-300 font-mono uppercase font-bold truncate">
                   {currentTab === 'dashboard'
-                    ? 'Centro de Control'
+                    ? 'Mando'
                     : currentTab === 'calendar'
-                    ? 'Cronograma & Ocupación'
+                    ? 'Cronograma'
                     : currentTab}
                 </span>
               </div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white font-display tracking-tight mt-1">
-                {currentTab === 'dashboard' && 'Centro de Mando & Telemetría Comercial'}
-                {currentTab === 'fleet' && 'Gestión Integral de Flota Boutique'}
-                {currentTab === 'reservations' && 'Solicitudes & Ciclo de Vida de Reservas'}
-                {currentTab === 'clients' && 'Directorio & Verificación de Conductores KYC'}
-                {currentTab === 'calendar' && 'Cronograma Operativo & Ocupación de Flota'}
+              <h1 className="text-base sm:text-xl lg:text-3xl font-black text-white font-display tracking-tight mt-0.5 truncate">
+                {currentTab === 'dashboard' && 'Centro de Mando'}
+                {currentTab === 'fleet' && 'Gestión de Flota'}
+                {currentTab === 'reservations' && 'Gestión de Reservas'}
+                {currentTab === 'clients' && 'Directorio de Clientes'}
+                {currentTab === 'calendar' && 'Cronograma Operativo'}
+                {currentTab === 'analytics' && 'Analítica & Finanzas'}
+                {currentTab === 'settings' && 'Ajustes de Empresa'}
               </h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
             {/* Botón Principal de Acción Rápida: Nuevo Vehículo */}
             <button
               onClick={handleOpenCreateVehicle}
-              className="inline-flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-5 py-2 sm:py-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-gold-500 via-gold-400 to-gold-500 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black text-xs sm:text-base shadow-xl shadow-gold-500/25 active:scale-95 transition-all"
+              className="inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-gold-500 via-gold-400 to-gold-500 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black text-xs sm:text-sm shadow-md active:scale-95 transition-all cursor-pointer"
               title="Añadir nuevo vehículo a la flota"
             >
-              <Plus className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-              <span className="hidden xs:inline">Nuevo Vehículo</span>
+              <Plus className="w-4 h-4 flex-shrink-0" />
+              <span className="hidden sm:inline">Nuevo Auto</span>
             </button>
 
             {/* Indicador de Estado Cloud Firestore (Spark $0) */}
@@ -367,25 +369,27 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
                 onClick={handleSyncToCloud}
                 disabled={isSeeding}
                 title="Sincronizar catálogo y reservas con Cloud Firestore"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-carbon-850 hover:bg-carbon-800 border border-gold-500/35 text-xs sm:text-sm font-bold text-gold-400 hover:text-gold-300 transition-colors disabled:opacity-50"
+                className="hidden xl:inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-carbon-850 hover:bg-carbon-800 border border-gold-500/35 text-xs sm:text-sm font-bold text-gold-400 hover:text-gold-300 transition-colors disabled:opacity-50"
               >
                 <RefreshCw className={`w-4 h-4 ${isSeeding ? 'animate-spin' : ''}`} />
-                <span className="hidden xl:inline">Sincronizar Nube</span>
+                <span>Sincronizar</span>
               </button>
             )}
 
             <button
               onClick={onNavigateHome}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-carbon-850 hover:bg-carbon-800 border border-carbon-750 text-xs sm:text-sm font-bold text-silver-200 hover:text-gold-400 transition-colors shadow-sm"
+              className="inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-carbon-850 hover:bg-carbon-800 border border-carbon-750 text-xs sm:text-sm font-bold text-silver-200 hover:text-gold-400 transition-colors shadow-sm cursor-pointer"
+              title="Ver Showroom Público"
             >
-              <span>Ver Showroom</span>
-              <ArrowUpRight className="w-4 h-4" />
+              <span className="hidden sm:inline">Ver Showroom</span>
+              <span className="inline sm:hidden">Web</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </header>
 
         {/* Contenedor de la Vista Activa con Scroll */}
-        <main className="flex-1 overflow-y-auto p-5 sm:p-8 lg:p-10 w-full max-w-[1680px] mx-auto space-y-7">
+        <main className="flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-10 w-full max-w-[1680px] mx-auto space-y-6 sm:space-y-7">
           
           {/* Alerta de Solicitudes Pendientes con Letra Clara */}
           {pendingCount > 0 && currentTab !== 'reservations' && (
@@ -533,60 +537,60 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
                           return (
                             <div
                               key={r.id}
-                              className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-carbon-850 to-carbon-850/80 border border-carbon-750 hover:border-gold-500/50 transition-all duration-300 space-y-4 shadow-xl group"
+                              className="p-4 sm:p-6 rounded-2xl bg-gradient-to-r from-carbon-850 to-carbon-850/80 border border-carbon-750 hover:border-gold-500/50 transition-all duration-300 space-y-4 shadow-xl group"
                             >
                               {/* Fila Superior: Vehículo, Cliente, Fechas y Monto */}
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                                 
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
                                   <div className="relative flex-shrink-0">
                                     <img
                                       src={r.vehicleImage}
                                       alt={r.vehicleName}
-                                      className="w-24 h-18 sm:w-28 sm:h-20 object-cover rounded-2xl border-2 border-carbon-700 shadow-md group-hover:scale-105 transition-transform"
+                                      className="w-20 h-16 sm:w-28 sm:h-20 object-cover rounded-xl sm:rounded-2xl border-2 border-carbon-700 shadow-md group-hover:scale-105 transition-transform"
                                     />
-                                    <span className="absolute bottom-1 right-1 bg-carbon-950/95 text-[11px] font-mono font-bold text-gold-400 px-2 py-0.5 rounded-md border border-carbon-700 shadow-sm">
+                                    <span className="absolute bottom-1 right-1 bg-carbon-950/95 text-[10px] sm:text-[11px] font-mono font-bold text-gold-400 px-1.5 py-0.5 rounded border border-carbon-700 shadow-sm">
                                       {r.vehiclePlate}
                                     </span>
                                   </div>
 
-                                  <div>
-                                    <div className="flex items-center gap-2.5 flex-wrap">
-                                      <span className="text-base sm:text-lg font-black text-white">{r.vehicleName}</span>
-                                      <span className="text-xs font-mono font-bold text-gold-400 bg-carbon-800 px-2 py-0.5 rounded-md border border-carbon-700">
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="text-sm sm:text-lg font-black text-white truncate">{r.vehicleName}</span>
+                                      <span className="text-[11px] sm:text-xs font-mono font-bold text-gold-400 bg-carbon-800 px-1.5 py-0.5 rounded border border-carbon-700">
                                         #{r.id}
                                       </span>
                                     </div>
-                                    <div className="text-xs sm:text-sm text-silver-200 font-medium mt-1 flex items-center gap-2 flex-wrap">
-                                      <span className="text-white font-extrabold text-sm sm:text-base">{r.client.fullName}</span>
+                                    <div className="text-xs sm:text-sm text-silver-200 font-medium mt-1 flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                      <span className="text-white font-extrabold text-xs sm:text-base">{r.client.fullName}</span>
                                       <span className="text-carbon-600 font-bold">•</span>
-                                      <span className="text-silver-300 font-mono">{r.client.phone}</span>
+                                      <span className="text-silver-300 font-mono text-xs">{r.client.phone}</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-xs text-silver-300 font-mono mt-1.5 flex-wrap">
-                                      <span className="inline-flex items-center gap-1.5 bg-carbon-900 px-2.5 py-1 rounded-lg text-silver-200 font-medium border border-carbon-800">
-                                        <Calendar className="w-3.5 h-3.5 text-gold-400" />
-                                        {r.startDate} al {r.endDate} ({r.pricing?.days || 1}d)
+                                    <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-silver-300 font-mono mt-1.5 flex-wrap">
+                                      <span className="inline-flex items-center gap-1 bg-carbon-900 px-2 py-0.5 rounded text-silver-200 font-medium border border-carbon-800">
+                                        <Calendar className="w-3 h-3 text-gold-400 flex-shrink-0" />
+                                        <span className="truncate">{r.startDate} al {r.endDate} ({r.pricing?.days || 1}d)</span>
                                       </span>
-                                      <span className="inline-flex items-center gap-1.5 bg-carbon-900 px-2.5 py-1 rounded-lg text-silver-200 font-medium border border-carbon-800">
-                                        <MapPin className="w-3.5 h-3.5 text-blue-400" />
-                                        {getDeliveryLocationLabel(r.deliveryLocation)}
+                                      <span className="inline-flex items-center gap-1 bg-carbon-900 px-2 py-0.5 rounded text-silver-200 font-medium border border-carbon-800">
+                                        <MapPin className="w-3 h-3 text-blue-400 flex-shrink-0" />
+                                        <span className="truncate">{getDeliveryLocationLabel(r.deliveryLocation)}</span>
                                       </span>
                                     </div>
                                   </div>
                                 </div>
 
                                 {/* Columna de Precios y Estado */}
-                                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-1.5 border-t sm:border-t-0 pt-3 sm:pt-0 border-carbon-800">
+                                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-1.5 border-t sm:border-t-0 pt-2.5 sm:pt-0 border-carbon-800/80">
                                   <div className="text-left sm:text-right">
-                                    <div className="text-xs text-silver-400 font-medium uppercase tracking-wider">Renta Total</div>
-                                    <div className="text-xl sm:text-2xl font-mono font-black text-gold-400 mt-0.5">
+                                    <div className="text-[10px] sm:text-xs text-silver-400 font-medium uppercase tracking-wider">Renta Total</div>
+                                    <div className="text-base sm:text-2xl font-mono font-black text-gold-400 mt-0.5">
                                       {formatCurrency(r.pricing?.rentalTotal || 0)}
                                     </div>
                                   </div>
 
                                   <div>
                                     <span
-                                      className={`text-xs font-bold uppercase px-3 py-1 rounded-full inline-block ${
+                                      className={`text-[11px] sm:text-xs font-bold uppercase px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full inline-block ${
                                         isConfirmed
                                           ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/50'
                                           : isPending
@@ -604,51 +608,53 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
                               </div>
 
                               {/* Fila Inferior: Botones de Acción Inmediata */}
-                              <div className="pt-3 border-t border-carbon-800/70 flex items-center justify-between gap-3 flex-wrap">
-                                <div className="text-xs sm:text-sm text-silver-300 font-mono font-semibold">
-                                  Garantía: <span className="text-white">{formatCurrency(r.pricing?.securityDeposit || 0)}</span> (Custodia)
+                              <div className="pt-3 border-t border-carbon-800/70 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                                <div className="text-xs sm:text-sm text-silver-300 font-mono font-semibold flex items-center justify-between sm:justify-start gap-1.5">
+                                  <span className="text-silver-400">Garantía:</span>
+                                  <span className="text-white font-bold">{formatCurrency(r.pricing?.securityDeposit || 0)}</span>
+                                  <span className="text-silver-400 text-[10px] sm:text-[11px]">(Custodia)</span>
                                 </div>
 
-                                <div className="flex items-center gap-2.5">
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                                   {/* Botón Directo a WhatsApp Concierge */}
                                   <button
                                     onClick={() => {
                                       const url = generateWhatsAppReservationLink(r);
                                       window.open(url, '_blank', 'noopener,noreferrer');
                                     }}
-                                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-95"
+                                    className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
                                     title="Contactar al cliente con plantilla VIP de WhatsApp"
                                   >
-                                    <Phone className="w-4 h-4" />
+                                    <Phone className="w-4 h-4 flex-shrink-0" />
                                     <span>WhatsApp Concierge</span>
                                   </button>
 
                                   {/* Acciones de estado */}
                                   {isPending && (
-                                    <>
+                                    <div className="grid grid-cols-2 sm:flex items-center gap-2">
                                       <button
                                         onClick={() => handleUpdateReservationStatus(r.id, 'CONFIRMED')}
-                                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-carbon-950 font-black text-xs sm:text-sm transition-all shadow-md active:scale-95"
+                                        className="inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-carbon-950 font-black text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer"
                                       >
-                                        <Check className="w-4 h-4" />
+                                        <Check className="w-4 h-4 flex-shrink-0" />
                                         <span>Aprobar</span>
                                       </button>
                                       <button
                                         onClick={() => handleUpdateReservationStatus(r.id, 'CANCELLED')}
-                                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-carbon-800 hover:bg-rose-950/40 text-rose-400 border border-carbon-700 hover:border-rose-500/30 text-xs sm:text-sm font-semibold transition-colors"
+                                        className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl bg-carbon-800 hover:bg-rose-950/40 text-rose-400 border border-carbon-700 hover:border-rose-500/30 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
                                       >
-                                        <XCircle className="w-4 h-4" />
+                                        <XCircle className="w-4 h-4 flex-shrink-0" />
                                         <span>Rechazar</span>
                                       </button>
-                                    </>
+                                    </div>
                                   )}
 
                                   {isConfirmed && (
                                     <button
                                       onClick={() => handleUpdateReservationStatus(r.id, 'ACTIVE')}
-                                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm transition-all active:scale-95"
+                                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm transition-all active:scale-95 cursor-pointer"
                                     >
-                                      <Car className="w-4 h-4" />
+                                      <Car className="w-4 h-4 flex-shrink-0" />
                                       <span>Marcar en Entrega</span>
                                     </button>
                                   )}
@@ -656,9 +662,9 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
                                   {isActive && (
                                     <button
                                       onClick={() => handleUpdateReservationStatus(r.id, 'COMPLETED')}
-                                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-all active:scale-95"
+                                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-all active:scale-95 cursor-pointer"
                                     >
-                                      <CheckCircle2 className="w-4 h-4" />
+                                      <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
                                       <span>Completar Renta</span>
                                     </button>
                                   )}

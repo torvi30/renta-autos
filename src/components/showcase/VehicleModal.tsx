@@ -62,11 +62,10 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
       aria-modal="true"
       aria-label={`Detalles de ${vehicle.brand} ${vehicle.model}`}
     >
-      {/* Backdrop explícito de pantalla completa con soporte táctil y clic */}
+      {/* Backdrop explícito de pantalla completa con soporte clic */}
       <div
         className="fixed inset-0 bg-carbon-950/85 backdrop-blur-xl transition-opacity cursor-pointer -z-10"
         onClick={onClose}
-        onTouchStart={onClose}
         aria-hidden="true"
       />
 

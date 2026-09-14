@@ -50,27 +50,27 @@ export const FaqSection: React.FC = () => {
         </div>
 
         {/* Requisitos clave destacados */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12">
-          <div className="p-4 rounded-xl bg-carbon-900 border border-carbon-800 text-center">
-            <UserCheck className="w-5 h-5 mx-auto text-gold-400 mb-2" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mb-8 sm:mb-12">
+          <div className="p-3 sm:p-4 rounded-xl bg-carbon-900 border border-carbon-800 text-center">
+            <UserCheck className="w-5 h-5 mx-auto text-gold-400 mb-1.5" />
             <div className="text-xs font-bold text-silver-200">{t.faq.reqAge} {minAge}+</div>
             <div className="text-[10px] text-silver-400 mt-0.5">{minAge}+ {t.faq.reqAgeDesc}</div>
           </div>
 
-          <div className="p-4 rounded-xl bg-carbon-900 border border-carbon-800 text-center">
-            <FileCheck className="w-5 h-5 mx-auto text-gold-400 mb-2" />
+          <div className="p-3 sm:p-4 rounded-xl bg-carbon-900 border border-carbon-800 text-center">
+            <FileCheck className="w-5 h-5 mx-auto text-gold-400 mb-1.5" />
             <div className="text-xs font-bold text-silver-200">{t.faq.reqLicense}</div>
             <div className="text-[10px] text-silver-400 mt-0.5">{t.faq.reqLicenseDesc}</div>
           </div>
 
-          <div className="p-4 rounded-xl bg-carbon-900 border border-carbon-800 text-center">
-            <CreditCard className="w-5 h-5 mx-auto text-gold-400 mb-2" />
+          <div className="p-3 sm:p-4 rounded-xl bg-carbon-900 border border-carbon-800 text-center">
+            <CreditCard className="w-5 h-5 mx-auto text-gold-400 mb-1.5" />
             <div className="text-xs font-bold text-silver-200">{t.faq.reqDeposit}</div>
             <div className="text-[10px] text-silver-400 mt-0.5">{t.faq.reqDepositDesc}</div>
           </div>
 
-          <div className="p-4 rounded-xl bg-carbon-900 border border-carbon-800 text-center">
-            <ShieldAlert className="w-5 h-5 mx-auto text-emerald-400 mb-2" />
+          <div className="p-3 sm:p-4 rounded-xl bg-carbon-900 border border-carbon-800 text-center">
+            <ShieldAlert className="w-5 h-5 mx-auto text-emerald-400 mb-1.5" />
             <div className="text-xs font-bold text-silver-200">{t.faq.reqInsurance}</div>
             <div className="text-[10px] text-silver-400 mt-0.5">{t.faq.reqInsuranceDesc}</div>
           </div>

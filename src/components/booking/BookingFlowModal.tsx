@@ -297,11 +297,10 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
       aria-modal="true"
       aria-labelledby="booking-modal-title"
     >
-      {/* Backdrop explícito con soporte de toque móvil y clic para cerrar afuera */}
+      {/* Backdrop explícito con soporte de clic para cerrar afuera */}
       <div
         className="fixed inset-0 bg-carbon-950/85 backdrop-blur-xl transition-opacity cursor-pointer -z-10"
         onClick={onClose}
-        onTouchStart={onClose}
         aria-hidden="true"
       />
 
@@ -311,32 +310,32 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
       >
         
         {/* Encabezado Superior con Stepper */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 border-b border-carbon-800 bg-carbon-850/90 gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[11px] font-semibold uppercase tracking-widest text-gold-400">
-                {language === 'ES' ? 'Showroom Concierge VIP' : 'VIP Showroom Concierge'}
+        <div className="flex items-center justify-between p-3.5 sm:p-5 border-b border-carbon-800 bg-carbon-850/90 gap-2.5">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+              <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-widest text-gold-400 truncate">
+                {language === 'ES' ? 'Showroom Concierge VIP' : 'VIP Concierge'}
               </span>
               <span className="text-carbon-600">•</span>
-              <span className="text-xs text-silver-400 font-mono">
+              <span className="text-[11px] sm:text-xs text-silver-400 font-mono">
                 {language === 'ES' ? `Paso ${currentStep} de 3` : `Step ${currentStep} of 3`}
               </span>
             </div>
-            <h2 id="booking-modal-title" className="text-lg sm:text-xl font-bold text-silver-100 font-display">
+            <h2 id="booking-modal-title" className="text-sm sm:text-lg font-bold text-silver-100 font-display truncate">
               {currentStep === 1 &&
-                (language === 'ES' ? 'Configuración de Renta & Fechas' : 'Rental Configuration & Dates')}
+                (language === 'ES' ? 'Configuración de Renta' : 'Rental Configuration')}
               {currentStep === 2 &&
-                (language === 'ES' ? 'Registro del Conductor & KYC' : 'Driver Registration & KYC')}
+                (language === 'ES' ? 'Registro del Conductor KYC' : 'Driver Registration KYC')}
               {currentStep === 3 &&
                 (language === 'ES' ? 'Voucher de Reserva Oficial' : 'Official Booking Voucher')}
             </h2>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {/* Stepper Visual */}
-            <div className="flex items-center gap-1.5 bg-carbon-900/80 px-3 py-1.5 rounded-full border border-carbon-750 text-xs">
+            <div className="flex items-center gap-1 sm:gap-1.5 bg-carbon-900/80 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-carbon-750 text-xs">
               <span
-                className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[11px] transition-colors ${
+                className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center font-bold text-[10px] sm:text-[11px] transition-colors ${
                   currentStep >= 1
                     ? 'bg-gold-500 text-carbon-950'
                     : 'bg-carbon-800 text-silver-500'
@@ -344,9 +343,9 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
               >
                 1
               </span>
-              <div className={`w-3 h-0.5 ${currentStep >= 2 ? 'bg-gold-500' : 'bg-carbon-700'}`} />
+              <div className={`w-2 sm:w-3 h-0.5 ${currentStep >= 2 ? 'bg-gold-500' : 'bg-carbon-700'}`} />
               <span
-                className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[11px] transition-colors ${
+                className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center font-bold text-[10px] sm:text-[11px] transition-colors ${
                   currentStep >= 2
                     ? 'bg-gold-500 text-carbon-950'
                     : 'bg-carbon-800 text-silver-500'
@@ -354,9 +353,9 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
               >
                 2
               </span>
-              <div className={`w-3 h-0.5 ${currentStep >= 3 ? 'bg-gold-500' : 'bg-carbon-700'}`} />
+              <div className={`w-2 sm:w-3 h-0.5 ${currentStep >= 3 ? 'bg-gold-500' : 'bg-carbon-700'}`} />
               <span
-                className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[11px] transition-colors ${
+                className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center font-bold text-[10px] sm:text-[11px] transition-colors ${
                   currentStep === 3
                     ? 'bg-gold-500 text-carbon-950'
                     : 'bg-carbon-800 text-silver-500'
@@ -368,10 +367,10 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
 
             <button
               onClick={onClose}
-              className="p-2 rounded-lg bg-carbon-800 hover:bg-carbon-750 text-silver-400 hover:text-white transition-colors"
+              className="p-1.5 sm:p-2 rounded-lg bg-carbon-800 hover:bg-carbon-750 text-silver-400 hover:text-white transition-colors cursor-pointer"
               aria-label="Cerrar modal"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         </div>
@@ -600,7 +599,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                           ? 'Ej. Hotel Four Seasons / Penthouse 1201'
                           : 'e.g. Four Seasons Hotel / Penthouse 1201'
                       }
-                      className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-800 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
+                      className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-800 border border-carbon-700 text-silver-200 text-base sm:text-xs focus:outline-none focus:border-gold-500"
                     />
                   </div>
                 )}
@@ -696,7 +695,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     value={clientInfo.fullName}
                     onChange={(e) => setClientInfo({ ...clientInfo, fullName: e.target.value })}
                     placeholder={language === 'ES' ? 'Ej. Roberto Gómez Silva' : 'e.g. Robert Smith'}
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-base sm:text-xs focus:outline-none focus:border-gold-500"
                   />
                 </div>
 
@@ -713,7 +712,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     value={clientInfo.documentId}
                     onChange={(e) => setClientInfo({ ...clientInfo, documentId: e.target.value })}
                     placeholder={language === 'ES' ? 'Ej. 1020304050 o PAS-992144' : 'e.g. PAS-992144'}
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-base sm:text-xs focus:outline-none focus:border-gold-500"
                   />
                 </div>
 
@@ -730,7 +729,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     value={clientInfo.driverLicense}
                     onChange={(e) => setClientInfo({ ...clientInfo, driverLicense: e.target.value })}
                     placeholder={language === 'ES' ? 'Ej. LC-2024-8890' : 'e.g. DL-2026-8890'}
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-base sm:text-xs focus:outline-none focus:border-gold-500"
                   />
                 </div>
 
@@ -747,7 +746,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     value={clientInfo.phone}
                     onChange={(e) => setClientInfo({ ...clientInfo, phone: e.target.value })}
                     placeholder="+1 555 123 4567"
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-base sm:text-xs focus:outline-none focus:border-gold-500"
                   />
                 </div>
 
@@ -764,7 +763,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     value={clientInfo.email}
                     onChange={(e) => setClientInfo({ ...clientInfo, email: e.target.value })}
                     placeholder="client@luxury.com"
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-base sm:text-xs focus:outline-none focus:border-gold-500"
                   />
                 </div>
 

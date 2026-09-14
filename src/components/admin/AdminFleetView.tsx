@@ -239,7 +239,7 @@ export const AdminFleetView: React.FC<AdminFleetViewProps> = ({
       <div className="p-4 sm:p-5 rounded-2xl bg-carbon-900 border border-carbon-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-xl">
         
         {/* Input de Búsqueda y Botón Nuevo Vehículo */}
-        <div className="flex items-center gap-3 flex-1 max-w-xl">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 flex-1 w-full sm:max-w-xl">
           <div className="relative flex-1">
             <Search className="w-5 h-5 text-silver-400 absolute left-4 top-1/2 -translate-y-1/2" />
             <input
@@ -253,15 +253,15 @@ export const AdminFleetView: React.FC<AdminFleetViewProps> = ({
 
           <button
             onClick={onCreateVehicle}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black text-sm shadow-xl shadow-gold-500/20 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black text-sm shadow-xl shadow-gold-500/20 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-5 h-5 flex-shrink-0" />
             <span>Nuevo Vehículo</span>
           </button>
         </div>
 
         {/* Filtros por Categoría */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 lg:pb-0">
           {[
             { id: 'ALL', label: 'Todas las Categorías' },
             { id: 'DEPORTIVO', label: 'Deportivos' },

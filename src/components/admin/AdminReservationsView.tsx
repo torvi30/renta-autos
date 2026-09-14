@@ -879,7 +879,7 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
       {/* 4. Modal / Expediente Completo de Reserva */}
       {selectedReservation && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-carbon-950/85 backdrop-blur-xl animate-fade-in overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-6 bg-carbon-950/85 backdrop-blur-xl animate-fade-in overflow-y-auto"
           role="dialog"
           aria-modal="true"
           onClick={(e) => {
@@ -888,26 +888,26 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-2xl rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden my-auto"
+            className="relative w-full max-w-2xl rounded-2xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden my-auto"
           >
             
             {/* Cabecera Modal */}
-            <div className="p-6 border-b border-carbon-800 bg-carbon-850/95 flex items-center justify-between">
+            <div className="p-4 sm:p-6 border-b border-carbon-800 bg-carbon-850/95 flex items-center justify-between">
               <div>
-                <div className="flex items-center gap-2.5 mb-1.5">
-                  <span className="text-xs font-mono font-bold uppercase px-3 py-1 rounded-lg bg-carbon-800 text-gold-400 border border-carbon-750">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-mono font-bold uppercase px-2.5 py-0.5 rounded-lg bg-carbon-800 text-gold-400 border border-carbon-750">
                     {selectedReservation.id}
                   </span>
                   {getStatusBadge(selectedReservation.status)}
                 </div>
-                <h3 className="text-xl font-black text-white font-display">
-                  Expediente de Solicitud de Reserva
+                <h3 className="text-base sm:text-xl font-black text-white font-display">
+                  Expediente de Reserva
                 </h3>
               </div>
 
               <button
                 onClick={() => setSelectedReservation(null)}
-                className="p-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-400 hover:text-white transition-colors"
+                className="p-2 sm:p-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-400 hover:text-white transition-colors cursor-pointer"
                 aria-label="Cerrar expediente"
               >
                 <X className="w-5 h-5" />
@@ -915,32 +915,32 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
             </div>
 
             {/* Contenido Modal */}
-            <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto text-sm">
+            <div className="p-4 sm:p-6 space-y-4 max-h-[80vh] overflow-y-auto text-sm">
               
               {/* Vehículo Asignado */}
-              <div className="p-5 rounded-2xl bg-carbon-850 border border-carbon-800 flex items-center gap-4">
+              <div className="p-3.5 sm:p-5 rounded-2xl bg-carbon-850 border border-carbon-800 flex items-center gap-3 sm:gap-4">
                 <img
                   src={selectedReservation.vehicleImage}
                   alt={selectedReservation.vehicleName}
-                  className="w-24 h-16 object-cover rounded-xl border-2 border-carbon-700 flex-shrink-0"
+                  className="w-20 h-14 sm:w-24 sm:h-16 object-cover rounded-xl border-2 border-carbon-700 flex-shrink-0"
                 />
-                <div>
-                  <span className="text-xs text-gold-400 font-bold uppercase tracking-wider">Vehículo Asignado</span>
-                  <h4 className="text-lg font-black text-white font-display mt-0.5">
+                <div className="min-w-0">
+                  <span className="text-[10px] sm:text-xs text-gold-400 font-bold uppercase tracking-wider">Vehículo Asignado</span>
+                  <h4 className="text-base sm:text-lg font-black text-white font-display truncate">
                     {selectedReservation.vehicleName}
                   </h4>
-                  <div className="text-xs text-silver-300 font-mono font-bold mt-1">
+                  <div className="text-xs text-silver-300 font-mono font-bold mt-0.5">
                     Placa: {selectedReservation.vehiclePlate}
                   </div>
                 </div>
               </div>
 
               {/* Titular Conductor */}
-              <div className="p-5 rounded-2xl bg-carbon-850/60 border border-carbon-800 space-y-2.5">
-                <span className="text-xs font-bold uppercase text-silver-400 block tracking-wider">
+              <div className="p-3.5 sm:p-5 rounded-2xl bg-carbon-850/60 border border-carbon-800 space-y-2">
+                <span className="text-[11px] sm:text-xs font-bold uppercase text-silver-400 block tracking-wider">
                   Datos del Conductor Titular (KYC)
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
                   <div><strong className="text-silver-400">Nombre:</strong> <span className="text-white font-bold">{selectedReservation.client.fullName}</span></div>
                   <div><strong className="text-silver-400">ID / Pasaporte:</strong> <span className="text-white font-mono">{selectedReservation.client.documentId}</span></div>
                   <div><strong className="text-silver-400">Licencia:</strong> <span className="text-white font-mono">{selectedReservation.client.driverLicense}</span></div>
@@ -950,11 +950,11 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
               </div>
 
               {/* Fechas y Entrega */}
-              <div className="p-5 rounded-2xl bg-carbon-850/60 border border-carbon-800 space-y-2.5">
-                <span className="text-xs font-bold uppercase text-silver-400 block tracking-wider">
+              <div className="p-3.5 sm:p-5 rounded-2xl bg-carbon-850/60 border border-carbon-800 space-y-2">
+                <span className="text-[11px] sm:text-xs font-bold uppercase text-silver-400 block tracking-wider">
                   Agenda y Ubicación
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
                   <div>
                     <strong className="text-silver-400">Recogida:</strong> <span className="text-white">{selectedReservation.startDate} ({selectedReservation.pickupTime})</span>
                   </div>
@@ -962,36 +962,36 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
                     <strong className="text-silver-400">Devolución:</strong> <span className="text-white">{selectedReservation.endDate} ({selectedReservation.returnTime})</span>
                   </div>
                   <div className="sm:col-span-2">
-                    <strong className="text-silver-400">Modalidad de Entrega:</strong> <span className="text-white font-semibold">{getDeliveryLocationLabel(selectedReservation.deliveryLocation)}</span>
+                    <strong className="text-silver-400">Modalidad:</strong> <span className="text-white font-semibold">{getDeliveryLocationLabel(selectedReservation.deliveryLocation)}</span>
                     {selectedReservation.deliveryAddress && ` - ${selectedReservation.deliveryAddress}`}
                   </div>
                 </div>
               </div>
 
               {/* Desglose Financiero */}
-              <div className="p-5 rounded-2xl bg-carbon-850 border border-carbon-800 space-y-2.5">
-                <span className="text-xs font-bold uppercase text-silver-400 block tracking-wider">
+              <div className="p-3.5 sm:p-5 rounded-2xl bg-carbon-850 border border-carbon-800 space-y-2">
+                <span className="text-[11px] sm:text-xs font-bold uppercase text-silver-400 block tracking-wider">
                   Desglose Financiero
                 </span>
-                <div className="flex justify-between text-silver-300 text-sm">
+                <div className="flex justify-between text-silver-300 text-xs sm:text-sm">
                   <span>Subtotal Renta ({selectedReservation.pricing?.days} días):</span>
                   <span className="text-white font-bold font-mono">
                     {formatCurrency(selectedReservation.pricing?.rentalTotal || 0)}
                   </span>
                 </div>
-                <div className="flex justify-between text-silver-300 text-sm">
+                <div className="flex justify-between text-silver-300 text-xs sm:text-sm">
                   <span>Depósito en Garantía (Reembolsable):</span>
                   <span className="text-white font-bold font-mono">
                     {formatCurrency(selectedReservation.pricing?.securityDeposit || 0)}
                   </span>
                 </div>
-                <div className="flex justify-between text-silver-300 text-sm">
+                <div className="flex justify-between text-silver-300 text-xs sm:text-sm">
                   <span>Cobertura VIP a Todo Riesgo:</span>
                   <span className="text-emerald-400 font-bold">Incluida ($0)</span>
                 </div>
-                <div className="pt-3 border-t border-carbon-750 flex justify-between font-black text-base text-white">
+                <div className="pt-2 border-t border-carbon-750 flex justify-between font-black text-sm sm:text-base text-white">
                   <span>Total Estimado al Despacho:</span>
-                  <span className="font-mono text-gold-400 text-xl">
+                  <span className="font-mono text-gold-400 text-base sm:text-xl">
                     {formatCurrency(
                       (selectedReservation.pricing?.rentalTotal || 0) +
                         (selectedReservation.pricing?.securityDeposit || 0)
@@ -1000,78 +1000,85 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
                 </div>
               </div>
 
-              {/* Botones de Acción */}
-              <div className="pt-3 flex flex-wrap gap-2.5">
-                <button
-                  onClick={() => handleOpenClientWhatsApp(selectedReservation)}
-                  className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-carbon-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 cursor-pointer"
-                >
-                  <Send className="w-4 h-4" />
-                  <span>WhatsApp Oficial</span>
-                </button>
+              {/* Botones de Acción Organizados */}
+              <div className="pt-2 space-y-2">
+                {/* Acciones principales */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    onClick={() => handleOpenClientWhatsApp(selectedReservation)}
+                    className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-carbon-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 cursor-pointer"
+                  >
+                    <Send className="w-4 h-4 flex-shrink-0" />
+                    <span>WhatsApp Oficial</span>
+                  </button>
 
-                <button
-                  onClick={() => {
-                    const target = selectedReservation;
-                    setSelectedReservation(null);
-                    setContractReservation(target);
-                  }}
-                  className="py-3 px-4 rounded-xl bg-carbon-800 hover:bg-gold-500/20 border border-gold-500/40 text-gold-400 font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
-                  title="Generar e Imprimir Contrato Oficial"
-                >
-                  <FileCheck className="w-4 h-4" />
-                  <span>Contrato PDF</span>
-                </button>
+                  {selectedReservation.status === 'PENDING' && (
+                    <button
+                      onClick={() => {
+                        onUpdateStatus(selectedReservation.id, 'CONFIRMED');
+                        setSelectedReservation(null);
+                      }}
+                      className="py-3 px-5 rounded-xl bg-gold-500 hover:bg-gold-400 text-carbon-950 font-black text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <Check className="w-4 h-4 flex-shrink-0" />
+                      <span>Aprobar Reserva</span>
+                    </button>
+                  )}
+                </div>
 
-                <button
-                  onClick={() => {
-                    const target = selectedReservation;
-                    setSelectedReservation(null);
-                    setInspectionReservation(target);
-                  }}
-                  className="py-3 px-4 rounded-xl bg-carbon-800 hover:bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
-                  title="Acta de Inspección Check-in / Check-out"
-                >
-                  <ClipboardCheck className="w-4 h-4" />
-                  <span>Inspección</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    const target = selectedReservation;
-                    setSelectedReservation(null);
-                    setEditingReservation(target);
-                  }}
-                  className="py-3 px-4 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-silver-200 hover:text-white font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <Pencil className="w-4 h-4 text-gold-400" />
-                  <span>Editar</span>
-                </button>
-
-                <button
-                  onClick={async () => {
-                    if (window.confirm(`¿Seguro que deseas eliminar permanentemente la reserva ${selectedReservation.id}?`)) {
-                      await onDeleteReservation(selectedReservation.id);
-                      setSelectedReservation(null);
-                    }
-                  }}
-                  className="py-3 px-4 rounded-xl bg-carbon-850 hover:bg-rose-950/80 border border-rose-500/40 text-rose-400 hover:text-rose-300 font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>Eliminar</span>
-                </button>
-
-                {selectedReservation.status === 'PENDING' && (
+                {/* Acciones operativas secundarias */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <button
                     onClick={() => {
-                      onUpdateStatus(selectedReservation.id, 'CONFIRMED');
+                      const target = selectedReservation;
                       setSelectedReservation(null);
+                      setContractReservation(target);
                     }}
-                    className="py-3 px-5 rounded-xl bg-gold-500 hover:bg-gold-400 text-carbon-950 font-black text-xs uppercase transition-all shadow-md active:scale-95 cursor-pointer ml-auto"
+                    className="py-2.5 px-3 rounded-xl bg-carbon-800 hover:bg-gold-500/20 border border-gold-500/40 text-gold-400 font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                    title="Generar e Imprimir Contrato Oficial"
                   >
-                    Aprobar Ahora
+                    <FileCheck className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span>Contrato</span>
                   </button>
-                )}
+
+                  <button
+                    onClick={() => {
+                      const target = selectedReservation;
+                      setSelectedReservation(null);
+                      setInspectionReservation(target);
+                    }}
+                    className="py-2.5 px-3 rounded-xl bg-carbon-800 hover:bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                    title="Acta de Inspección Check-in / Check-out"
+                  >
+                    <ClipboardCheck className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span>Inspección</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const target = selectedReservation;
+                      setSelectedReservation(null);
+                      setEditingReservation(target);
+                    }}
+                    className="py-2.5 px-3 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-silver-200 hover:text-white font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Pencil className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
+                    <span>Editar</span>
+                  </button>
+
+                  <button
+                    onClick={async () => {
+                      if (window.confirm(`¿Seguro que deseas eliminar permanentemente la reserva ${selectedReservation.id}?`)) {
+                        await onDeleteReservation(selectedReservation.id);
+                        setSelectedReservation(null);
+                      }
+                    }}
+                    className="py-2.5 px-3 rounded-xl bg-carbon-850 hover:bg-rose-950/80 border border-rose-500/40 text-rose-400 hover:text-rose-300 font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span>Eliminar</span>
+                  </button>
+                </div>
               </div>
 
             </div>

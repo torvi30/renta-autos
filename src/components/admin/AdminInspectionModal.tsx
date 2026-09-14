@@ -245,29 +245,29 @@ export const AdminInspectionModal: React.FC<AdminInspectionModalProps> = ({
       >
         
         {/* Cabecera del Modal */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:px-8 border-b border-carbon-800 bg-gradient-to-r from-carbon-900 via-carbon-850 to-carbon-900 gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-gold-500/15 text-gold-400 flex items-center justify-center border border-gold-500/30">
-              <ClipboardCheck className="w-6 h-6" />
+        <div className="flex items-center justify-between p-3.5 sm:p-6 sm:px-8 border-b border-carbon-800 bg-gradient-to-r from-carbon-900 via-carbon-850 to-carbon-900 gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gold-500/15 text-gold-400 flex items-center justify-center border border-gold-500/30 flex-shrink-0">
+              <ClipboardCheck className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-gold-500/20 text-gold-400 border border-gold-500/30 font-mono">
-                  ACTA DE INSPECCIÓN OFICIAL
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+                <span className="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-gold-500/20 text-gold-400 border border-gold-500/30 font-mono truncate">
+                  INSPECCIÓN
                 </span>
-                <span className="text-silver-400 text-xs font-mono">
-                  Ref: {reservation.id} • {reservation.vehiclePlate}
+                <span className="text-silver-400 text-[11px] sm:text-xs font-mono truncate">
+                  #{reservation.id} • {reservation.vehiclePlate}
                 </span>
               </div>
-              <h2 className="text-xl font-black text-white font-display">
-                Inspección de Entrega & Devolución (Check-in / Check-out)
+              <h2 className="text-sm sm:text-xl font-black text-white font-display truncate">
+                Inspección de Flota VIP
               </h2>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2.5 rounded-xl bg-carbon-800 text-silver-400 hover:text-white hover:bg-carbon-750 transition-colors border border-carbon-700 self-end sm:self-center"
+            className="p-2 sm:p-2.5 rounded-xl bg-carbon-800 text-silver-400 hover:text-white hover:bg-carbon-750 transition-colors border border-carbon-700 flex-shrink-0 cursor-pointer"
             aria-label="Cerrar modal"
           >
             <X className="w-5 h-5" />
@@ -275,47 +275,50 @@ export const AdminInspectionModal: React.FC<AdminInspectionModalProps> = ({
         </div>
 
         {/* Pestañas de Navegación de la Inspección */}
-        <div className="flex border-b border-carbon-800 bg-carbon-850/60 px-5 sm:px-8 gap-2 pt-2">
+        <div className="flex border-b border-carbon-800 bg-carbon-850/60 px-3 sm:px-8 gap-2 pt-2 overflow-x-auto scrollbar-none whitespace-nowrap">
           <button
             type="button"
             onClick={() => setActiveTab('CHECK_IN')}
-            className={`flex items-center gap-2 px-4 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all flex-shrink-0 cursor-pointer ${
               activeTab === 'CHECK_IN'
                 ? 'border-gold-500 text-gold-400 bg-carbon-900/90 rounded-t-xl'
                 : 'border-transparent text-silver-400 hover:text-silver-200'
             }`}
           >
-            <Gauge className="w-4 h-4" />
-            <span>1. Entrega al Cliente (Check-in)</span>
-            {existingCheckIn && <CheckCircle2 className="w-4 h-4 text-emerald-400 ml-1" />}
+            <Gauge className="w-4 h-4 flex-shrink-0" />
+            <span className="hidden sm:inline">1. Entrega al Cliente (Check-in)</span>
+            <span className="inline sm:hidden">1. Entrega</span>
+            {existingCheckIn && <CheckCircle2 className="w-4 h-4 text-emerald-400 ml-1 flex-shrink-0" />}
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('CHECK_OUT')}
-            className={`flex items-center gap-2 px-4 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all flex-shrink-0 cursor-pointer ${
               activeTab === 'CHECK_OUT'
                 ? 'border-gold-500 text-gold-400 bg-carbon-900/90 rounded-t-xl'
                 : 'border-transparent text-silver-400 hover:text-silver-200'
             }`}
           >
-            <Scale className="w-4 h-4" />
-            <span>2. Devolución (Check-out)</span>
-            {existingCheckOut && <CheckCircle2 className="w-4 h-4 text-emerald-400 ml-1" />}
+            <Scale className="w-4 h-4 flex-shrink-0" />
+            <span className="hidden sm:inline">2. Devolución (Check-out)</span>
+            <span className="inline sm:hidden">2. Devolución</span>
+            {existingCheckOut && <CheckCircle2 className="w-4 h-4 text-emerald-400 ml-1 flex-shrink-0" />}
           </button>
 
           {existingCheckIn && existingCheckOut && (
             <button
               type="button"
               onClick={() => setActiveTab('COMPARE')}
-              className={`flex items-center gap-2 px-4 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all flex-shrink-0 cursor-pointer ${
                 activeTab === 'COMPARE'
                   ? 'border-emerald-500 text-emerald-400 bg-carbon-900/90 rounded-t-xl'
                   : 'border-transparent text-silver-400 hover:text-silver-200'
               }`}
             >
-              <ShieldCheck className="w-4 h-4" />
-              <span>3. Liquidación & Depósito</span>
+              <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+              <span className="hidden sm:inline">3. Liquidación & Depósito</span>
+              <span className="inline sm:hidden">3. Balance</span>
             </button>
           )}
         </div>

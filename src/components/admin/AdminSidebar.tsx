@@ -85,11 +85,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
   return (
     <>
-      {/* Backdrop oscuro para versión móvil con soporte táctil y clic */}
+      {/* Backdrop oscuro para versión móvil con soporte clic */}
       {isOpenMobile && (
         <div
           onClick={onCloseMobile}
-          onTouchStart={onCloseMobile}
           className="fixed inset-0 z-40 bg-carbon-950/85 backdrop-blur-md lg:hidden transition-opacity cursor-pointer"
           aria-hidden="true"
         />

@@ -236,8 +236,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Aloja utilidades (Divisas, Idioma, Estado Showroom y Portal Staff)        */}
       {/* ========================================================================= */}
       <div className="bg-carbon-950/90 backdrop-blur-md border-b border-carbon-800/40 transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-1.5 sm:py-2.5 min-h-[38px] text-xs font-medium text-silver-400 tracking-wider">
+        <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-1 sm:py-2.5 min-h-[36px] sm:min-h-[38px] text-xs font-medium text-silver-400 tracking-wider">
             
             {/* Lado Izquierdo: Telemetría de Ubicación & Servicio VIP */}
             <div className="flex items-center gap-2 sm:gap-4 min-w-0">
@@ -456,7 +456,6 @@ export const Navbar: React.FC<NavbarProps> = ({
         createPortal(
           <div
             onClick={() => setIsMobileMenuOpen(false)}
-            onTouchStart={() => setIsMobileMenuOpen(false)}
             className="fixed inset-0 bg-black/80 backdrop-blur-sm z-30 lg:hidden animate-fade-in cursor-pointer"
             aria-hidden="true"
           />,

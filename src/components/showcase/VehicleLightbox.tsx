@@ -64,11 +64,10 @@ export const VehicleLightbox: React.FC<VehicleLightboxProps> = ({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      {/* Backdrop con captura de toque y clic en toda la pantalla */}
+      {/* Backdrop con captura de clic en toda la pantalla */}
       <div
         className="fixed inset-0 bg-black/95 backdrop-blur-2xl -z-10 cursor-pointer"
         onClick={onClose}
-        onTouchStart={onClose}
         aria-hidden="true"
       />
 

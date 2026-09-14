@@ -305,11 +305,10 @@ export const CatalogFilters: React.FC<CatalogFiltersProps> = ({
       {/* Versión Mobile: Drawer deslizable con backdrop */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex justify-end">
-          {/* Backdrop blur con respuesta táctil y click para cerrar afuera */}
+          {/* Backdrop blur con respuesta click para cerrar afuera */}
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity cursor-pointer"
             onClick={onCloseMobile}
-            onTouchStart={onCloseMobile}
             aria-hidden="true"
           />
 

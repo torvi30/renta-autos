@@ -57,36 +57,37 @@ export const AdminContractModal: React.FC<AdminContractModalProps> = ({
       >
         
         {/* Cabecera Interactiva del Modal (Oculta en Impresión) */}
-        <div className="flex items-center justify-between p-5 border-b border-carbon-800 bg-carbon-850 print:hidden">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gold-500/15 text-gold-400 flex items-center justify-center border border-gold-500/30">
-              <FileCheck className="w-5 h-5" />
+        <div className="flex items-center justify-between p-3.5 sm:p-5 border-b border-carbon-800 bg-carbon-850 print:hidden gap-2">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gold-500/15 text-gold-400 flex items-center justify-center border border-gold-500/30 flex-shrink-0">
+              <FileCheck className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <div className="text-xs text-gold-400 font-mono font-bold tracking-wider uppercase">
-                DOCUMENTO LEGAL OFICIAL
+            <div className="min-w-0">
+              <div className="text-[10px] sm:text-xs text-gold-400 font-mono font-bold tracking-wider uppercase truncate">
+                DOCUMENTO LEGAL
               </div>
-              <h2 className="text-lg font-black text-white font-display">
-                Contrato de Arrendamiento & Voucher Ejecutivo
+              <h2 className="text-xs sm:text-lg font-black text-white font-display truncate">
+                Contrato & Voucher
               </h2>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 text-xs font-black shadow-lg transition-all hover:scale-105"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 text-xs font-black shadow-lg transition-all active:scale-95 cursor-pointer"
             >
-              <Printer className="w-4 h-4" />
-              <span>Imprimir / Guardar en PDF</span>
+              <Printer className="w-4 h-4 flex-shrink-0" />
+              <span className="hidden sm:inline">Imprimir / PDF</span>
+              <span className="inline sm:hidden">PDF</span>
             </button>
 
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-carbon-800 text-silver-400 hover:text-white hover:bg-carbon-750 transition-colors border border-carbon-700"
+              className="p-2 rounded-xl bg-carbon-800 text-silver-400 hover:text-white hover:bg-carbon-750 transition-colors border border-carbon-700 cursor-pointer"
               aria-label="Cerrar modal"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         </div>
@@ -96,7 +97,7 @@ export const AdminContractModal: React.FC<AdminContractModalProps> = ({
         {/* ======================================================== */}
         <div
           id="printable-contract"
-          className="overflow-y-auto p-6 sm:p-10 text-silver-200 bg-carbon-900 font-sans space-y-6 print:overflow-visible print:p-8 print:bg-white print:text-black print:space-y-4"
+          className="overflow-y-auto p-4 sm:p-10 text-silver-200 bg-carbon-900 font-sans space-y-5 sm:space-y-6 print:overflow-visible print:p-8 print:bg-white print:text-black print:space-y-4"
         >
           {/* Membrete Corporativo */}
           <div className="border-b-2 border-gold-500/60 pb-6 print:border-black print:pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
