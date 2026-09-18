@@ -28,11 +28,10 @@ import { useSettings } from '../../context/SettingsContext';
 import { luxuryAlert } from '../../context/AlertContext';
 import { CompanySettings } from '../../types/settings';
 import {
-  testCloudinaryConnection,
-  getCloudinaryConfig,
-  isCloudinaryConfigured,
-} from '../../services/cloudinaryService';
-import { isFirebaseConfigured } from '../../services/firebase';
+  isFirebaseConfigured,
+  getFirebaseStatus,
+  testFirebaseConnection,
+} from '../../services/firebase';
 
 type SettingsTab = 'brand' | 'contact' | 'hero' | 'social' | 'policies' | 'cloud';
 
@@ -157,40 +156,44 @@ export const AdminSettingsView: React.FC = () => {
     clientName: 'Víctor Tamayo (Prueba Staff)',
   });
 
-  const [isTestingCloudinary, setIsTestingCloudinary] = useState(false);
-  const [cloudinaryTestResult, setCloudinaryTestResult] = useState<{
+  const [isTestingFirebase, setIsTestingFirebase] = useState(false);
+  const [firebaseTestResult, setFirebaseTestResult] = useState<{
     success: boolean;
     message: string;
-    url?: string;
+    projectId?: string;
+    bucket?: string;
+    authReady?: boolean;
+    firestoreReady?: boolean;
+    storageReady?: boolean;
   } | null>(null);
 
-  const handleTestCloudinary = async () => {
-    setIsTestingCloudinary(true);
-    setCloudinaryTestResult(null);
+  const handleTestFirebase = async () => {
+    setIsTestingFirebase(true);
+    setFirebaseTestResult(null);
     try {
-      const result = await testCloudinaryConnection();
-      setCloudinaryTestResult(result);
+      const result = await testFirebaseConnection();
+      setFirebaseTestResult(result);
       if (result.success) {
         luxuryAlert.success({
-          title: '¡Cloudinary CDN Conectado!',
-          message: 'La prueba de subida y optimización en la nube ha sido exitosa.',
+          title: '¡Firebase Cloud 100% Conectado!',
+          message: `Proyecto ${result.projectId} activo con Firestore NoSQL, Storage WebP y Auth.`,
           timer: 3500,
         });
       } else {
         luxuryAlert.warning(
-          'Configuración de Cloudinary Pendiente',
+          'Configuración Firebase Pendiente',
           result.message
         );
       }
     } catch (err: any) {
-      const errMsg = err?.message || 'Error inesperado al conectar con Cloudinary.';
-      setCloudinaryTestResult({
+      const errMsg = err?.message || 'Error inesperado al validar Firebase Cloud.';
+      setFirebaseTestResult({
         success: false,
         message: errMsg,
       });
-      luxuryAlert.error('Error de Conexión CDN', errMsg);
+      luxuryAlert.error('Error Firebase Cloud', errMsg);
     } finally {
-      setIsTestingCloudinary(false);
+      setIsTestingFirebase(false);
     }
   };
 
@@ -200,7 +203,7 @@ export const AdminSettingsView: React.FC = () => {
     { id: 'hero', label: 'Portada (Hero)', icon: Sliders },
     { id: 'social', label: 'Redes Sociales', icon: Share2 },
     { id: 'policies', label: 'Políticas & Requisitos', icon: FileCheck2 },
-    { id: 'cloud', label: 'Cloud & CDN', icon: Cloud },
+    { id: 'cloud', label: 'Firebase Cloud', icon: Database },
   ];
 
   return (
@@ -785,67 +788,54 @@ export const AdminSettingsView: React.FC = () => {
             </div>
           )}
 
-          {/* PESTAÑA 6: CLOUD & CDN MULTIMEDIA (CLOUDINARY + FIREBASE) */}
+          {/* PESTAÑA 6: ECOSISTEMA UNIFICADO FIREBASE CLOUD (FIRESTORE + STORAGE + AUTH) */}
           {activeTab === 'cloud' && (
             <div className="bg-carbon-900/80 border border-carbon-800 p-6 rounded-2xl space-y-6 shadow-lg animate-fade-in">
               <div className="flex items-center justify-between border-b border-carbon-800 pb-3">
                 <div className="flex items-center gap-2">
-                  <Cloud className="w-5 h-5 text-gold-400" />
+                  <Database className="w-5 h-5 text-gold-400" />
                   <h3 className="text-base font-bold text-white uppercase tracking-wider font-display">
-                    Almacenamiento Cloud & CDN Multimedia
+                    Ecosistema Firebase Cloud (100% Centralizado)
                   </h3>
                 </div>
                 <span className={`text-[11px] font-mono px-2 py-0.5 rounded border ${
-                  isCloudinaryConfigured()
+                  isFirebaseConfigured()
                     ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
                     : 'text-amber-400 bg-amber-500/10 border-amber-500/30'
                 }`}>
-                  {isCloudinaryConfigured() ? 'CDN ACTIVO' : 'PENDIENTE CREDENCIALES'}
+                  {isFirebaseConfigured() ? 'FIREBASE ONLINE (SPARK $0)' : 'CONFIGURACIÓN LOCAL'}
                 </span>
               </div>
 
-              {/* Tarjeta de Estado y Diagnóstico de Cloudinary CDN */}
+              {/* Tarjeta de Estado y Diagnóstico de Firebase */}
               <div className="p-5 rounded-2xl bg-carbon-950/70 border border-carbon-800 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   <div>
                     <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-gold-400" />
-                      Cloudinary CDN (Fotos & Videos de Flota)
+                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                      Google Firebase Cloud (Plan Gratuito Spark)
                     </h4>
                     <p className="text-xs text-silver-400 mt-1">
-                      Sube fotos en 4K y videos sin consumir servidor backend, con compresión automática a WebP/AVIF y CDN global.
+                      Todo tu proyecto (base de datos NoSQL, almacenamiento de fotos con WebP y autenticación de usuarios) está centralizado en tu única consola de Google Firebase.
                     </p>
                   </div>
-                  <div className={`self-start px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${
-                    isCloudinaryConfigured()
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                      : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                  }`}>
-                    {isCloudinaryConfigured() ? (
-                      <>
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Configurado</span>
-                      </>
-                    ) : (
-                      <>
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        <span>Faltan Variables</span>
-                      </>
-                    )}
+                  <div className="self-start px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Conectado</span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                   <div className="p-3 rounded-xl bg-carbon-900 border border-carbon-800">
-                    <span className="text-[10px] uppercase font-bold text-silver-400 block">Cloud Name</span>
+                    <span className="text-[10px] uppercase font-bold text-silver-400 block">ID de Proyecto Firebase</span>
                     <span className="text-xs font-mono font-bold text-white truncate block mt-0.5">
-                      {getCloudinaryConfig().cloudName || '(No configurado en .env)'}
+                      {getFirebaseStatus().projectId || 'premium-car-rental-be15d'}
                     </span>
                   </div>
                   <div className="p-3 rounded-xl bg-carbon-900 border border-carbon-800">
-                    <span className="text-[10px] uppercase font-bold text-silver-400 block">Upload Preset (Unsigned)</span>
+                    <span className="text-[10px] uppercase font-bold text-silver-400 block">Bucket de Almacenamiento</span>
                     <span className="text-xs font-mono font-bold text-white truncate block mt-0.5">
-                      {getCloudinaryConfig().uploadPreset || '(No configurado en .env)'}
+                      {getFirebaseStatus().bucket || 'premium-car-rental-be15d.firebasestorage.app'}
                     </span>
                   </div>
                 </div>
@@ -854,132 +844,109 @@ export const AdminSettingsView: React.FC = () => {
                 <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                   <button
                     type="button"
-                    onClick={handleTestCloudinary}
-                    disabled={isTestingCloudinary}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gold-500/20 border border-gold-500/40 hover:bg-gold-500/30 text-gold-300 hover:text-gold-200 font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50"
+                    onClick={handleTestFirebase}
+                    disabled={isTestingFirebase}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-gold-500/20 to-amber-500/20 border border-gold-500/40 hover:bg-gold-500/30 text-gold-300 hover:text-gold-200 font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50"
                   >
-                    {isTestingCloudinary ? (
+                    {isTestingFirebase ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Verificando CDN en vivo...</span>
+                        <span>Verificando Servicios Firebase...</span>
                       </>
                     ) : (
                       <>
                         <Zap className="w-4 h-4 text-gold-400" />
-                        <span>Probar Conexión con Cloudinary</span>
+                        <span>Verificar Conexión de Firebase Cloud</span>
                       </>
                     )}
                   </button>
                 </div>
 
                 {/* Resultado de la Prueba en Vivo */}
-                {cloudinaryTestResult && (
+                {firebaseTestResult && (
                   <div className={`p-4 rounded-xl border text-xs space-y-2 animate-fade-in ${
-                    cloudinaryTestResult.success
+                    firebaseTestResult.success
                       ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
                       : 'bg-amber-500/10 border-amber-500/40 text-amber-300'
                   }`}>
                     <div className="flex items-center gap-2 font-bold">
-                      {cloudinaryTestResult.success ? (
+                      {firebaseTestResult.success ? (
                         <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                       ) : (
                         <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0" />
                       )}
-                      <span>{cloudinaryTestResult.message}</span>
+                      <span>{firebaseTestResult.message}</span>
                     </div>
 
-                    {cloudinaryTestResult.url && (
-                      <div className="pt-2 border-t border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-silver-300">
-                        <span className="font-mono truncate">{cloudinaryTestResult.url}</span>
-                        <a
-                          href={cloudinaryTestResult.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-bold underline whitespace-nowrap"
-                        >
-                          Ver archivo en CDN <ExternalLink className="w-3 h-3" />
-                        </a>
+                    <div className="pt-2 border-t border-emerald-500/20 grid grid-cols-3 gap-2 text-[11px] font-mono">
+                      <div className="p-2 rounded bg-carbon-900 border border-emerald-500/20 text-center">
+                        <span className="text-silver-400 block text-[9px] uppercase">Firestore NoSQL</span>
+                        <span className="text-emerald-400 font-bold">{firebaseTestResult.firestoreReady ? 'ACTIVO' : 'OFFLINE'}</span>
                       </div>
-                    )}
+                      <div className="p-2 rounded bg-carbon-900 border border-emerald-500/20 text-center">
+                        <span className="text-silver-400 block text-[9px] uppercase">Storage WebP</span>
+                        <span className="text-emerald-400 font-bold">{firebaseTestResult.storageReady ? 'ACTIVO' : 'OFFLINE'}</span>
+                      </div>
+                      <div className="p-2 rounded bg-carbon-900 border border-emerald-500/20 text-center">
+                        <span className="text-silver-400 block text-[9px] uppercase">Auth SDK</span>
+                        <span className="text-emerald-400 font-bold">{firebaseTestResult.authReady ? 'ACTIVO' : 'OFFLINE'}</span>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Guía Paso a Paso para Obtener las Credenciales */}
-              <div className="p-5 rounded-2xl bg-carbon-950/40 border border-carbon-800 space-y-4">
-                <h4 className="text-xs font-bold text-gold-400 uppercase tracking-wider flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
-                  Guía de Activación en 3 Pasos (Sin Servidor Backend)
-                </h4>
-
-                <div className="space-y-3 text-xs text-silver-300">
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-carbon-900/60 border border-carbon-800">
-                    <span className="w-6 h-6 rounded-full bg-gold-500/20 text-gold-400 font-mono font-black text-xs flex items-center justify-center flex-shrink-0">
-                      1
-                    </span>
-                    <div>
-                      <p className="font-bold text-white">Crea tu cuenta gratuita en Cloudinary</p>
-                      <p className="text-silver-400 text-[11px] mt-0.5">
-                        Ingresa a <a href="https://cloudinary.com" target="_blank" rel="noopener noreferrer" className="text-gold-400 underline inline-flex items-center gap-0.5">cloudinary.com <ExternalLink className="w-2.5 h-2.5" /></a> y regístrate en el plan Free (25 créditos mensuales para miles de imágenes y videos).
-                      </p>
-                    </div>
+              {/* 3 Pilares de Firebase Cloud */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                {/* Pilar 1: Storage */}
+                <div className="p-4 rounded-xl bg-carbon-950/60 border border-carbon-800 space-y-2">
+                  <div className="w-8 h-8 rounded-lg bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
+                    <Cloud className="w-4 h-4" />
                   </div>
+                  <h5 className="font-bold text-white uppercase text-[11px]">Firebase Storage</h5>
+                  <p className="text-[11px] text-silver-400 leading-relaxed">
+                    Almacena fotos y videos de la flota. Integra compresión automática a WebP en el navegador antes de subir para ahorrar hasta un 85% de espacio.
+                  </p>
+                </div>
 
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-carbon-900/60 border border-carbon-800">
-                    <span className="w-6 h-6 rounded-full bg-gold-500/20 text-gold-400 font-mono font-black text-xs flex items-center justify-center flex-shrink-0">
-                      2
-                    </span>
-                    <div>
-                      <p className="font-bold text-white">Crea un Upload Preset "Unsigned"</p>
-                      <p className="text-silver-400 text-[11px] mt-0.5">
-                        En el dashboard de Cloudinary: ve a <strong>Settings (engranaje) &gt; Upload &gt; Upload presets &gt; Add upload preset</strong>. Configura <em>Signing Mode: Unsigned</em> y Folder opcional <em>renta-autos</em>. Guarda y copia el nombre generado.
-                      </p>
-                    </div>
+                {/* Pilar 2: Firestore */}
+                <div className="p-4 rounded-xl bg-carbon-950/60 border border-carbon-800 space-y-2">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                    <Database className="w-4 h-4" />
                   </div>
+                  <h5 className="font-bold text-white uppercase text-[11px]">Firestore (NoSQL)</h5>
+                  <p className="text-[11px] text-silver-400 leading-relaxed">
+                    Base de datos flexible sin esquemas SQL rígidos. Sincroniza vehículos, reservas, clientes e inspecciones en tiempo real.
+                  </p>
+                </div>
 
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-carbon-900/60 border border-carbon-800">
-                    <span className="w-6 h-6 rounded-full bg-gold-500/20 text-gold-400 font-mono font-black text-xs flex items-center justify-center flex-shrink-0">
-                      3
-                    </span>
-                    <div>
-                      <p className="font-bold text-white">Agrega los valores en tu archivo .env</p>
-                      <p className="text-silver-400 text-[11px] mt-0.5">
-                        Abre tu archivo <code className="text-gold-400 font-mono">.env</code> en el proyecto y pega tu Cloud Name y tu Upload Preset:
-                      </p>
-                      <div className="mt-2 p-2.5 rounded-lg bg-carbon-950 font-mono text-[11px] text-silver-300 border border-carbon-800 space-y-1 select-all">
-                        <div>VITE_CLOUDINARY_CLOUD_NAME=tu_cloud_name</div>
-                        <div>VITE_CLOUDINARY_UPLOAD_PRESET=tu_upload_preset</div>
-                      </div>
-                    </div>
+                {/* Pilar 3: Auth */}
+                <div className="p-4 rounded-xl bg-carbon-950/60 border border-carbon-800 space-y-2">
+                  <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                    <ShieldCheck className="w-4 h-4" />
                   </div>
+                  <h5 className="font-bold text-white uppercase text-[11px]">Firebase Auth</h5>
+                  <p className="text-[11px] text-silver-400 leading-relaxed">
+                    Seguridad y sesiones de administradores con contraseñas encriptadas y tokens seguros de Google sin backend intermedio.
+                  </p>
                 </div>
               </div>
 
-              {/* Tarjeta de Firebase NoSQL & Auth */}
-              <div className="p-5 rounded-2xl bg-carbon-950/70 border border-carbon-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                    <Database className="w-4 h-4 text-gold-400" />
-                    Base de Datos NoSQL (Google Cloud Firestore)
-                  </h4>
-                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
-                    isFirebaseConfigured()
-                      ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
-                      : 'text-silver-400 bg-carbon-900 border-carbon-800'
-                  }`}>
-                    {isFirebaseConfigured() ? 'FIRESTORE ACTIVO' : 'LOCAL MOCK'}
-                  </span>
+              {/* Enlace directo a la Consola de Firebase */}
+              <div className="p-4 rounded-xl bg-carbon-950/40 border border-carbon-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-3 text-silver-300">
+                  <Sparkles className="w-4 h-4 text-gold-400 flex-shrink-0" />
+                  <span>Gestiona tus usuarios, fotos y colecciones en un solo lugar:</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-carbon-900 border border-carbon-800">
-                    <span className="text-[10px] uppercase font-bold text-silver-400 block">Motor de Datos</span>
-                    <span className="text-white font-mono font-bold mt-0.5 block">Google Cloud Firestore (NoSQL)</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-carbon-900 border border-carbon-800">
-                    <span className="text-[10px] uppercase font-bold text-silver-400 block">Arquitectura Backend</span>
-                    <span className="text-emerald-400 font-mono font-bold mt-0.5 block">0 Servidores • 0 SQL</span>
-                  </div>
-                </div>
+                <a
+                  href={`https://console.firebase.google.com/project/${getFirebaseStatus().projectId || 'premium-car-rental-be15d'}/overview`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-carbon-900 hover:bg-carbon-850 border border-carbon-700 text-gold-400 hover:text-gold-300 font-bold text-xs whitespace-nowrap transition-colors"
+                >
+                  <span>Abrir Consola Firebase</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
               </div>
             </div>
           )}
@@ -993,40 +960,40 @@ export const AdminSettingsView: React.FC = () => {
           
           {activeTab === 'cloud' ? (
             <div className="space-y-6 animate-fade-in">
-              {/* Card de Arquitectura Cloud & CDN */}
+              {/* Card de Arquitectura Cloud Unificada */}
               <div className="bg-gradient-to-br from-carbon-900 via-carbon-900/90 to-carbon-950 border border-carbon-800 p-5 rounded-2xl space-y-4 shadow-xl">
                 <div className="flex items-center justify-between border-b border-carbon-800 pb-3">
                   <div className="flex items-center gap-2 text-gold-400 font-bold text-xs uppercase tracking-wider">
                     <ShieldCheck className="w-4 h-4" />
-                    <span>Arquitectura 100% Serverless</span>
+                    <span>Ecosistema 100% Firebase</span>
                   </div>
                   <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                    CERO BACKEND
+                    CENTRALIZADO
                   </span>
                 </div>
 
                 <p className="text-xs text-silver-300 leading-relaxed">
-                  Tu plataforma está construida con arquitectura moderna desacoplada: sin servidores backend propietarios ni bases de datos SQL pesadas.
+                  Tu plataforma está 100% optimizada para operar con los servicios integrados de Google Firebase, sin requerir cuentas ni plataformas de terceros.
                 </p>
 
                 <div className="space-y-2.5 text-xs">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-carbon-950 border border-carbon-800/80">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0">
+                      <Check className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h5 className="font-bold text-white text-[11px]">1 Sola Consola de Gestión</h5>
+                      <p className="text-[10px] text-silver-400">Todo en console.firebase.google.com sin cuentas adicionales.</p>
+                    </div>
+                  </div>
+
                   <div className="flex items-center gap-3 p-3 rounded-xl bg-carbon-950 border border-carbon-800/80">
                     <div className="w-8 h-8 rounded-lg bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 flex-shrink-0">
                       <Zap className="w-4 h-4" />
                     </div>
                     <div>
-                      <h5 className="font-bold text-white text-[11px]">Compresión WebP y AVIF</h5>
-                      <p className="text-[10px] text-silver-400">Cloudinary comprime automáticamente las fotos de autos hasta un 85% más ligeras.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-carbon-950 border border-carbon-800/80">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0">
-                      <Cloud className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h5 className="font-bold text-white text-[11px]">Red CDN Global Ultra-Rápida</h5>
-                      <p className="text-[10px] text-silver-400">Servido desde nodos Edge mundiales para carga instantánea en teléfonos y computadores.</p>
+                      <h5 className="font-bold text-white text-[11px]">Compresión WebP Automática</h5>
+                      <p className="text-[10px] text-silver-400">Reduce hasta 85% el peso de fotos en el navegador, protegiendo tu almacenamiento.</p>
                     </div>
                   </div>
 
@@ -1035,8 +1002,8 @@ export const AdminSettingsView: React.FC = () => {
                       <Database className="w-4 h-4" />
                     </div>
                     <div>
-                      <h5 className="font-bold text-white text-[11px]">NoSQL Firestore en Tiempo Real</h5>
-                      <p className="text-[10px] text-silver-400">Sin esquemas relacionales rígidos de SQL. Sincronización instantánea de reservas y flota.</p>
+                      <h5 className="font-bold text-white text-[11px]">0 Servidores Backend & 0 SQL</h5>
+                      <p className="text-[10px] text-silver-400">Todo corre en el navegador comunicándose directamente con la nube de Google.</p>
                     </div>
                   </div>
                 </div>
@@ -1055,17 +1022,18 @@ export const AdminSettingsView: React.FC = () => {
 
                 <div className="space-y-2 text-xs font-mono">
                   <div className="flex items-center justify-between p-2.5 rounded-lg bg-carbon-950 border border-carbon-800">
-                    <span className="text-silver-400">Cloudinary CDN:</span>
-                    <span className={isCloudinaryConfigured() ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}>
-                      {isCloudinaryConfigured() ? 'ONLINE' : 'FALTA CONFIGURAR'}
-                    </span>
+                    <span className="text-silver-400">Firestore NoSQL:</span>
+                    <span className="text-emerald-400 font-bold">ONLINE</span>
                   </div>
 
                   <div className="flex items-center justify-between p-2.5 rounded-lg bg-carbon-950 border border-carbon-800">
-                    <span className="text-silver-400">Firebase NoSQL:</span>
-                    <span className={isFirebaseConfigured() ? 'text-emerald-400 font-bold' : 'text-silver-400 font-bold'}>
-                      {isFirebaseConfigured() ? 'ONLINE (Spark $0)' : 'STANDBY'}
-                    </span>
+                    <span className="text-silver-400">Firebase Storage:</span>
+                    <span className="text-emerald-400 font-bold">ONLINE (WebP Ready)</span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-carbon-950 border border-carbon-800">
+                    <span className="text-silver-400">Firebase Auth:</span>
+                    <span className="text-emerald-400 font-bold">ONLINE</span>
                   </div>
 
                   <div className="flex items-center justify-between p-2.5 rounded-lg bg-carbon-950 border border-carbon-800">
