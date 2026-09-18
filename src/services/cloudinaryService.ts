@@ -22,10 +22,56 @@ const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '';
 export const isCloudinaryConfigured = (): boolean => {
   return Boolean(
     CLOUD_NAME &&
+    CLOUD_NAME.trim() !== '' &&
     CLOUD_NAME !== 'tu_cloud_name_aqui' &&
     UPLOAD_PRESET &&
-    UPLOAD_PRESET !== 'tu_preset_aqui'
+    UPLOAD_PRESET.trim() !== '' &&
+    UPLOAD_PRESET !== 'tu_preset_aqui' &&
+    UPLOAD_PRESET !== 'tu_upload_preset_unsigned_aqui'
   );
+};
+
+export const getCloudinaryConfig = () => ({
+  cloudName: CLOUD_NAME,
+  uploadPreset: UPLOAD_PRESET,
+  isConfigured: isCloudinaryConfigured(),
+});
+
+/**
+ * Realiza una prueba de conexión en vivo con Cloudinary subiendo un archivo de prueba mínimo
+ */
+export const testCloudinaryConnection = async (): Promise<{
+  success: boolean;
+  message: string;
+  url?: string;
+  details?: any;
+}> => {
+  if (!isCloudinaryConfigured()) {
+    return {
+      success: false,
+      message: 'Faltan variables VITE_CLOUDINARY_CLOUD_NAME o VITE_CLOUDINARY_UPLOAD_PRESET en el archivo .env',
+    };
+  }
+
+  try {
+    const base64Pixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+    const res = await fetch(base64Pixel);
+    const blob = await res.blob();
+    const testFile = new File([blob], 'cloudinary_ping.png', { type: 'image/png' });
+
+    const result = await uploadImageToCloudinary(testFile, 'renta-autos/diagnostico');
+    return {
+      success: true,
+      message: `Conexión exitosa con Cloudinary CDN (Cloud: ${CLOUD_NAME})`,
+      url: result.url,
+      details: result,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err?.message || 'Error al conectar con la API de Cloudinary.',
+    };
+  }
 };
 
 /**
