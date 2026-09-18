@@ -148,8 +148,9 @@ export const LuxuryAlertModal: React.FC<LuxuryAlertModalProps> = ({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`relative w-full max-w-lg rounded-3xl bg-gradient-to-b from-carbon-900 via-carbon-900 to-carbon-950 border border-carbon-750/90 ${typeConfig.glow} overflow-hidden flex flex-col p-6 sm:p-8 animate-alert-pop`}
+        className={`relative w-full max-w-lg rounded-3xl bg-gradient-to-b from-carbon-900 via-carbon-900 to-carbon-950 border border-carbon-750/90 ${typeConfig.glow} overflow-hidden max-h-[90dvh] flex flex-col p-4 sm:p-7 animate-alert-pop`}
       >
+        <div className="overflow-y-auto overscroll-contain flex-1">
         {/* Luz ambiental cenital sutil */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-gold-500/10 blur-3xl pointer-events-none" />
 
@@ -265,6 +266,7 @@ export const LuxuryAlertModal: React.FC<LuxuryAlertModalProps> = ({
             />
           </div>
         )}
+        </div>
 
       </div>
     </div>

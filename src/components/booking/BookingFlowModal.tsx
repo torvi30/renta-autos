@@ -292,7 +292,7 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 overflow-hidden animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="booking-modal-title"
@@ -306,11 +306,13 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
 
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-3xl rounded-2xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden my-auto flex flex-col max-h-[92vh] z-10"
+        className="relative w-full max-w-3xl rounded-t-3xl sm:rounded-2xl bg-carbon-900 border-t sm:border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[88dvh] sm:max-h-[90vh] z-10 animate-slide-up sm:animate-fade-in"
       >
+        {/* Píldora de arrastre táctil superior para smartphones */}
+        <div className="w-12 h-1 rounded-full bg-carbon-700/80 mx-auto mt-2.5 mb-1 sm:hidden flex-shrink-0" />
         
-        {/* Encabezado Superior con Stepper */}
-        <div className="flex items-center justify-between p-3.5 sm:p-5 border-b border-carbon-800 bg-carbon-850/90 gap-2.5">
+        {/* Encabezado Superior con Stepper (Fijo, no se desplaza) */}
+        <div className="flex items-center justify-between p-3.5 sm:p-5 border-b border-carbon-800 bg-carbon-850/90 gap-2.5 flex-shrink-0">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
               <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-widest text-gold-400 truncate">
@@ -411,8 +413,8 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
           </div>
         )}
 
-        {/* Cuerpo del Modal con Scroll */}
-        <div className="overflow-y-auto p-5 sm:p-6 space-y-6">
+        {/* Cuerpo del Modal con Scroll Aislado */}
+        <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-5">
 
           {/* ============================================================ */}
           {/* PASO 1: SELECCIÓN DE VEHÍCULO, FECHAS Y MODALIDAD DE ENTREGA */}

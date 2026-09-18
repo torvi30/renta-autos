@@ -195,34 +195,36 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
         </div>
       </div>
 
-      {/* 2. Cuadrícula de KPIs Ejecutivos (Interactivos con Enfoque Directo a Gráficas) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* 2. Cuadrícula de KPIs Ejecutivos (Matriz 2x2 en Móvil para cero scroll excesivo) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
         
         {/* Facturación Bruta */}
         <button
           type="button"
           onClick={() => document.getElementById('analytics-monthly-chart')?.scrollIntoView({ behavior: 'smooth' })}
-          className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-gold-500/70 p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none"
+          className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-gold-500/70 p-3.5 sm:p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none flex flex-col justify-between"
           title="Clic para ver gráfica de evolución mensual de ingresos"
         >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold-500 via-gold-400 to-transparent" />
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
-              Facturación Bruta 2026
-            </span>
-            <div className="w-11 h-11 rounded-xl bg-gold-500/15 border border-gold-500/30 text-gold-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
-              <DollarSign className="w-5 h-5" />
+          <div>
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <span className="text-[10px] sm:text-xs lg:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono truncate">
+                Facturación 2026
+              </span>
+              <div className="w-7 h-7 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-gold-500/15 border border-gold-500/30 text-gold-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner flex-shrink-0">
+                <DollarSign className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+              </div>
+            </div>
+            <div className="text-lg sm:text-3xl lg:text-4xl font-black font-display text-white tracking-tight truncate">
+              {formatCurrency(totalRevenue + 524000)}
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl lg:text-5xl font-black font-display text-white tracking-tight">
-            {formatCurrency(totalRevenue + 524000)}
-          </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs text-emerald-400 font-bold flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <TrendingUp className="w-4 h-4" />
-              <span>+18.4% vs proyección trimestral</span>
+          <div className="mt-2.5 sm:mt-4 pt-2 sm:pt-3 border-t border-carbon-800/80 text-[10.5px] sm:text-xs text-emerald-400 font-bold flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              <TrendingUp className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="truncate">+18.4% Q-Trimestre</span>
             </div>
-            <span className="text-gold-400 font-mono text-[11px] opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="text-gold-400 font-mono text-[10px] sm:text-[11px] opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">
               Ver Gráfica ↓
             </span>
           </div>
@@ -232,24 +234,26 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
         <button
           type="button"
           onClick={() => document.getElementById('analytics-top-vehicles')?.scrollIntoView({ behavior: 'smooth' })}
-          className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-emerald-500/70 p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none"
+          className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-emerald-500/70 p-3.5 sm:p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none flex flex-col justify-between"
           title="Clic para ver superdeportivos más rentables del showroom"
         >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-emerald-400 to-transparent" />
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
-              Ticket Promedio VIP
-            </span>
-            <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
-              <Award className="w-5 h-5" />
+          <div>
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <span className="text-[10px] sm:text-xs lg:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono truncate">
+                Ticket VIP
+              </span>
+              <div className="w-7 h-7 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner flex-shrink-0">
+                <Award className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+              </div>
+            </div>
+            <div className="text-lg sm:text-3xl lg:text-4xl font-black font-display text-emerald-400 tracking-tight truncate">
+              {formatCurrency(averageBookingValue > 0 ? averageBookingValue : 5850)}
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl lg:text-5xl font-black font-display text-emerald-400 tracking-tight">
-            {formatCurrency(averageBookingValue > 0 ? averageBookingValue : 5850)}
-          </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs text-silver-400 font-medium flex items-center justify-between">
-            <span>Promedio de <strong className="text-white">{averageRentalDays} días</strong> por contrato</span>
-            <span className="text-emerald-400 font-mono text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="mt-2.5 sm:mt-4 pt-2 sm:pt-3 border-t border-carbon-800/80 text-[10.5px] sm:text-xs text-silver-400 font-medium flex items-center justify-between">
+            <span className="truncate">~<strong className="text-white">{averageRentalDays}d</strong>/contrato</span>
+            <span className="text-emerald-400 font-mono text-[10px] sm:text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">
               Top Autos ↓
             </span>
           </div>
@@ -259,24 +263,26 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
         <button
           type="button"
           onClick={() => document.getElementById('analytics-categories-chart')?.scrollIntoView({ behavior: 'smooth' })}
-          className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-blue-500/70 p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none"
+          className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-blue-500/70 p-3.5 sm:p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none flex flex-col justify-between"
           title="Clic para ver demanda por categoría y modalidades de entrega"
         >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-blue-400 to-transparent" />
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
-              Ocupación de Flota
-            </span>
-            <div className="w-11 h-11 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
-              <Calendar className="w-5 h-5" />
+          <div>
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <span className="text-[10px] sm:text-xs lg:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono truncate">
+                Ocupación Flota
+              </span>
+              <div className="w-7 h-7 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner flex-shrink-0">
+                <Calendar className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+              </div>
+            </div>
+            <div className="text-lg sm:text-3xl lg:text-4xl font-black font-display text-white tracking-tight truncate">
+              76.8%
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl lg:text-5xl font-black font-display text-white tracking-tight">
-            76.8%
-          </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs text-silver-300 font-medium flex items-center justify-between">
-            <span>Capacidad operativa de superdeportivos</span>
-            <span className="text-blue-400 font-mono text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="mt-2.5 sm:mt-4 pt-2 sm:pt-3 border-t border-carbon-800/80 text-[10.5px] sm:text-xs text-silver-300 font-medium flex items-center justify-between">
+            <span className="truncate">Alta demanda</span>
+            <span className="text-blue-400 font-mono text-[10px] sm:text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">
               Categorías ↓
             </span>
           </div>
@@ -286,24 +292,26 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
         <button
           type="button"
           onClick={() => document.getElementById('analytics-escrow-summary')?.scrollIntoView({ behavior: 'smooth' })}
-          className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-amber-500/70 p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none"
+          className="relative text-left group overflow-hidden rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-carbon-750 hover:border-amber-500/70 p-3.5 sm:p-6 lg:p-7 shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer focus:outline-none flex flex-col justify-between"
           title="Clic para ver auditoría de garantías y pólizas de seguro"
         >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-amber-400 to-transparent" />
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs sm:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono">
-              Garantías en Custodia
-            </span>
-            <div className="w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
-              <CheckCircle2 className="w-5 h-5" />
+          <div>
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <span className="text-[10px] sm:text-xs lg:text-sm font-bold text-silver-300 uppercase tracking-wider font-mono truncate">
+                Garantías
+              </span>
+              <div className="w-7 h-7 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner flex-shrink-0">
+                <CheckCircle2 className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+              </div>
+            </div>
+            <div className="text-lg sm:text-3xl lg:text-4xl font-black font-display text-amber-400 tracking-tight truncate">
+              {formatCurrency(totalDepositsInEscrow > 0 ? totalDepositsInEscrow : 24000)}
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl lg:text-5xl font-black font-display text-amber-400 tracking-tight">
-            {formatCurrency(totalDepositsInEscrow > 0 ? totalDepositsInEscrow : 24000)}
-          </div>
-          <div className="mt-4 pt-3 border-t border-carbon-800/80 text-xs text-silver-400 font-medium flex items-center justify-between">
-            <span>100% auditables bajo acta de inspección</span>
-            <span className="text-amber-400 font-mono text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="mt-2.5 sm:mt-4 pt-2 sm:pt-3 border-t border-carbon-800/80 text-[10.5px] sm:text-xs text-silver-400 font-medium flex items-center justify-between">
+            <span className="truncate">Actas 100% OK</span>
+            <span className="text-amber-400 font-mono text-[10px] sm:text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">
               Auditoría ↓
             </span>
           </div>
@@ -352,6 +360,8 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
               return (
                 <div
                   key={idx}
+                  onClick={() => setHoveredMonth(d)}
+                  onTouchStart={() => setHoveredMonth(d)}
                   onMouseEnter={() => setHoveredMonth(d)}
                   onMouseLeave={() => setHoveredMonth(null)}
                   className="flex-1 h-full flex flex-col items-center justify-end group cursor-pointer"
@@ -359,7 +369,7 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
                   {/* Barra de Proyección (Fondo Sutil) */}
                   <div
                     style={{ height: `${projectedHeight}%` }}
-                    className="w-full max-w-[28px] rounded-t-lg bg-carbon-800/40 border-t border-dashed border-silver-600/50 relative flex items-end justify-center"
+                    className="w-full max-w-[20px] sm:max-w-[28px] rounded-t-lg bg-carbon-800/40 border-t border-dashed border-silver-600/50 relative flex items-end justify-center"
                   >
                     {/* Barra Real (Degradado Oro) */}
                     <div
@@ -369,7 +379,7 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
                   </div>
 
                   {/* Etiqueta del Mes */}
-                  <span className="text-[10px] sm:text-xs font-mono font-bold text-silver-400 group-hover:text-gold-400 mt-3 transition-colors">
+                  <span className="text-[9px] sm:text-xs font-mono font-bold text-silver-400 group-hover:text-gold-400 mt-2.5 sm:mt-3 transition-colors">
                     {d.shortMonth}
                   </span>
                 </div>
@@ -378,10 +388,10 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-6 pt-4 border-t border-carbon-800 text-xs font-mono font-semibold text-silver-400">
+        <div className="flex items-center justify-center gap-4 sm:gap-6 pt-4 border-t border-carbon-800 text-[11px] sm:text-xs font-mono font-semibold text-silver-400 flex-wrap">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded bg-gradient-to-r from-gold-600 to-gold-400" />
-            <span>Facturación Consolidada</span>
+            <span>Facturación Real</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded bg-carbon-800 border-t border-dashed border-silver-400" />
@@ -391,46 +401,46 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
       </div>
 
       {/* 4. Grilla Inferior: Top Superdeportivos & Canales de Entrega */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
         
         {/* Top 5 Superdeportivos Más Rentables (7 Columnas) */}
-        <div id="analytics-top-vehicles" className="lg:col-span-7 p-6 sm:p-8 rounded-3xl bg-carbon-900 border border-carbon-800 shadow-2xl space-y-5">
+        <div id="analytics-top-vehicles" className="lg:col-span-7 p-4 sm:p-8 rounded-3xl bg-carbon-900 border border-carbon-800 shadow-2xl space-y-4 sm:space-y-5">
           <div className="flex items-center justify-between pb-3 border-b border-carbon-800">
             <div>
-              <h3 className="text-lg font-black text-white font-display flex items-center gap-2">
-                <Award className="w-5 h-5 text-gold-400" />
-                <span>Superdeportivos Más Rentables (Top Performers)</span>
+              <h3 className="text-base sm:text-lg font-black text-white font-display flex items-center gap-2">
+                <Award className="w-4 h-4 sm:w-5 sm:h-5 text-gold-400" />
+                <span>Superdeportivos Más Rentables</span>
               </h3>
-              <p className="text-xs text-silver-400 mt-0.5">Ranking por volumen de facturación bruta acumulada.</p>
+              <p className="text-[11px] sm:text-xs text-silver-400 mt-0.5">Ranking por volumen de facturación bruta acumulada.</p>
             </div>
             <span className="text-xs font-mono text-gold-400 font-bold">Top 5</span>
           </div>
 
-          <div className="space-y-4 pt-1">
+          <div className="space-y-3 sm:space-y-4 pt-1">
             {vehiclePerformance.map((veh, i) => {
               const widthPct = Math.round((veh.revenue / maxVehicleRevenue) * 100);
 
               return (
-                <div key={i} className="space-y-1.5 p-3 rounded-2xl hover:bg-carbon-850/60 transition-colors">
-                  <div className="flex items-center justify-between text-xs sm:text-sm">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-lg bg-carbon-800 text-gold-400 font-mono font-black text-xs flex items-center justify-center border border-carbon-750">
+                <div key={i} className="space-y-1.5 p-2.5 sm:p-3 rounded-2xl hover:bg-carbon-850/60 transition-colors">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs sm:text-sm gap-1 sm:gap-2">
+                    <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                      <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-md sm:rounded-lg bg-carbon-800 text-gold-400 font-mono font-black text-[11px] sm:text-xs flex items-center justify-center border border-carbon-750 flex-shrink-0">
                         #{i + 1}
                       </span>
-                      <strong className="text-white font-display text-sm sm:text-base">
+                      <strong className="text-white font-display text-xs sm:text-base truncate">
                         {veh.brand} {veh.model}
                       </strong>
-                      <span className="text-[10px] font-mono text-silver-400 bg-carbon-950 px-2 py-0.5 rounded border border-carbon-800">
+                      <span className="text-[9.5px] sm:text-[10px] font-mono text-silver-400 bg-carbon-950 px-1.5 py-0.5 rounded border border-carbon-800 flex-shrink-0">
                         {veh.plate}
                       </span>
                     </div>
 
-                    <div className="text-right">
-                      <span className="font-mono font-black text-gold-400 text-sm sm:text-base">
+                    <div className="text-left sm:text-right pl-7 sm:pl-0 flex items-center sm:block justify-between">
+                      <span className="font-mono font-black text-gold-400 text-xs sm:text-base">
                         {formatCurrency(veh.revenue)}
                       </span>
-                      <span className="text-[11px] text-silver-400 block">
-                        {veh.days} días rentados ({veh.count} reservas)
+                      <span className="text-[10px] sm:text-[11px] text-silver-400 block ml-2 sm:ml-0">
+                        {veh.days}d ({veh.count} res.)
                       </span>
                     </div>
                   </div>

@@ -166,7 +166,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
   });
 
   return (
-    <div className="min-h-screen bg-carbon-950 text-silver-100 pt-32 pb-20">
+    <div className="pt-24 pb-28 lg:pb-16 bg-carbon-950 min-h-screen text-silver-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Breadcrumb Navigation (Regla 17: SEO y navegación) */}
@@ -356,7 +356,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
                 </div>
 
                 {/* Filtros de Galería por Sección */}
-                <div className="flex items-center gap-1.5 bg-carbon-900 border border-carbon-800 p-1 rounded-xl">
+                <div className="flex items-center gap-1.5 bg-carbon-900 border border-carbon-800 p-1 rounded-xl overflow-x-auto scrollbar-none max-w-full">
                   {[
                     { key: 'ALL', label: t.detail.galleryTabAll },
                     { key: 'EXTERIOR', label: t.detail.galleryTabExt },
@@ -648,6 +648,39 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
           </div>
         )}
 
+      </div>
+
+      {/* Barra de Reserva Flotante Fija para Smartphones (Alta Conversión Móvil) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-carbon-950/95 backdrop-blur-xl border-t border-carbon-800 p-3.5 px-4 flex items-center justify-between gap-3 shadow-2xl">
+        <div className="min-w-0">
+          <span className="text-[10px] text-silver-400 uppercase tracking-wider block">
+            {language === 'EN' ? 'Rate per day' : 'Tarifa oficial'}
+          </span>
+          <div className="text-base sm:text-lg font-black text-silver-100 font-mono leading-tight truncate">
+            {formatPrice(vehicle.pricePerDay)}
+            <span className="text-[10.5px] font-normal text-silver-400">/{language === 'EN' ? 'day' : 'día'}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <a
+            href={whatsAppLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2.5 rounded-xl bg-carbon-850 hover:bg-carbon-800 border border-carbon-750 text-emerald-400 transition-colors"
+            title="WhatsApp Concierge"
+          >
+            <Phone className="w-4 h-4" />
+          </a>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => onOpenBooking(vehicle, startDate, endDate)}
+            className="min-h-[42px] px-4 sm:px-5 text-xs font-bold"
+          >
+            {language === 'EN' ? 'RESERVE NOW' : 'RESERVAR'}
+          </Button>
+        </div>
       </div>
 
       {/* Modal Lightbox a Pantalla Completa */}
