@@ -1,3 +1,5 @@
+import plugin from 'tailwindcss/plugin';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -54,6 +56,8 @@ export default {
       animation: {
         'fade-in': 'fadeIn 0.7s ease-out forwards',
         'pulse-subtle': 'pulseSubtle 3s infinite',
+        'alert-pop': 'alertPop 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'slide-up': 'slideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards',
       },
       keyframes: {
         fadeIn: {
@@ -63,9 +67,73 @@ export default {
         pulseSubtle: {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.6' },
-        }
+        },
+        alertPop: {
+          '0%': { opacity: '0', transform: 'scale(0.92) translateY(12px)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(100%)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
       }
     },
   },
-  plugins: [],
-}
+  plugins: [
+    plugin(function({ addBase, addUtilities }) {
+      addBase({
+        ':root': {
+          colorScheme: 'dark',
+        },
+        'body': {
+          backgroundColor: '#08090C',
+          color: '#F8F9FB',
+          fontFamily: "'Outfit', 'Inter', sans-serif",
+          overflowX: 'hidden',
+        },
+        '::-webkit-scrollbar': {
+          width: '8px',
+          height: '8px',
+        },
+        '::-webkit-scrollbar-track': {
+          background: '#08090C',
+        },
+        '::-webkit-scrollbar-thumb': {
+          background: '#212634',
+          borderRadius: '4px',
+          border: '1px solid #141720',
+        },
+        '::-webkit-scrollbar-thumb:hover': {
+          background: '#D4AF37',
+        },
+      });
+
+      addUtilities({
+        '.text-glow': {
+          textShadow: '0 0 20px rgba(212, 175, 55, 0.35)',
+        },
+        '.bg-grid-pattern': {
+          backgroundSize: '40px 40px',
+          backgroundImage: 
+            'linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px)',
+        },
+        '.showroom-radial-spotlight': {
+          background: 'radial-gradient(circle at 50% 30%, rgba(212, 175, 55, 0.08) 0%, rgba(14, 16, 22, 0) 70%)',
+        },
+        '.border-luxury': {
+          borderColor: 'rgba(255, 255, 255, 0.08)',
+        },
+        '.border-luxury-hover:hover': {
+          borderColor: 'rgba(212, 175, 55, 0.4)',
+        },
+        '.scrollbar-none, .no-scrollbar': {
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none',
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+        },
+      });
+    }),
+  ],
+};

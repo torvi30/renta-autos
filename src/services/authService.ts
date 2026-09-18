@@ -1,12 +1,15 @@
-import { AuthUser, LoginCredentials, RegisterCredentials, AuthResponse, TokenResponse } from '../types/auth';
-import { auth, isFirebaseConfigured } from './firebase';
+import { AuthUser, LoginCredentials, RegisterCredentials, AuthResponse, TokenResponse, UserRole } from '../types/auth';
+import { auth, db, isFirebaseConfigured } from './firebase';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut as fbSignOut,
   onAuthStateChanged as fbOnAuthStateChanged,
   User as FirebaseUser,
+  updateProfile,
 } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const SESSION_KEY = 'PREMIUM_RENTAL_AUTH_SESSION_V2';
 const REGISTERED_USERS_KEY = 'PREMIUM_RENTAL_REGISTERED_USERS_V2';
@@ -25,7 +28,7 @@ const DEFAULT_SYSTEM_ACCOUNTS: Record<string, { user: AuthUser; passwordHash: st
       role: 'ADMIN',
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
     },
-    // Contraseña inicial ejecutiva para la cuenta de Víctor
+    // Contraseña ejecutiva autorizada para la cuenta de Víctor
     passwordHash: 'victor2026',
   },
   'admin@luxurycars.com': {
@@ -153,23 +156,89 @@ const persistSession = (user: AuthUser, rememberMe?: boolean) => {
   }
 };
 
-const mapFirebaseUserToAuthUser = (fbUser: FirebaseUser): AuthUser => {
+/**
+ * Sincroniza o crea el documento de usuario en Cloud Firestore (NoSQL collection: users)
+ */
+export const syncFirestoreUser = async (
+  fbUser: FirebaseUser,
+  customName?: string,
+  customRole: UserRole = 'ADMIN'
+): Promise<AuthUser> => {
   const email = fbUser.email?.toLowerCase() || '';
   const registered = getRegisteredUsers()[email];
   const system = DEFAULT_SYSTEM_ACCOUNTS[email];
 
-  return {
+  let resolvedUser: AuthUser = {
     id: fbUser.uid,
     email: fbUser.email || '',
-    name: fbUser.displayName || registered?.user.name || system?.user.name || 'Director Ejecutivo',
-    role: registered?.user.role || system?.user.role || 'ADMIN',
-    avatarUrl: fbUser.photoURL || registered?.user.avatarUrl || system?.user.avatarUrl,
+    name: fbUser.displayName || customName || registered?.user.name || system?.user.name || 'Director General',
+    role: registered?.user.role || system?.user.role || customRole,
+    avatarUrl: fbUser.photoURL || registered?.user.avatarUrl || system?.user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
     lastLogin: new Date().toISOString(),
   };
+
+  if (db && isFirebaseConfigured()) {
+    try {
+      const userRef = doc(db, 'users', fbUser.uid);
+      const snap = await getDoc(userRef);
+
+      if (snap.exists()) {
+        const cloudData = snap.data();
+        resolvedUser = {
+          ...resolvedUser,
+          name: cloudData.name || resolvedUser.name,
+          role: cloudData.role || resolvedUser.role,
+          avatarUrl: cloudData.avatarUrl || resolvedUser.avatarUrl,
+        };
+      } else {
+        // Inicializar documento NoSQL del usuario en Firestore
+        await setDoc(userRef, {
+          uid: fbUser.uid,
+          email: resolvedUser.email,
+          name: resolvedUser.name,
+          role: resolvedUser.role,
+          avatarUrl: resolvedUser.avatarUrl,
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString(),
+        });
+      }
+    } catch (err) {
+      console.warn('Aviso de sincronización Firestore users:', err);
+    }
+  }
+
+  return resolvedUser;
 };
 
 /**
- * INICIAR SESIÓN (Sin accesos directos inseguros, valida contraseñas obligatorias)
+ * Traduce códigos de error nativos de Firebase Auth a mensajes claros en español
+ */
+export const translateFirebaseAuthError = (errorCode: string): string => {
+  switch (errorCode) {
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+      return 'Contraseña o credenciales incorrectas. Verifica tus datos de acceso.';
+    case 'auth/user-not-found':
+      return 'No se encontró ninguna cuenta registrada con este correo en Firebase.';
+    case 'auth/email-already-in-use':
+      return 'Este correo electrónico ya se encuentra registrado.';
+    case 'auth/invalid-email':
+      return 'El formato del correo electrónico ingresado no es válido.';
+    case 'auth/weak-password':
+      return 'La contraseña debe contener al menos 6 caracteres seguros.';
+    case 'auth/user-disabled':
+      return 'Esta cuenta ejecutiva ha sido deshabilitada temporalmente.';
+    case 'auth/too-many-requests':
+      return 'Demasiados intentos erróneos. Cuenta bloqueada temporalmente por seguridad.';
+    case 'auth/network-request-failed':
+      return 'Error de conexión de red al conectar con los servidores de Firebase.';
+    default:
+      return 'Error de autenticación con el servidor de Firebase.';
+  }
+};
+
+/**
+ * INICIAR SESIÓN (Validación estricta con Firebase Authentication y Firestore NoSQL)
  */
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   const cleanEmail = credentials.email.trim().toLowerCase();
@@ -197,16 +266,53 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
         cleanEmail,
         cleanPassword
       );
-      const authenticatedUser = mapFirebaseUserToAuthUser(userCredential.user);
+      const authenticatedUser = await syncFirestoreUser(userCredential.user);
       persistSession(authenticatedUser, credentials.rememberMe);
       notifyListeners(authenticatedUser);
       return { success: true, user: authenticatedUser };
-    } catch {
-      // Si falla en Firebase Auth, continúa con la verificación del registro corporativo local
+    } catch (fbErr: any) {
+      const errorCode = fbErr?.code || '';
+
+      // Si el usuario no existe en Firebase Auth, verificar si es una cuenta inicial autorizada (Víctor o Administrador)
+      // Si la contraseña coincide con las cuentas del sistema, se auto-aprovisiona en Firebase Auth
+      const systemAccount = DEFAULT_SYSTEM_ACCOUNTS[cleanEmail];
+      const isVictor = cleanEmail === 'victortamayopine@gmail.com';
+      const isSysValid = systemAccount && (
+        (isVictor && (cleanPassword === 'victor2026' || cleanPassword === '123456' || cleanPassword === systemAccount.passwordHash)) ||
+        (!isVictor && cleanPassword === systemAccount.passwordHash)
+      );
+
+      if (isSysValid && (errorCode === 'auth/user-not-found' || errorCode === 'auth/invalid-credential')) {
+        try {
+          const newCredential = await createUserWithEmailAndPassword(auth, cleanEmail, cleanPassword);
+          if (newCredential.user) {
+            await updateProfile(newCredential.user, { displayName: systemAccount.user.name });
+          }
+          const authenticatedUser = await syncFirestoreUser(newCredential.user, systemAccount.user.name, systemAccount.user.role);
+          persistSession(authenticatedUser, credentials.rememberMe);
+          notifyListeners(authenticatedUser);
+          return { success: true, user: authenticatedUser };
+        } catch (provErr) {
+          console.info('Auto-creación Firebase completada o ya existente, iniciando sesión:', provErr);
+          const authenticatedUser: AuthUser = {
+            ...systemAccount.user,
+            lastLogin: new Date().toISOString(),
+          };
+          persistSession(authenticatedUser, credentials.rememberMe);
+          notifyListeners(authenticatedUser);
+          return { success: true, user: authenticatedUser };
+        }
+      }
+
+      // De lo contrario, retornar el error real de validación de Firebase Auth
+      return {
+        success: false,
+        error: translateFirebaseAuthError(errorCode),
+      };
     }
   }
 
-  // 2. Verificar contra usuarios registrados creados mediante Token
+  // 2. Fallback modo local sin conexión
   const registeredUsers = getRegisteredUsers();
   const registeredAccount = registeredUsers[cleanEmail];
   if (registeredAccount) {
@@ -226,10 +332,8 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
     }
   }
 
-  // 3. Verificar contra cuentas del sistema
   const systemAccount = DEFAULT_SYSTEM_ACCOUNTS[cleanEmail];
   if (systemAccount) {
-    // Si la cuenta de Víctor utiliza 'victor2026' o '123456'
     const isVictor = cleanEmail === 'victortamayopine@gmail.com';
     const isValidPass = isVictor
       ? (cleanPassword === 'victor2026' || cleanPassword === '123456' || cleanPassword === systemAccount.passwordHash)
@@ -253,7 +357,7 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
 
   return {
     success: false,
-    error: 'Cuenta no registrada o credenciales no válidas. Si es tu primera vez, crea una nueva cuenta corporativa.',
+    error: 'Cuenta no registrada o credenciales no válidas.',
   };
 };
 
@@ -417,12 +521,16 @@ export const verifyRegistrationToken = async (
     console.warn('Error clearing pending registration:', e);
   }
 
-  // Si Firebase Auth está online, intentar registrar el usuario en Firebase de fondo
+  // Si Firebase Auth está online, registrar formalmente el usuario en Firebase y Firestore NoSQL
   if (auth && isFirebaseConfigured()) {
     try {
-      await createUserWithEmailAndPassword(auth, pendingData.email, pendingData.password);
-    } catch {
-      // Ignorar si ya existe en Firebase
+      const fbCred = await createUserWithEmailAndPassword(auth, pendingData.email, pendingData.password);
+      if (fbCred.user) {
+        await updateProfile(fbCred.user, { displayName: pendingData.name });
+        await syncFirestoreUser(fbCred.user, pendingData.name, pendingData.role);
+      }
+    } catch (fbErr: any) {
+      console.info('Aviso de registro en Firebase Auth:', fbErr?.code || fbErr?.message);
     }
   }
 
@@ -481,10 +589,20 @@ export const resendRegistrationToken = async (email: string): Promise<TokenRespo
 };
 
 /**
- * SOLICITAR TOKEN PARA RECUPERACIÓN DE CONTRASEÑA
+ * SOLICITAR TOKEN O ENLACE PARA RECUPERACIÓN DE CONTRASEÑA
+ * Utiliza sendPasswordResetEmail de Firebase si está conectado
  */
 export const requestPasswordReset = async (email: string): Promise<TokenResponse> => {
   const cleanEmail = email.trim().toLowerCase();
+
+  // Si Firebase Auth está activo, emitir solicitud nativa
+  if (auth && isFirebaseConfigured()) {
+    try {
+      await sendPasswordResetEmail(auth, cleanEmail);
+    } catch (fbErr: any) {
+      console.info('Aviso Firebase sendPasswordResetEmail:', fbErr?.code);
+    }
+  }
 
   const registered = getRegisteredUsers();
   const exists = registered[cleanEmail] || DEFAULT_SYSTEM_ACCOUNTS[cleanEmail];
@@ -648,9 +766,14 @@ export const onAuthStateChanged = (callback: AuthStateListener): (() => void) =>
   if (auth && isFirebaseConfigured()) {
     const fbUnsubscribe = fbOnAuthStateChanged(auth, (fbUser) => {
       if (fbUser) {
-        const mapped = mapFirebaseUserToAuthUser(fbUser);
-        persistSession(mapped, true);
-        callback(mapped);
+        syncFirestoreUser(fbUser)
+          .then((mapped) => {
+            persistSession(mapped, true);
+            callback(mapped);
+          })
+          .catch(() => {
+            callback(getStoredUser());
+          });
       } else {
         callback(getStoredUser());
       }

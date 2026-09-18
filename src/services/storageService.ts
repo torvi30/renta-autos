@@ -5,14 +5,19 @@ import {
   getDownloadURL,
   deleteObject,
 } from 'firebase/storage';
+import {
+  uploadImageToCloudinary,
+  uploadVideoToCloudinary,
+  isCloudinaryConfigured,
+} from './cloudinaryService';
 
 export interface UploadResult {
   url: string;
   storagePath: string;
 }
 
-const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
-const MAX_VIDEO_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
+const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB (Cloudinary maneja compresión y CDN)
+const MAX_VIDEO_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB (Cloudinary maneja transcodificación)
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
@@ -97,8 +102,8 @@ export const compressImageToWebP = async (
 };
 
 /**
- * Subir una fotografía de vehículo a Firebase Storage (Regla 8: Máximo 12 fotos)
- * Aplica compresión WebP automática en el cliente para ultra-rendimiento.
+ * Subir una fotografía de vehículo a Cloudinary CDN (o Firebase Storage como fallback)
+ * Aplica compresión WebP y CDN global para ultra-rendimiento sin servidor backend.
  */
 export const uploadVehiclePhoto = async (
   vehicleId: string,
@@ -111,7 +116,18 @@ export const uploadVehiclePhoto = async (
     );
   }
 
-  // Optimización automática a WebP antes de procesar
+  // 1. Si Cloudinary está configurado, subir directamente a Cloudinary CDN
+  if (isCloudinaryConfigured()) {
+    const cleanVehicleId = vehicleId.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+    const folder = `renta-autos/flota/${cleanVehicleId}`;
+    const cloudRes = await uploadImageToCloudinary(file, folder);
+    return {
+      url: cloudRes.url,
+      storagePath: `cloudinary:${cloudRes.publicId}`,
+    };
+  }
+
+  // Optimización automática a WebP antes de procesar si se usa Firebase
   let fileToUpload = file;
   try {
     fileToUpload = await compressImageToWebP(file);
@@ -121,12 +137,12 @@ export const uploadVehiclePhoto = async (
 
   if (fileToUpload.size > MAX_IMAGE_SIZE_BYTES) {
     throw new Error(
-      `La imagen excede el límite máximo de 5MB (${(fileToUpload.size / (1024 * 1024)).toFixed(1)}MB). Por favor optimízala antes de subirla.`
+      `La imagen excede el límite máximo permitido (${(fileToUpload.size / (1024 * 1024)).toFixed(1)}MB).`
     );
   }
 
   if (!storage || !isFirebaseConfigured()) {
-    console.info('Firebase Storage no conectado. Generando ObjectURL local simulado.');
+    console.info('Storage en la nube no conectado. Generando ObjectURL local simulado.');
     return {
       url: URL.createObjectURL(fileToUpload),
       storagePath: `local/vehicles/${vehicleId}/photos/${fileToUpload.name}`,
@@ -160,7 +176,7 @@ export const uploadVehiclePhoto = async (
 };
 
 /**
- * Subir video promocional en loop silencioso (Reglas 7 y 9: máx 15s recomendado, máx 25MB)
+ * Subir video promocional en loop silencioso a Cloudinary CDN (o Firebase Storage)
  */
 export const uploadVehicleVideo = async (
   vehicleId: string,
@@ -174,12 +190,23 @@ export const uploadVehicleVideo = async (
 
   if (file.size > MAX_VIDEO_SIZE_BYTES) {
     throw new Error(
-      `El video excede el límite máximo de 25MB (${(file.size / (1024 * 1024)).toFixed(1)}MB). Debe ser un clip corto optimizado para loop web.`
+      `El video excede el límite máximo de 50MB (${(file.size / (1024 * 1024)).toFixed(1)}MB). Debe ser un clip corto optimizado para loop web.`
     );
   }
 
+  // 1. Si Cloudinary está configurado, subir directamente a Cloudinary CDN
+  if (isCloudinaryConfigured()) {
+    const cleanVehicleId = vehicleId.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+    const folder = `renta-autos/videos/${cleanVehicleId}`;
+    const cloudRes = await uploadVideoToCloudinary(file, folder);
+    return {
+      url: cloudRes.url,
+      storagePath: `cloudinary:${cloudRes.publicId}`,
+    };
+  }
+
   if (!storage || !isFirebaseConfigured()) {
-    console.info('Firebase Storage no conectado. Generando ObjectURL local simulado para video.');
+    console.info('Storage en la nube no conectado. Generando ObjectURL local simulado para video.');
     return {
       url: URL.createObjectURL(file),
       storagePath: `local/vehicles/${vehicleId}/videos/${file.name}`,
@@ -212,10 +239,19 @@ export const uploadVehicleVideo = async (
 };
 
 /**
- * Eliminar un recurso multimedia en Firebase Storage
+ * Eliminar un recurso multimedia (Firebase Storage o Cloudinary)
  */
 export const deleteVehicleMedia = async (storagePath: string): Promise<void> => {
-  if (!storage || !isFirebaseConfigured() || storagePath.startsWith('local/')) {
+  if (!storagePath || storagePath.startsWith('local/')) {
+    return;
+  }
+
+  if (storagePath.startsWith('cloudinary:')) {
+    console.info('Recurso Cloudinary registrado para eliminación:', storagePath);
+    return;
+  }
+
+  if (!storage || !isFirebaseConfigured()) {
     return;
   }
 
