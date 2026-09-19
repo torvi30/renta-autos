@@ -91,6 +91,7 @@ export interface StudioShowroomPhoto {
 }
 
 export const OFFICIAL_STUDIO_TURNTABLE_PHOTOS: StudioShowroomPhoto[] = [
+  { id: 'toyota-4runner-sr5', name: 'Toyota 4Runner SR5 Blanca (FRE334)', brand: 'Toyota', url: '/vehicles/user-toyota-4runner-showroom.jpg', type: 'SUV Lujo' },
   { id: 'toyota-4runner', name: 'Toyota 4Runner Blanca (Blindada)', brand: 'Toyota', url: '/vehicles/toyota-4runner-blanca-blindada.jpg', type: 'SUV Lujo' },
   { id: 'toyota-prado', name: 'Toyota Prado TXL Negra', brand: 'Toyota', url: '/vehicles/toyota-prado-txl-negra.jpg', type: 'SUV Lujo' },
   { id: 'toyota-fortuner', name: 'Toyota Fortuner SW4 Gris', brand: 'Toyota', url: '/vehicles/toyota-fortuner-sw4-2023.jpg', type: 'SUV Lujo' },
@@ -1091,13 +1092,13 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
               </div>
               <div>
                 <div className="font-bold text-white text-xs sm:text-sm flex items-center gap-2">
-                  <span>Sincronizar a Formato Oficial Showroom (Toyota 4Runner Blanca)</span>
+                  <span>Sincronizar a Formato Oficial Showroom (Tu Toyota 4Runner Real)</span>
                   <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                     Estudio 360°
                   </span>
                 </div>
                 <div className="text-[11px] text-silver-300 mt-0.5">
-                  Reemplaza la foto al aire libre por la foto oficial de estudio en plataforma giratoria y ajusta la ficha a SUV de Lujo (270 CV, $260/día).
+                  Monta tu 4Runner real en la plataforma giratoria del showroom y ajusta la ficha a SUV de Lujo (270 CV, $240/día).
                 </div>
               </div>
             </div>
@@ -1105,9 +1106,9 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
               type="button"
               onClick={() => {
                 setBrand('Toyota');
-                setModel('4Runner Blindada Nivel 3+ 2022');
+                setModel('4Runner SR5 4x4 2022');
                 setCategory('SUV_LUJO');
-                setPricePerDay(260);
+                setPricePerDay(240);
                 setHorsepower(270);
                 setAcceleration('8.4s');
                 setTopSpeed(190);
@@ -1115,13 +1116,14 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                 setFuel('GASOLINA');
                 setSeats(7);
                 setDoors(5);
-                setMainImage('/vehicles/toyota-4runner-blanca-blindada.jpg');
+                setMainImage('/vehicles/user-toyota-4runner-showroom.jpg');
                 setGalleryImages([
+                  '/vehicles/user-toyota-4runner-showroom.jpg',
                   '/vehicles/toyota-4runner-blanca-blindada.jpg',
                   'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=85',
                   'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=85',
                 ]);
-                setPresetSuccessToast('✨ Formato de estudio Showroom aplicado exitosamente a la Toyota 4Runner');
+                setPresetSuccessToast('✨ Montaje oficial Showroom aplicado exitosamente a tu Toyota 4Runner');
                 setTimeout(() => setPresetSuccessToast(null), 4000);
               }}
               className="px-4 py-2 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black rounded-xl text-xs transition-all shadow-md active:scale-95 whitespace-nowrap self-start sm:self-auto flex items-center gap-1.5"
