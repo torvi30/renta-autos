@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Reservation } from '../../types/reservation';
 import { Vehicle } from '../../types/vehicle';
 import {
@@ -51,9 +52,9 @@ export const AdminContractModal: React.FC<AdminContractModalProps> = ({
     };
   }, []);
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-xl overflow-hidden animate-fade-in print:p-0 print:bg-white print:static print:inset-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-xl overflow-hidden animate-fade-in print:p-0 print:bg-white print:static print:inset-auto"
       role="dialog"
       aria-modal="true"
       onClick={(e) => {
@@ -62,7 +63,7 @@ export const AdminContractModal: React.FC<AdminContractModalProps> = ({
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-4xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[88dvh] sm:max-h-[92vh] animate-slide-up sm:animate-fade-in print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:bg-white"
+        className="relative w-full max-w-4xl rounded-2xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[90vh] print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:bg-white"
       >
         {/* Indicador de Arrastre para Móvil */}
         <div className="w-10 h-1 rounded-full bg-carbon-600/70 mx-auto mt-2.5 sm:hidden flex-shrink-0 print:hidden" />
@@ -108,7 +109,7 @@ export const AdminContractModal: React.FC<AdminContractModalProps> = ({
         {/* ======================================================== */}
         <div
           id="printable-contract"
-          className="overflow-y-auto p-4 sm:p-10 text-silver-200 bg-carbon-900 font-sans space-y-5 sm:space-y-6 print:overflow-visible print:p-8 print:bg-white print:text-black print:space-y-4"
+          className="overflow-y-auto flex-1 min-h-0 p-4 sm:p-10 text-silver-200 bg-carbon-900 font-sans space-y-5 sm:space-y-6 print:overflow-visible print:p-8 print:bg-white print:text-black print:space-y-4"
         >
           {/* Membrete Corporativo */}
           <div className="border-b-2 border-gold-500/60 pb-6 print:border-black print:pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -335,6 +336,7 @@ export const AdminContractModal: React.FC<AdminContractModalProps> = ({
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

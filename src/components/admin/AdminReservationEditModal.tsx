@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Vehicle } from '../../types/vehicle';
 import { Reservation, ReservationStatus, DeliveryLocationType } from '../../types/reservation';
 import { formatCurrency } from '../../utils/formatters';
@@ -198,14 +199,14 @@ export const AdminReservationEditModal: React.FC<AdminReservationEditModalProps>
     }
   };
 
-  return (
+  return createPortal(
     <div 
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-md overflow-hidden animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-md overflow-hidden animate-fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-3xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border-2 border-gold-500/40 shadow-2xl shadow-black/90 flex flex-col max-h-[88dvh] sm:max-h-[88vh] overflow-hidden text-silver-100 animate-slide-up sm:animate-fade-in">
+      <div className="relative w-full max-w-3xl rounded-2xl sm:rounded-3xl bg-carbon-900 border-2 border-gold-500/40 shadow-2xl shadow-black/90 flex flex-col max-h-[92vh] sm:max-h-[90vh] overflow-hidden text-silver-100">
         {/* Indicador de Arrastre para Móvil */}
         <div className="w-10 h-1 rounded-full bg-carbon-600/70 mx-auto mt-2.5 sm:hidden flex-shrink-0" />
         
@@ -253,7 +254,7 @@ export const AdminReservationEditModal: React.FC<AdminReservationEditModalProps>
         {/* Formulario con Scroll Interno y Footer Fijo */}
         <form onSubmit={handleSave} className="flex flex-col flex-1 min-h-0 overflow-hidden">
           
-          <div className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-6">
+          <div className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-7 space-y-6">
           
           {/* SECCIÓN 1: VEHÍCULO ASIGNADO */}
           <div className="space-y-3">
@@ -566,6 +567,7 @@ export const AdminReservationEditModal: React.FC<AdminReservationEditModalProps>
         </form>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Reservation, ReservationStatus } from '../../types/reservation';
 import {
   Search,
@@ -887,48 +888,49 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
         </>
       )}
 
-      {/* 4. Modal / Expediente Completo de Reserva */}
-      {selectedReservation && (
-        <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-carbon-950/85 backdrop-blur-xl animate-fade-in overflow-hidden"
-          role="dialog"
-          aria-modal="true"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setSelectedReservation(null);
-          }}
-        >
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-2xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[85dvh] sm:max-h-[88vh] animate-slide-up sm:animate-fade-in"
+      {/* 4. Modal / Expediente Completo de Reserva (Portaled directly to body to avoid clipping) */}
+      {selectedReservation &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-carbon-950/85 backdrop-blur-xl animate-fade-in overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setSelectedReservation(null);
+            }}
           >
-            {/* Indicador de Arrastre para Móvil */}
-            <div className="w-10 h-1 rounded-full bg-carbon-600/70 mx-auto mt-2.5 sm:hidden flex-shrink-0" />
-            
-            {/* Cabecera Modal Fija al Tope */}
-            <div className="p-4 sm:p-5 border-b border-carbon-800 bg-carbon-850/95 flex items-center justify-between flex-shrink-0 z-10">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-mono font-bold uppercase px-2.5 py-0.5 rounded-lg bg-carbon-800 text-gold-400 border border-carbon-750">
-                    {selectedReservation.id}
-                  </span>
-                  {getStatusBadge(selectedReservation.status)}
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-2xl rounded-2xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[90vh]"
+            >
+              {/* Indicador de Arrastre para Móvil */}
+              <div className="w-10 h-1 rounded-full bg-carbon-600/70 mx-auto mt-2.5 sm:hidden flex-shrink-0" />
+              
+              {/* Cabecera Modal Fija al Tope */}
+              <div className="p-4 sm:p-5 border-b border-carbon-800 bg-carbon-850/95 flex items-center justify-between flex-shrink-0 z-10">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-mono font-bold uppercase px-2.5 py-0.5 rounded-lg bg-carbon-800 text-gold-400 border border-carbon-750">
+                      {selectedReservation.id}
+                    </span>
+                    {getStatusBadge(selectedReservation.status)}
+                  </div>
+                  <h3 className="text-base sm:text-xl font-black text-white font-display truncate">
+                    Expediente de Reserva
+                  </h3>
                 </div>
-                <h3 className="text-base sm:text-xl font-black text-white font-display truncate">
-                  Expediente de Reserva
-                </h3>
+
+                <button
+                  onClick={() => setSelectedReservation(null)}
+                  className="p-2 sm:p-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-400 hover:text-white transition-colors cursor-pointer flex-shrink-0 ml-2"
+                  aria-label="Cerrar expediente"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
 
-              <button
-                onClick={() => setSelectedReservation(null)}
-                className="p-2 sm:p-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-400 hover:text-white transition-colors cursor-pointer flex-shrink-0 ml-2"
-                aria-label="Cerrar expediente"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Contenido Desplazable en Medio (Comienza siempre en la parte superior) */}
-            <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 text-sm overscroll-contain">
+              {/* Contenido Desplazable en Medio con min-h-0 para scroll perfecto */}
+              <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 min-h-0 text-sm overscroll-contain">
               
               {/* Vehículo Asignado */}
               <div className="p-3.5 sm:p-5 rounded-2xl bg-carbon-850 border border-carbon-800 flex items-center gap-3 sm:gap-4">
@@ -1097,7 +1099,8 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* 5. Modal de Edición de Reserva */}

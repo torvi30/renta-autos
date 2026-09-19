@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Reservation } from '../../types/reservation';
 import { formatCurrency } from '../../utils/formatters';
 import {
@@ -562,21 +563,22 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
       )}
 
       {/* 4. Modal / Expediente Completo de Cliente */}
-      {selectedClient && (
-        <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-carbon-950/85 backdrop-blur-xl animate-fade-in overflow-hidden"
-          role="dialog"
-          aria-modal="true"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setSelectedClient(null);
-          }}
-        >
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-2xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[85dvh] sm:max-h-[88vh] animate-slide-up sm:animate-fade-in"
+      {selectedClient &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-carbon-950/85 backdrop-blur-xl animate-fade-in overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setSelectedClient(null);
+            }}
           >
-            {/* Indicador de Arrastre para Móvil */}
-            <div className="w-10 h-1 rounded-full bg-carbon-600/70 mx-auto mt-2.5 sm:hidden flex-shrink-0" />
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-2xl rounded-2xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[90vh]"
+            >
+              {/* Indicador de Arrastre para Móvil */}
+              <div className="w-10 h-1 rounded-full bg-carbon-600/70 mx-auto mt-2.5 sm:hidden flex-shrink-0" />
             
             {/* Cabecera del Expediente Fija al Tope */}
             <div className="p-4 sm:p-5 border-b border-carbon-800 bg-carbon-850/95 flex items-center justify-between flex-shrink-0 z-10">
@@ -604,7 +606,7 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
             </div>
 
             {/* Contenido del Expediente Desplazable */}
-            <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto flex-1 text-sm overscroll-contain">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto flex-1 min-h-0 text-sm overscroll-contain">
               
               {/* Resumen Comercial */}
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
@@ -691,7 +693,8 @@ export const AdminClientsView: React.FC<AdminClientsViewProps> = ({ reservations
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>

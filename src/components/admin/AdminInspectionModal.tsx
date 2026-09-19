@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Reservation } from '../../types/reservation';
 import { Vehicle } from '../../types/vehicle';
 import {
@@ -239,9 +240,9 @@ export const AdminInspectionModal: React.FC<AdminInspectionModalProps> = ({
     };
   }, []);
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-xl overflow-hidden animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-xl overflow-hidden animate-fade-in"
       role="dialog"
       aria-modal="true"
       onClick={(e) => {
@@ -250,7 +251,7 @@ export const AdminInspectionModal: React.FC<AdminInspectionModalProps> = ({
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-5xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[88dvh] sm:max-h-[90vh] animate-slide-up sm:animate-fade-in"
+        className="relative w-full max-w-5xl rounded-2xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[90vh]"
       >
         {/* Indicador de Arrastre para Móvil */}
         <div className="w-10 h-1 rounded-full bg-carbon-600/70 mx-auto mt-2.5 sm:hidden flex-shrink-0" />
@@ -343,7 +344,7 @@ export const AdminInspectionModal: React.FC<AdminInspectionModalProps> = ({
         )}
 
         {/* Contenido con Scroll */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-8 space-y-6">
+        <div className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-8 space-y-6">
           
           {/* ======================================================== */}
           {/* MODO 1 Y 2: FORMULARIO DE CHECK-IN / CHECK-OUT           */}
@@ -815,6 +816,7 @@ export const AdminInspectionModal: React.FC<AdminInspectionModalProps> = ({
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
