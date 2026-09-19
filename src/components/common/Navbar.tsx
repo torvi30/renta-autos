@@ -305,8 +305,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* ========================================================================= */}
       <div
         className={`transition-all duration-300 ${
-          isScrolled
-            ? 'bg-carbon-950/90 backdrop-blur-2xl py-3 shadow-[0_16px_40px_rgba(0,0,0,0.9)]'
+          isScrolled || currentRoute !== 'home'
+            ? 'bg-carbon-950/95 backdrop-blur-2xl py-3 border-b border-carbon-800/50 shadow-[0_16px_40px_rgba(0,0,0,0.9)]'
             : 'bg-gradient-to-b from-carbon-950/95 via-carbon-950/60 to-transparent py-4'
         }`}
       >

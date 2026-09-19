@@ -67,7 +67,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
   const availableCount = statusCounts['AVAILABLE'] || 0;
 
   return (
-    <div className="min-h-screen bg-carbon-950 pt-32 pb-20 text-silver-100">
+    <div className="min-h-screen bg-carbon-950 pt-32 sm:pt-36 lg:pt-40 pb-20 text-silver-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Breadcrumb Navigation (Regla 17: SEO y navegación clara) */}
