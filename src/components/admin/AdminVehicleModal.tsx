@@ -9,6 +9,7 @@ import {
 } from '../../types/vehicle';
 import { uploadVehiclePhoto, uploadVehicleVideo, UploadResult } from '../../services/storageService';
 import { generateVehicleSlug } from '../../services/vehicleService';
+import { AdminShowroomCompositorModal } from './AdminShowroomCompositorModal';
 import {
   X,
   Camera,
@@ -650,6 +651,9 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
 
   // Zoom / Lightbox modal interno de previsualización de foto
   const [zoomImage, setZoomImage] = useState<{ url: string; label: string } | null>(null);
+
+  // Taller de Montaje Showroom Oficial (Foto Estática 3/4)
+  const [isCompositorOpen, setIsCompositorOpen] = useState(false);
 
   // Upload status
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -1521,6 +1525,15 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                           className="w-full text-xs font-mono bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-gold-500"
                         />
                         <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setIsCompositorOpen(true)}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 text-xs font-black cursor-pointer border border-gold-400 shadow-md transition-all active:scale-95"
+                          >
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>Taller de Montaje Showroom (Foto Estática 3/4)</span>
+                          </button>
+
                           <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-gold-500/20 to-gold-400/10 hover:from-gold-500/30 hover:to-gold-400/20 text-gold-300 text-xs font-bold cursor-pointer border border-gold-500/40 transition-all shadow-sm">
                             <Upload className="w-3.5 h-3.5" />
                             <span>Subir Archivo Local (WebP/JPG)</span>
@@ -2189,6 +2202,22 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
           </div>
         </div>
       )}
+
+      {/* Taller de Montaje Showroom Fotográfico (Estático 3/4) */}
+      <AdminShowroomCompositorModal
+        isOpen={isCompositorOpen}
+        onClose={() => setIsCompositorOpen(false)}
+        initialCarImage={mainImage}
+        vehicleName={`${brand} ${model}`}
+        onApplyImage={(compositeDataUrl) => {
+          setMainImage(compositeDataUrl);
+          if (!galleryImages.includes(compositeDataUrl)) {
+            setGalleryImages([compositeDataUrl, ...galleryImages].slice(0, 12));
+          }
+          setPresetSuccessToast('✨ Montaje oficial Showroom generado y aplicado como portada');
+          setTimeout(() => setPresetSuccessToast(null), 4000);
+        }}
+      />
 
     </div>,
     document.body
