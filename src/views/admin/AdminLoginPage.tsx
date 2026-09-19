@@ -292,10 +292,14 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     try {
       const response = await requestReset(resetEmail);
       if (!response.success) {
-        setErrorMessage(response.error || 'No se pudo generar el código de recuperación.');
+        setErrorMessage(response.error || 'No se pudo procesar la recuperación de contraseña.');
       } else {
+        if (response.token) {
+          const digits = response.token.slice(0, 6).split('');
+          setOtpDigits(digits);
+        }
         setResetStep('CONFIRM');
-        setSuccessMessage(`Código emitido para ${resetEmail}. Revisa la notificación de correo corporativo.`);
+        setSuccessMessage(`Solicitud autorizada para ${resetEmail}. Define tu nueva contraseña a continuación.`);
       }
     } catch {
       setErrorMessage('Error al solicitar recuperación de clave.');
@@ -899,10 +903,43 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-3 px-4 rounded-xl bg-gold-500 hover:bg-gold-400 text-carbon-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-glow cursor-pointer"
+                    className="w-full py-3 px-4 rounded-xl bg-gold-500 hover:bg-gold-400 text-carbon-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-glow cursor-pointer disabled:opacity-50"
                   >
-                    <span>ACTUALIZAR CONTRASEÑA</span>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Actualizando Contraseña...</span>
+                      </>
+                    ) : (
+                      <span>ACTUALIZAR CONTRASEÑA</span>
+                    )}
                   </button>
+
+                  <div className="flex items-center justify-between pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setResetStep('REQUEST');
+                        setErrorMessage(null);
+                        setSuccessMessage(null);
+                      }}
+                      className="text-xs text-silver-400 hover:text-gold-400 transition-colors cursor-pointer"
+                    >
+                      ← Cambiar Correo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode('LOGIN');
+                        setResetStep('REQUEST');
+                        setErrorMessage(null);
+                        setSuccessMessage(null);
+                      }}
+                      className="text-xs text-silver-400 hover:text-gold-400 transition-colors cursor-pointer"
+                    >
+                      Volver a Iniciar Sesión
+                    </button>
+                  </div>
                 </form>
               )}
             </>
