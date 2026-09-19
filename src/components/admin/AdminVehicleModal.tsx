@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Vehicle,
   VehicleCategory,
@@ -30,8 +31,8 @@ import {
   CheckCircle2,
   ShieldCheck,
   Car,
+  Copy,
 } from 'lucide-react';
-
 
 interface AdminVehicleModalProps {
   isOpen: boolean;
@@ -56,7 +57,7 @@ const LUXURY_AMENITIES_PRESETS = [
   'Faros Láser Matrix LED',
 ];
 
-// Banco de Plantillas Oficiales de Superdeportivos VIP (Nivel Ingeniero Senior)
+// Banco de Plantillas Oficiales de Superdeportivos y Flota VIP
 interface VehiclePreset {
   id: string;
   name: string;
@@ -80,7 +81,324 @@ interface VehiclePreset {
   videoUrl?: string;
 }
 
+// Catálogo Oficial de Fotografías en Estudio Turntable 360°
+export interface StudioShowroomPhoto {
+  id: string;
+  name: string;
+  brand: string;
+  url: string;
+  type: string;
+}
+
+export const OFFICIAL_STUDIO_TURNTABLE_PHOTOS: StudioShowroomPhoto[] = [
+  { id: 'toyota-4runner', name: 'Toyota 4Runner Blanca (Blindada)', brand: 'Toyota', url: '/vehicles/toyota-4runner-blanca-blindada.jpg', type: 'SUV Lujo' },
+  { id: 'toyota-prado', name: 'Toyota Prado TXL Negra', brand: 'Toyota', url: '/vehicles/toyota-prado-txl-negra.jpg', type: 'SUV Lujo' },
+  { id: 'toyota-fortuner', name: 'Toyota Fortuner SW4 Gris', brand: 'Toyota', url: '/vehicles/toyota-fortuner-sw4-2023.jpg', type: 'SUV Lujo' },
+  { id: 'kia-sportage-blanca', name: 'Kia Sportage Zenith Blanca', brand: 'Kia', url: '/vehicles/kia-sportage-blanca-2022.jpg', type: 'SUV Lujo' },
+  { id: 'kia-sportage-gris', name: 'Kia Sportage GT-Line Gris', brand: 'Kia', url: '/vehicles/kia-sportage-gris-2022.jpg', type: 'SUV Lujo' },
+  { id: 'mazda-3', name: 'Mazda 3 Grand Touring Blanco', brand: 'Mazda', url: '/vehicles/mazda-3-blanco-2018.jpg', type: 'Sedán' },
+  { id: 'suzuki-swift', name: 'Suzuki Swift Sport Amarillo', brand: 'Suzuki', url: '/vehicles/suzuki-swift-sport-2022.jpg', type: 'Deportivo' },
+  { id: 'mercedes-g63', name: 'Mercedes-Benz G63 AMG Biturbo', brand: 'Mercedes-Benz', url: '/vehicles/mercedes-amg-g63.jpg', type: 'SUV Lujo' },
+  { id: 'aston-martin-dbx', name: 'Aston Martin DBX 707 Biturbo', brand: 'Aston Martin', url: '/vehicles/aston-martin-dbx.jpg', type: 'SUV Lujo' },
+  { id: 'porsche-gt3', name: 'Porsche 911 GT3 RS (992)', brand: 'Porsche', url: '/vehicles/porsche-gt3-rs.jpg', type: 'Deportivo' },
+  { id: 'ferrari-f8', name: 'Ferrari F8 Tributo V8', brand: 'Ferrari', url: '/vehicles/ferrari-f8.jpg', type: 'Exótico' },
+  { id: 'lamborghini-urus', name: 'Lamborghini Urus Performante', brand: 'Lamborghini', url: '/vehicles/lamborghini-urus.jpg', type: 'SUV Lujo' },
+  { id: 'bmw-m4', name: 'BMW M4 Competition Coupé', brand: 'BMW', url: '/vehicles/bmw-m4.jpg', type: 'Deportivo' },
+  { id: 'rolls-royce-ghost', name: 'Rolls-Royce Ghost Extended', brand: 'Rolls-Royce', url: '/vehicles/rolls-royce-ghost.jpg', type: 'Sedán VIP' },
+  { id: 'mclaren-720s', name: 'McLaren 720S Spider Performance', brand: 'McLaren', url: '/vehicles/mclaren-720s.jpg', type: 'Convertible' },
+];
+
 const LUXURY_PRESETS: VehiclePreset[] = [
+  {
+    id: 'toyota-4runner-blindada',
+    name: 'Toyota 4Runner Blindada Nivel 3+',
+    brand: 'Toyota',
+    model: '4Runner Blindada Nivel 3+',
+    year: 2022,
+    plate: 'RUN-422',
+    category: 'SUV_LUJO',
+    pricePerDay: 260,
+    horsepower: 270,
+    acceleration: '8.4s',
+    topSpeed: 190,
+    transmission: 'AUTOMATICA',
+    fuel: 'GASOLINA',
+    seats: 7,
+    doors: 5,
+    features: [
+      'Blindaje Balístico Nivel 3+ Certificado',
+      'Cristales Blindados con Traslúcidos de Alta Resistencia',
+      'Neumáticos con Inserciones Run-Flat Antipinchazos',
+      'Sirena e Intercomunicador de Seguridad Bidireccional',
+      'Motor V6 4.0L de Alto Torque',
+      'Suspensión Deportiva Reforzada para Peso Adicional',
+    ],
+    description:
+      'Seguridad ejecutiva de máxima categoría en color Blanco Perla. Blindaje balístico integral Nivel 3+ certificado con vidrios multicapa de 21mm, protección contra armas cortas y subametralladoras, rines con sistema Run-Flat y suspensión reforzada.',
+    mainImage: '/vehicles/toyota-4runner-blanca-blindada.jpg',
+    galleryImages: [
+      '/vehicles/toyota-4runner-blanca-blindada.jpg',
+      'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85',
+    ],
+  },
+  {
+    id: 'toyota-prado-txl',
+    name: 'Toyota Prado TXL 4x4 2022',
+    brand: 'Toyota',
+    model: 'Prado TXL 4x4 2022',
+    year: 2022,
+    plate: 'TXL-022',
+    category: 'SUV_LUJO',
+    pricePerDay: 180,
+    horsepower: 204,
+    acceleration: '9.8s',
+    topSpeed: 185,
+    transmission: 'AUTOMATICA',
+    fuel: 'DIESEL',
+    seats: 7,
+    doors: 5,
+    features: [
+      'Tracción 4WD Permanente con Selector Multiterreno',
+      'Interior en Cuero Premium con Calefacción y Ventilación',
+      'Techo Corredizo Eléctrico (Sunroof)',
+      'Sistema Touch con Apple CarPlay y Android Auto',
+      'Nevera en Consola Central (Cool Box)',
+      'Cámara 360° con Sensores de Proximidad 8 Zonas',
+    ],
+    description:
+      'La camioneta insignia ejecutiva en Colombia. Máximo estatus, comodidad superior y capacidad 4x4 total. Acabados en cuero premium, techo corredizo, climatizador tri-zona y serenidad absoluta para traslados ejecutivos y viajes VIP.',
+    mainImage: '/vehicles/toyota-prado-txl-negra.jpg',
+    galleryImages: [
+      '/vehicles/toyota-prado-txl-negra.jpg',
+      'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85',
+    ],
+  },
+  {
+    id: 'toyota-fortuner-sw4',
+    name: 'Toyota Fortuner SW4 Diamond 4x4',
+    brand: 'Toyota',
+    model: 'Fortuner SW4 Diamond 4x4',
+    year: 2023,
+    plate: 'FTN-723',
+    category: 'SUV_LUJO',
+    pricePerDay: 160,
+    horsepower: 204,
+    acceleration: '10.2s',
+    topSpeed: 180,
+    transmission: 'AUTOMATICA',
+    fuel: 'DIESEL',
+    seats: 7,
+    doors: 5,
+    features: [
+      'Tracción 4x4 con Bajo y Bloqueo de Diferencial Trasero',
+      'Capacidad para 7 Pasajeros con Tercera Fila Plegable',
+      'Cojinería en Cuero Bitono Diamond con Costuras Especiales',
+      'Portón Trasero con Apertura y Cierre Eléctrico',
+      'Sistema de Audio JBL Premium con Subwoofer',
+      'Control de Descenso en Pendientes (DAC)',
+    ],
+    description:
+      'La camioneta todoterreno familiar por excelencia en Colombia. Robustez insuperable, confort de 7 plazas en color Gris Plata, tracción 4x4 con bajo y bloqueo de diferencial, ideal para viajes por cualquier topografía nacional.',
+    mainImage: '/vehicles/toyota-fortuner-sw4-2023.jpg',
+    galleryImages: [
+      '/vehicles/toyota-fortuner-sw4-2023.jpg',
+      'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85',
+    ],
+  },
+  {
+    id: 'kia-sportage-zenith',
+    name: 'Kia Sportage Zenith 2022 (Blanca)',
+    brand: 'Kia',
+    model: 'Sportage Zenith 2022',
+    year: 2022,
+    plate: 'SPT-822',
+    category: 'SUV_LUJO',
+    pricePerDay: 95,
+    horsepower: 187,
+    acceleration: '8.9s',
+    topSpeed: 200,
+    transmission: 'AUTOMATICA',
+    fuel: 'GASOLINA',
+    seats: 5,
+    doors: 5,
+    features: [
+      'Acabado Bitono Blanco Perla con Techo Negro Gloss',
+      'Rines de Lujo Bicolor de 19 Pulgadas',
+      'Asientos en Cuero con Ajuste Eléctrico y Lumbar',
+      'Apertura Inteligente de Baúl Manos Libres',
+      'Control de Crucero Adaptativo con Freno Autónomo',
+      'Cargador Inalámbrico para Smartphones',
+    ],
+    description:
+      'La SUV preferida en color Blanco Perla con techo negro bitono. Diseño vanguardista, asientos ergonómicos, gran confort de marcha para viajes largos y excelente consumo de combustible.',
+    mainImage: '/vehicles/kia-sportage-blanca-2022.jpg',
+    galleryImages: [
+      '/vehicles/kia-sportage-blanca-2022.jpg',
+      'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85',
+    ],
+  },
+  {
+    id: 'kia-sportage-gtline',
+    name: 'Kia Sportage GT-Line 2022 (Gris)',
+    brand: 'Kia',
+    model: 'Sportage GT-Line 2022',
+    year: 2022,
+    plate: 'KSP-222',
+    category: 'SUV_LUJO',
+    pricePerDay: 95,
+    horsepower: 187,
+    acceleration: '8.9s',
+    topSpeed: 200,
+    transmission: 'AUTOMATICA',
+    fuel: 'GASOLINA',
+    seats: 5,
+    doors: 5,
+    features: [
+      'Pantalla Panorámica Curva Dual de 12.3 Pulgadas',
+      'Faros Delanteros Full LED con Luces Boomerang',
+      'Techo Panorámico Corredizo de Cristal',
+      'Apple CarPlay y Android Auto Inalámbrico',
+      'Cámara de Reversa HD con Guías Dinámicas',
+      'Climatizador Automático Dual Bizona',
+    ],
+    description:
+      'SUV moderna y elegante en tono Gris Titanio. Gran economía de combustible, excelente espacio interior para equipaje y familia, pantalla panorámica curva, asistentes avanzados de conducción y suavidad de marcha inigualable.',
+    mainImage: '/vehicles/kia-sportage-gris-2022.jpg',
+    galleryImages: [
+      '/vehicles/kia-sportage-gris-2022.jpg',
+      'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85',
+    ],
+  },
+  {
+    id: 'mazda-3-grand-touring',
+    name: 'Mazda 3 Grand Touring 2018',
+    brand: 'Mazda',
+    model: '3 Grand Touring 2018',
+    year: 2018,
+    plate: 'MZD-318',
+    category: 'SEDAN_EJECUTIVO',
+    pricePerDay: 65,
+    horsepower: 153,
+    acceleration: '8.2s',
+    topSpeed: 210,
+    transmission: 'AUTOMATICA',
+    fuel: 'GASOLINA',
+    seats: 5,
+    doors: 4,
+    features: [
+      'Motor 2.0L SkyActiv-G de Alto Rendimiento',
+      'Sistema de Audio Premium Bose de 9 Altavoces',
+      'Pantalla Activa de Conducción Head-Up Display',
+      'Sunroof Eléctrico de Cristal',
+      'Asientos en Cuero Genuino con Paletas al Volante',
+      'Monitoreo de Punto Ciego y Alerta de Tráfico Cruzado',
+    ],
+    description:
+      'El sedán compacto más elegante y cotizado en Blanco Nieve. Manejo ágil y dinámico con tecnología SkyActiv-G, interior refinado con Head-Up Display, sistema de audio premium Bose y líneas esculpidas Kodo.',
+    mainImage: '/vehicles/mazda-3-blanco-2018.jpg',
+    galleryImages: [
+      '/vehicles/mazda-3-blanco-2018.jpg',
+      'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85',
+    ],
+  },
+  {
+    id: 'suzuki-swift-sport',
+    name: 'Suzuki Swift Sport 2022',
+    brand: 'Suzuki',
+    model: 'Swift Sport Boosterjet 2022',
+    year: 2022,
+    plate: 'SZK-522',
+    category: 'DEPORTIVO',
+    pricePerDay: 70,
+    horsepower: 140,
+    acceleration: '7.8s',
+    topSpeed: 210,
+    transmission: 'AUTOMATICA',
+    fuel: 'GASOLINA',
+    seats: 5,
+    doors: 5,
+    features: [
+      'Motor 1.4L Turbo Boosterjet de Respuesta Inmediata',
+      'Doble Salida de Escape Deportivo Cromado',
+      'Asientos Semibucket Deportivos con Costuras Rojas Sport',
+      'Difusor Trasero en Acabado Tipo Fibra de Carbono',
+      'Pantalla Táctil con Apple CarPlay y Android Auto',
+    ],
+    description:
+      'Hot-hatch deportivo ultraligero y emocionante en Amarillo Campeón. Motor 1.4L Turbo Boosterjet con relación peso-potencia excepcional, rines de 17 pulgadas bitono y doble salida de escape cromada.',
+    mainImage: '/vehicles/suzuki-swift-sport-2022.jpg',
+    galleryImages: [
+      '/vehicles/suzuki-swift-sport-2022.jpg',
+      'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85',
+    ],
+  },
+  {
+    id: 'mercedes-g63-amg',
+    name: 'Mercedes-Benz Clase G 63 AMG',
+    brand: 'Mercedes-Benz',
+    model: 'Clase G 63 AMG Biturbo',
+    year: 2024,
+    plate: 'GMB-630',
+    category: 'SUV_LUJO',
+    pricePerDay: 850,
+    horsepower: 585,
+    acceleration: '4.5s',
+    topSpeed: 240,
+    transmission: 'AUTOMATICA',
+    fuel: 'GASOLINA',
+    seats: 5,
+    doors: 5,
+    features: [
+      'Motor V8 4.0L Biturbo AMG con 585 Caballos de Fuerza',
+      'Tres Bloqueos Mecánicos de Diferencial 100%',
+      'Escape Deportivo Lateral AMG con Válvulas Activas',
+      'Pantalla Widescreen Cockpit Dual con Sistema MBUX',
+      'Sonido Envolvente Burmester 3D Surround de 15 Altavoces',
+    ],
+    description:
+      'El icono definitivo del todoterreno de ultralujo en color Negro Obsidiana. Motor V8 Biturbo artesanal con 585 HP, tres bloqueos mecánicos de diferencial al 100%, escape lateral deportivo y presencia imponente.',
+    mainImage: '/vehicles/mercedes-amg-g63.jpg',
+    galleryImages: [
+      '/vehicles/mercedes-amg-g63.jpg',
+      'https://images.unsplash.com/photo-1520031441872-265e4ff70366?auto=format&fit=crop&w=1200&q=80',
+    ],
+  },
+  {
+    id: 'aston-martin-dbx',
+    name: 'Aston Martin DBX 707 V8 Biturbo',
+    brand: 'Aston Martin',
+    model: 'DBX 707 V8 Biturbo',
+    year: 2023,
+    plate: 'DBX-077',
+    category: 'SUV_LUJO',
+    pricePerDay: 750,
+    horsepower: 707,
+    acceleration: '3.3s',
+    topSpeed: 310,
+    transmission: 'AUTOMATICA',
+    fuel: 'GASOLINA',
+    seats: 5,
+    doors: 5,
+    features: [
+      'Motor V8 Biturbo de 707 HP de Rendimiento Extremo',
+      'Frenos Carbono-Cerámicos de Competición de 420mm',
+      'Interior Artesanal en Piel de Puente con Alcantara',
+      'Escape Deportivo Cuádruple con Selector de Sonido',
+      'Techo Panorámico Completo con Cortina Eléctrica',
+    ],
+    description:
+      'La supercamioneta británica de altas prestaciones en acabado Plata Satinado. Potencia brutal de 707 HP, tracción integral activa, suspensión neumática adaptativa de triple cámara y lujo artesanal.',
+    mainImage: '/vehicles/aston-martin-dbx.jpg',
+    galleryImages: [
+      '/vehicles/aston-martin-dbx.jpg',
+      'https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1200&q=80',
+    ],
+  },
   {
     id: 'porsche-gt3-rs',
     name: 'Porsche 911 GT3 RS (992)',
@@ -107,15 +425,12 @@ const LUXURY_PRESETS: VehiclePreset[] = [
     ],
     description:
       'Pura ingeniería de circuito homologada para la calle. Motor bóxer atmosférico de 4.0 litros que gira hasta las 9.000 rpm, aerodinámica activa con DRS y precisión quirúrgica para una experiencia de conducción inolvidable.',
-    mainImage:
-      'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1200&q=85',
+    mainImage: '/vehicles/porsche-gt3-rs.jpg',
     galleryImages: [
+      '/vehicles/porsche-gt3-rs.jpg',
       'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1000&q=80',
       'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1000&q=80',
       'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1520031441872-265e4ff70366?auto=format&fit=crop&w=1000&q=80',
     ],
   },
   {
@@ -144,13 +459,10 @@ const LUXURY_PRESETS: VehiclePreset[] = [
     ],
     description:
       'Homenaje a la excelencia del motor V8 de Maranello. Una sinfonía acústica inconfundible con 720 CV de potencia pura, aceleración fulgurante de 0 a 100 en 2.9 segundos y el magnetismo del Cavallino Rampante.',
-    mainImage:
-      'https://images.unsplash.com/photo-1592198084033-aade902d1aae?auto=format&fit=crop&w=1200&q=85',
+    mainImage: '/vehicles/ferrari-f8.jpg',
     galleryImages: [
+      '/vehicles/ferrari-f8.jpg',
       'https://images.unsplash.com/photo-1592198084033-aade902d1aae?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1541348263662-e0c8de4259ba?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1000&q=80',
     ],
   },
   {
@@ -175,16 +487,42 @@ const LUXURY_PRESETS: VehiclePreset[] = [
       'Frenos Carbocerámicos Gigantes 440mm',
       'Tracción Integral Permanente con Diferencial Torsen',
       'Interior Alcantara con Costuras Giallo',
-      'Audio Bang & Olufsen 3D 1700W',
     ],
     description:
       'El primer Super Sport Utility Vehicle del mundo en su versión más radical. Alma de superdeportivo con la versatilidad de un SUV de lujo, rugido intimidante y presencia imponente.',
-    mainImage:
-      'https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1200&q=85',
+    mainImage: '/vehicles/lamborghini-urus.jpg',
     galleryImages: [
+      '/vehicles/lamborghini-urus.jpg',
       'https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=1000&q=80',
+    ],
+  },
+  {
+    id: 'bmw-m4',
+    name: 'BMW M4 Competition Coupé',
+    brand: 'BMW',
+    model: 'M4 Competition Coupé',
+    year: 2024,
+    plate: 'BMW-004',
+    category: 'DEPORTIVO',
+    pricePerDay: 600,
+    horsepower: 510,
+    acceleration: '3.5s',
+    topSpeed: 290,
+    transmission: 'AUTOMATICA',
+    fuel: 'GASOLINA',
+    seats: 4,
+    doors: 2,
+    features: [
+      'Motor M TwinPower Turbo 6 cilindros en línea',
+      'Tracción Integral M xDrive',
+      'Techo en Plástico Reforzado con Fibra de Carbono (CFRP)',
+      'Asientos Deportivos M en Cuero Merino',
+    ],
+    description:
+      'Precisión alemana y dinamismo de pista. Motor biturbo de 510 HP con aceleración implacable y tecnología M xDrive.',
+    mainImage: '/vehicles/bmw-m4.jpg',
+    galleryImages: [
+      '/vehicles/bmw-m4.jpg',
     ],
   },
   {
@@ -208,17 +546,12 @@ const LUXURY_PRESETS: VehiclePreset[] = [
       'Puertas Eléctricas Suaves con Cierre Automático',
       'Nevera de Champán Refrigerada Integrada',
       'Suspensión Planar Magic Carpet Ride',
-      'Aislamiento Acústico Total de Doble Capa',
-      'Audio Bespoke Rolls-Royce 1300W',
     ],
     description:
-      'La máxima expresión del lujo sereno y la distinción británica. Suavidad inigualable gracias al motor V12 Twin-Turbo de 6.75 litros, acabados en maderas nobles y una experiencia de viaje inmaculada.',
-    mainImage:
-      'https://images.unsplash.com/photo-1631295868223-63265840d001?auto=format&fit=crop&w=1200&q=85',
+      'La máxima expresión del lujo sereno y la distinción británica. Suavidad inigualable gracias al motor V12 Twin-Turbo de 6.75 litros.',
+    mainImage: '/vehicles/rolls-royce-ghost.jpg',
     galleryImages: [
-      'https://images.unsplash.com/photo-1631295868223-63265840d001?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1000&q=80',
+      '/vehicles/rolls-royce-ghost.jpg',
     ],
   },
   {
@@ -241,67 +574,35 @@ const LUXURY_PRESETS: VehiclePreset[] = [
       'Chasis Monocasco de Carbono Monocage II-S',
       'Techo Rígido Retráctil Electrocrómico',
       'Puertas Diédricas de Apertura Vertical',
-      'Suspensión Proactive Chassis Control II',
-      'Frenos Carbocerámicos con Aerofreno Activo',
-      'Sistema de Telemetría McLaren Track Telemetry',
     ],
     description:
-      'Aerodinámica inspirada en la Fórmula 1 y visión panorámica a cielo abierto. Estructura de carbono ultra-ligera y motor V8 biturbo con aceleración implacable.',
-    mainImage:
-      'https://images.unsplash.com/photo-1621135802920-133df287f89c?auto=format&fit=crop&w=1200&q=85',
+      'Aerodinámica inspirada en la Fórmula 1 y visión panorámica a cielo abierto. Estructura de carbono ultra-ligera y motor V8 biturbo.',
+    mainImage: '/vehicles/mclaren-720s.jpg',
     galleryImages: [
-      'https://images.unsplash.com/photo-1621135802920-133df287f89c?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1592198084033-aade902d1aae?auto=format&fit=crop&w=1000&q=80',
-    ],
-  },
-  {
-    id: 'toyota-lc300',
-    name: 'Toyota Land Cruiser 300 GR-Sport',
-    brand: 'Toyota',
-    model: 'Land Cruiser 300 GR-Sport',
-    year: 2024,
-    plate: 'TOY-300',
-    category: 'SUV_LUJO',
-    pricePerDay: 750,
-    horsepower: 409,
-    acceleration: '6.7s',
-    topSpeed: 210,
-    transmission: 'AUTOMATICA',
-    fuel: 'GASOLINA',
-    seats: 7,
-    doors: 5,
-    features: [
-      'Suspensión electrónica cinética adaptativa E-KDSS',
-      'Tracción 4WD con Bloqueo de Diferencial Triple',
-      'Sistema de Audio Premium JBL Synthesis 14 Altavoces',
-      'Pantallas multimedia traseras VIP de 11.6 pulgadas',
-      'Refrigerador de consola central Cool Box integrado',
-      'Paquete de Seguridad Activa Toyota Safety Sense 3.0',
-    ],
-    description:
-      'El legendario ícono todoterreno elevado a la cúspide del confort VIP y protección ejecutiva. Con motor V6 3.5L Twin-Turbo de 409 HP, suspensión adaptativa E-KDSS, tracción total permanente y un habitáculo de máxima insonorización.',
-    mainImage:
-      'https://images.unsplash.com/photo-1594502184342-2e12f877aa73?auto=format&fit=crop&w=1200&q=85',
-    galleryImages: [
-      'https://images.unsplash.com/photo-1594502184342-2e12f877aa73?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1000&q=80',
+      '/vehicles/mclaren-720s.jpg',
     ],
   },
 ];
 
-// Banco de Fotografías de Stock HD para atajos rápidos
+// Banco de Fotografías de Stock y Estudio para atajos rápidos
 const STOCK_PHOTOS = [
-  { label: 'Porsche 911 Exterior', url: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1200&q=85' },
-  { label: 'Ferrari F8 Frontal', url: 'https://images.unsplash.com/photo-1592198084033-aade902d1aae?auto=format&fit=crop&w=1200&q=85' },
-  { label: 'Lamborghini Urus', url: 'https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1200&q=85' },
-  { label: 'Rolls-Royce Ghost', url: 'https://images.unsplash.com/photo-1631295868223-63265840d001?auto=format&fit=crop&w=1200&q=85' },
-  { label: 'McLaren 720S', url: 'https://images.unsplash.com/photo-1621135802920-133df287f89c?auto=format&fit=crop&w=1200&q=85' },
-  { label: 'Toyota Land Cruiser', url: 'https://images.unsplash.com/photo-1594502184342-2e12f877aa73?auto=format&fit=crop&w=1200&q=85' },
+  { label: 'Toyota 4Runner Blanca', url: '/vehicles/toyota-4runner-blanca-blindada.jpg' },
+  { label: 'Toyota Prado TXL Negra', url: '/vehicles/toyota-prado-txl-negra.jpg' },
+  { label: 'Toyota Fortuner SW4', url: '/vehicles/toyota-fortuner-sw4-2023.jpg' },
+  { label: 'Kia Sportage Blanca', url: '/vehicles/kia-sportage-blanca-2022.jpg' },
+  { label: 'Kia Sportage Gris', url: '/vehicles/kia-sportage-gris-2022.jpg' },
+  { label: 'Mazda 3 Blanco', url: '/vehicles/mazda-3-blanco-2018.jpg' },
+  { label: 'Suzuki Swift Sport', url: '/vehicles/suzuki-swift-sport-2022.jpg' },
+  { label: 'Mercedes-AMG G63', url: '/vehicles/mercedes-amg-g63.jpg' },
+  { label: 'Aston Martin DBX 707', url: '/vehicles/aston-martin-dbx.jpg' },
+  { label: 'Porsche 911 GT3 RS', url: '/vehicles/porsche-gt3-rs.jpg' },
+  { label: 'Ferrari F8 Frontal', url: '/vehicles/ferrari-f8.jpg' },
+  { label: 'Lamborghini Urus', url: '/vehicles/lamborghini-urus.jpg' },
+  { label: 'BMW M4 Competition', url: '/vehicles/bmw-m4.jpg' },
+  { label: 'Rolls-Royce Ghost', url: '/vehicles/rolls-royce-ghost.jpg' },
+  { label: 'McLaren 720S', url: '/vehicles/mclaren-720s.jpg' },
   { label: 'Cockpit & Volante VIP', url: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=85' },
   { label: 'Rines & Frenos Cerámicos', url: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=1200&q=85' },
-  { label: 'Mercedes-AMG G63', url: 'https://images.unsplash.com/photo-1520031441872-265e4ff70366?auto=format&fit=crop&w=1200&q=85' },
 ];
 
 export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
@@ -387,28 +688,28 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
       }
       setGalleryImages(allGallery.slice(0, 12));
     } else {
-      // Valores iniciales limpios pero con propuesta visual pre-configurada
+      // Valores iniciales realistas con propuesta de estudio Showroom pre-configurada
       setBrand('');
       setModel('');
       setYear(new Date().getFullYear());
       setPlate('');
-      setCategory('DEPORTIVO');
+      setCategory('SUV_LUJO');
       setStatus('AVAILABLE');
-      setPricePerDay(1500);
+      setPricePerDay(200);
       setTransmission('AUTOMATICA');
       setFuel('GASOLINA');
-      setSeats(2);
-      setDoors(2);
+      setSeats(5);
+      setDoors(5);
       setDescription('');
-      setHorsepower(650);
-      setAcceleration('2.9s');
-      setTopSpeed(330);
-      setFeatures(['Audio Burmester 3D High-End', 'Frenos Carbono-Cerámicos', 'Interior Cuero Nappa & Alcantara']);
-      setMainImage('https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1200&q=85');
+      setHorsepower(240);
+      setAcceleration('8.5s');
+      setTopSpeed(200);
+      setFeatures(['Tracción 4x4 / AWD', 'Cámara 360° Surround View', 'Interior Cuero Premium', 'Apple CarPlay & Android Auto Inalámbrico']);
+      setMainImage('/vehicles/toyota-4runner-blanca-blindada.jpg');
       setGalleryImages([
-        'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1000&q=80',
-        'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1000&q=80',
-        'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=1000&q=80',
+        '/vehicles/toyota-4runner-blanca-blindada.jpg',
+        'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85',
       ]);
       setVideoUrl('');
     }
@@ -701,7 +1002,7 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
   const warrantyDeposit = Math.round(pricePerDay * 3);
   const calculatedSlug = generateVehicleSlug(brand || 'marca', model || 'modelo', year);
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-carbon-950/90 backdrop-blur-xl overflow-hidden animate-fade-in"
       role="dialog"
@@ -762,24 +1063,72 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
         {/* ======================================================== */}
         {/* BARRA DE ACCIONES RÁPIDAS: PLANTILLAS PRE-CONFIGURADAS   */}
         {/* ======================================================== */}
-        {!isEditMode && (
-          <div className="px-5 sm:px-8 py-3 bg-carbon-950/70 border-b border-carbon-800 flex items-center gap-2 overflow-x-auto scrollbar-none">
-            <span className="text-xs font-bold text-silver-300 whitespace-nowrap flex items-center gap-1.5 flex-shrink-0">
-              <Sparkles className="w-3.5 h-3.5 text-gold-400" />
-              Plantillas 1-Clic:
-            </span>
-            <div className="flex items-center gap-2 flex-nowrap">
-              {LUXURY_PRESETS.map((preset) => (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => handleApplyPreset(preset)}
-                  className="px-3 py-1 rounded-lg text-xs font-semibold bg-carbon-800/90 hover:bg-gold-500/20 text-silver-300 hover:text-gold-300 border border-carbon-700 hover:border-gold-500/40 transition-all whitespace-nowrap flex items-center gap-1.5"
-                >
-                  <span>{preset.name}</span>
-                </button>
-              ))}
+        <div className="px-5 sm:px-8 py-3 bg-carbon-950/70 border-b border-carbon-800 flex items-center gap-2 overflow-x-auto scrollbar-none">
+          <span className="text-xs font-bold text-silver-300 whitespace-nowrap flex items-center gap-1.5 flex-shrink-0">
+            <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+            {isEditMode ? 'Reemplazar con Plantilla Oficial:' : 'Plantillas 1-Clic:'}
+          </span>
+          <div className="flex items-center gap-2 flex-nowrap">
+            {LUXURY_PRESETS.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => handleApplyPreset(preset)}
+                className="px-3 py-1 rounded-lg text-xs font-semibold bg-carbon-800/90 hover:bg-gold-500/20 text-silver-300 hover:text-gold-300 border border-carbon-700 hover:border-gold-500/40 transition-all whitespace-nowrap flex items-center gap-1.5"
+              >
+                <span>{preset.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Banner Inteligente de Sugerencia para sincronizar a formato oficial de estudio */}
+        {((brand.toUpperCase().includes('TOYOTA') && (model.includes('2022') || plate.toUpperCase() === 'FRE334' || plate.toUpperCase().includes('FRE')))) && (
+          <div className="mx-5 sm:mx-8 mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-gold-500/20 via-gold-400/10 to-carbon-900 border border-gold-500/50 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl animate-fade-in">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gold-500/20 text-gold-400 border border-gold-500/40 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-5 h-5 text-gold-400" />
+              </div>
+              <div>
+                <div className="font-bold text-white text-xs sm:text-sm flex items-center gap-2">
+                  <span>Sincronizar a Formato Oficial Showroom (Toyota 4Runner Blanca)</span>
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    Estudio 360°
+                  </span>
+                </div>
+                <div className="text-[11px] text-silver-300 mt-0.5">
+                  Reemplaza la foto al aire libre por la foto oficial de estudio en plataforma giratoria y ajusta la ficha a SUV de Lujo (270 CV, $260/día).
+                </div>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                setBrand('Toyota');
+                setModel('4Runner Blindada Nivel 3+ 2022');
+                setCategory('SUV_LUJO');
+                setPricePerDay(260);
+                setHorsepower(270);
+                setAcceleration('8.4s');
+                setTopSpeed(190);
+                setTransmission('AUTOMATICA');
+                setFuel('GASOLINA');
+                setSeats(7);
+                setDoors(5);
+                setMainImage('/vehicles/toyota-4runner-blanca-blindada.jpg');
+                setGalleryImages([
+                  '/vehicles/toyota-4runner-blanca-blindada.jpg',
+                  'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=85',
+                  'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=85',
+                ]);
+                setPresetSuccessToast('✨ Formato de estudio Showroom aplicado exitosamente a la Toyota 4Runner');
+                setTimeout(() => setPresetSuccessToast(null), 4000);
+              }}
+              className="px-4 py-2 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black rounded-xl text-xs transition-all shadow-md active:scale-95 whitespace-nowrap self-start sm:self-auto flex items-center gap-1.5"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Aplicar Formato Oficial 1-Clic</span>
+            </button>
           </div>
         )}
 
@@ -1181,6 +1530,112 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                             />
                           </label>
                         </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Selector de Estudio Showroom Oficial (Plataforma Giratoria 360°) */}
+                  <div className="p-5 rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-gold-500/40 space-y-4 shadow-xl">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-gold-500/20 text-gold-400 border border-gold-500/30 flex items-center justify-center font-black text-sm flex-shrink-0">
+                          ✨
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-2">
+                            Catálogo Oficial de Estudio Showroom (Plataforma Giratoria 360°)
+                          </h5>
+                          <p className="text-[11px] text-silver-400">
+                            Haz clic en cualquier vehículo para usar su fotografía profesional de estudio con plataforma giratoria e iluminación de concesionario.
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-mono font-bold text-gold-400 bg-gold-500/10 px-2.5 py-1 rounded-full border border-gold-500/20 self-start sm:self-auto">
+                        15 Modelos Oficiales
+                      </span>
+                    </div>
+
+                    {/* Grid de miniaturas con selector de 1 clic */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 max-h-72 overflow-y-auto pr-1">
+                      {OFFICIAL_STUDIO_TURNTABLE_PHOTOS.map((studioCar) => {
+                        const isSelected = mainImage === studioCar.url;
+                        return (
+                          <button
+                            key={studioCar.id}
+                            type="button"
+                            onClick={() => {
+                              setMainImage(studioCar.url);
+                              if (galleryImages.length === 0 || !galleryImages.includes(studioCar.url)) {
+                                setGalleryImages([studioCar.url, ...galleryImages.filter((img) => img !== studioCar.url)].slice(0, 12));
+                              }
+                              setPresetSuccessToast(`📸 Foto de estudio aplicada: ${studioCar.name}`);
+                              setTimeout(() => setPresetSuccessToast(null), 3000);
+                            }}
+                            className={`relative rounded-xl overflow-hidden border text-left transition-all group flex flex-col ${
+                              isSelected
+                                ? 'border-gold-500 ring-2 ring-gold-500/50 shadow-lg shadow-gold-500/20'
+                                : 'border-carbon-700 hover:border-gold-500/50 bg-carbon-800'
+                            }`}
+                          >
+                            <div className="relative aspect-video bg-carbon-950 overflow-hidden">
+                              <img
+                                src={studioCar.url}
+                                alt={studioCar.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                              />
+                              {isSelected && (
+                                <div className="absolute top-1 right-1 bg-gold-500 text-carbon-950 p-1 rounded-md shadow font-bold text-[10px] flex items-center gap-0.5">
+                                  <Check className="w-3 h-3 stroke-[3]" />
+                                </div>
+                              )}
+                              <div className="absolute bottom-1 left-1 bg-carbon-950/80 backdrop-blur-xs text-[9px] font-mono text-silver-300 px-1 rounded">
+                                {studioCar.type}
+                              </div>
+                            </div>
+                            <div className="p-2 bg-carbon-850 flex-1 flex flex-col justify-between">
+                              <span className="text-[10px] font-bold text-white leading-tight line-clamp-1">
+                                {studioCar.name}
+                              </span>
+                              <span className="text-[9px] text-gold-400/80 font-mono mt-0.5">
+                                {isSelected ? '✓ Portada Activa' : 'Aplicar Foto'}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Guía de Fotografía de Estudio e Inteligencia Artificial (IA) */}
+                    <div className="p-3.5 rounded-xl bg-carbon-950/70 border border-carbon-750 text-xs text-silver-300 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="font-bold text-white flex items-center gap-1.5 text-xs">
+                          <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+                          <span>¿Cómo lograr que un carro nuevo se vea igual a estos?</span>
+                        </div>
+                        <span className="text-[10px] font-mono text-gold-400">Guía Showroom VIP</span>
+                      </div>
+                      <p className="text-[11px] text-silver-400 leading-relaxed">
+                        Los vehículos de la flota usan <strong>fotografía de estudio en plataforma giratoria (turntable)</strong>:
+                        un pedestal circular oscuro en el piso, fondo negro difuso de concesionario sin distracciones de calle ni árboles, e iluminación cenital difusa (aros de luz).
+                      </p>
+                      <div className="pt-2 border-t border-carbon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <span className="text-[10px] text-silver-400 font-mono">
+                          Fórmula de IA (Midjourney / ChatGPT / Gemini) para cualquier modelo:
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const carDesc = `${brand || 'Toyota 4Runner'} ${model || '2022'}`;
+                            const promptText = `Professional commercial automotive studio photography of a ${carDesc} in white color, positioned on a circular rotating dark showroom turntable platform with edge LED ring lights, modern dark luxury dealership background with subtle glass reflections, high-end studio rim lighting, 8k resolution, photorealistic, 3/4 front view`;
+                            navigator.clipboard.writeText(promptText);
+                            setPresetSuccessToast('📋 Prompt maestro de IA copiado al portapapeles');
+                            setTimeout(() => setPresetSuccessToast(null), 3500);
+                          }}
+                          className="px-3 py-1.5 bg-carbon-800 hover:bg-gold-500/20 text-gold-400 border border-carbon-700 hover:border-gold-500/40 rounded-lg text-[10px] font-bold transition-all self-start sm:self-auto flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copiar Prompt Maestro de IA</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -1733,6 +2188,7 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
         </div>
       )}
 
-    </div>
+    </div>,
+    document.body
   );
 };
