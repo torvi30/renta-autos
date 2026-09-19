@@ -11,7 +11,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 
-const LOCAL_CACHE_KEY = 'PREMIUM_RENTAL_VEHICLES_CACHE_V4';
+const LOCAL_CACHE_KEY = 'PREMIUM_RENTAL_VEHICLES_FIRESTORE_V5';
 const VEHICLES_COLLECTION = 'vehicles';
 
 type VehicleChangeListener = (vehicles: Vehicle[]) => void;
@@ -55,19 +55,16 @@ export const getLocalVehicles = (): Vehicle[] => {
   try {
     const raw = localStorage.getItem(LOCAL_CACHE_KEY);
     if (!raw) {
-      localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(MOCK_VEHICLES));
-      return MOCK_VEHICLES;
+      return [];
     }
     const parsed = JSON.parse(raw) as Vehicle[];
-    // Si la caché está vacía o no tiene los mocks actuales, restablecer
     if (!Array.isArray(parsed) || parsed.length === 0) {
-      localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(MOCK_VEHICLES));
-      return MOCK_VEHICLES;
+      return [];
     }
     return parsed;
   } catch (error) {
     console.warn('Error al leer vehículos de la caché local:', error);
-    return MOCK_VEHICLES;
+    return [];
   }
 };
 
@@ -85,11 +82,12 @@ export const saveLocalVehicles = (vehicles: Vehicle[]): void => {
 };
 
 /**
- * Obtener todos los vehículos (Cloud Firestore con fallback local automático)
+ * Obtener todos los vehículos (Cloud Firestore como fuente única de verdad)
  */
 export const fetchVehicles = async (): Promise<Vehicle[]> => {
   if (!db || !isFirebaseConfigured()) {
-    return getLocalVehicles();
+    const local = getLocalVehicles();
+    return local.length > 0 ? local : MOCK_VEHICLES;
   }
 
   try {
@@ -97,7 +95,7 @@ export const fetchVehicles = async (): Promise<Vehicle[]> => {
     const snapshot = await getDocs(colRef);
 
     if (snapshot.empty) {
-      return getLocalVehicles();
+      return MOCK_VEHICLES;
     }
 
     const cloudVehicles: Vehicle[] = [];
@@ -105,22 +103,18 @@ export const fetchVehicles = async (): Promise<Vehicle[]> => {
       cloudVehicles.push(docSnap.data() as Vehicle);
     });
 
-    // Preservar cualquier vehículo local no sincronizado aún
-    const localItems = getLocalVehicles();
-    const cloudIds = new Set(cloudVehicles.map((v) => v.id));
-    const localOnly = localItems.filter((v) => !cloudIds.has(v.id));
-    const combined = [...localOnly, ...cloudVehicles];
-
-    saveLocalVehicles(combined);
-    return combined;
+    // Cloud Firestore es la única fuente de la verdad
+    saveLocalVehicles(cloudVehicles);
+    return cloudVehicles;
   } catch (error) {
     console.warn('Error al consultar vehículos en Firestore, usando fallback local:', error);
-    return getLocalVehicles();
+    const local = getLocalVehicles();
+    return local.length > 0 ? local : MOCK_VEHICLES;
   }
 };
 
 /**
- * Suscripción reactiva en tiempo real a la colección de vehículos con fusión local segura
+ * Suscripción reactiva en tiempo real a la colección de vehículos
  */
 export const subscribeVehicles = (
   callback: (vehicles: Vehicle[]) => void
@@ -128,9 +122,15 @@ export const subscribeVehicles = (
   vehicleListeners.add(callback);
 
   // Emitir de inmediato los datos de caché para carga instantánea
-  callback(getLocalVehicles());
+  const initialCache = getLocalVehicles();
+  if (initialCache.length > 0) {
+    callback(initialCache);
+  }
 
   if (!db || !isFirebaseConfigured()) {
+    if (initialCache.length === 0) {
+      callback(MOCK_VEHICLES);
+    }
     return () => {
       vehicleListeners.delete(callback);
     };
@@ -147,14 +147,12 @@ export const subscribeVehicles = (
             items.push(docSnap.data() as Vehicle);
           });
 
-          // Mezclar con vehículos agregados localmente para no borrarlos
-          const localItems = getLocalVehicles();
-          const firestoreIds = new Set(items.map((v) => v.id));
-          const localOnly = localItems.filter((v) => !firestoreIds.has(v.id));
-          const merged = [...localOnly, ...items];
-
-          localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(merged));
-          callback(merged);
+          // Cloud Firestore es la única fuente de la verdad
+          localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(items));
+          notifyVehicleListeners(items);
+          callback(items);
+        } else {
+          callback(MOCK_VEHICLES);
         }
       },
       (error) => {
