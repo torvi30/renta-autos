@@ -478,18 +478,40 @@ export const getDeliveryLocationLabel = (location: DeliveryLocationType): string
   }
 };
 
+export interface WhatsAppPricingDisplay {
+  dailyRateText?: string;
+  rentalTotalText?: string;
+  securityDepositText?: string;
+  totalEstimatedText?: string;
+  currencyCode?: string;
+}
+
 /**
- * Regla 30: Preparar enlace estructurado para WhatsApp Concierge
+ * Regla 30: Preparar enlace estructurado para WhatsApp Concierge con soporte de divisa activa
  */
 export const generateWhatsAppReservationLink = (
   reservation: Reservation,
-  conciergePhone: string = '573009115898'
+  conciergePhone: string = '573009115898',
+  pricingDisplay?: WhatsAppPricingDisplay
 ): string => {
   const locationLabel = getDeliveryLocationLabel(reservation.deliveryLocation);
 
+  const dailyText =
+    pricingDisplay?.dailyRateText ||
+    `$${reservation.pricing.dailyRate.toLocaleString()} ${reservation.pricing.currency}`;
+  const rentalTotalText =
+    pricingDisplay?.rentalTotalText ||
+    `$${reservation.pricing.rentalTotal.toLocaleString()} ${reservation.pricing.currency}`;
+  const depositText =
+    pricingDisplay?.securityDepositText ||
+    `$${reservation.pricing.securityDeposit.toLocaleString()} ${reservation.pricing.currency}`;
+  const totalText =
+    pricingDisplay?.totalEstimatedText ||
+    `$${(reservation.pricing.rentalTotal + reservation.pricing.securityDeposit).toLocaleString()} ${reservation.pricing.currency}`;
+
   const lines = [
     `🌟 *SOLICITUD DE RESERVA - BOUTIQUE LUXURY CAR RENTAL*`,
-    `🔖 *Código de Reserva:* ${reservation.id}`,
+    `🔖 *Código Oficial:* ${reservation.id}`,
     `---------------------------------`,
     `🚗 *Vehículo:* ${reservation.vehicleName}`,
     `🏷️ *Placa:* ${reservation.vehiclePlate}`,
@@ -506,12 +528,12 @@ export const generateWhatsAppReservationLink = (
     `• Teléfono: ${reservation.client.phone}`,
     `• Email: ${reservation.client.email}`,
     ``,
-    `💳 *Desglose Financiero:*`,
-    `• Tarifa por Día: $${reservation.pricing.dailyRate.toLocaleString()} ${reservation.pricing.currency}`,
-    `• Subtotal Renta (${reservation.pricing.days} d): $${reservation.pricing.rentalTotal.toLocaleString()} ${reservation.pricing.currency}`,
-    `• Depósito en Garantía (Reembolsable): $${reservation.pricing.securityDeposit.toLocaleString()} ${reservation.pricing.currency}`,
-    `• Cobertura VIP Integral: Incluida ($0)`,
-    `• *TOTAL ESTIMADO:* $${(reservation.pricing.rentalTotal + reservation.pricing.securityDeposit).toLocaleString()} ${reservation.pricing.currency}`,
+    `💳 *Liquidación Financiera:*`,
+    `• Tarifa por Día: ${dailyText}`,
+    `• Subtotal Renta (${reservation.pricing.days} d): ${rentalTotalText}`,
+    `• Depósito en Garantía (Reembolsable): ${depositText}`,
+    `• Cobertura VIP Todo Riesgo: Incluida ($0)`,
+    `• *TOTAL ESTIMADO AL DESPACHO:* ${totalText}`,
   ];
 
   if (reservation.notes) {
@@ -520,7 +542,7 @@ export const generateWhatsAppReservationLink = (
 
   lines.push(
     ``,
-    `Hola, he generado esta solicitud desde el Showroom Web y deseo confirmar la disponibilidad y coordinar la entrega. ¿Me pueden asistir?`
+    `Hola, he generado esta reserva desde el Showroom Web y deseo confirmar disponibilidad y entrega. ¿Me pueden asistir?`
   );
 
   const cleanPhone = conciergePhone.replace(/[^0-9]/g, '');

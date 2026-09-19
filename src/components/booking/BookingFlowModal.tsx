@@ -15,6 +15,8 @@ import {
   Check,
   ChevronRight,
   ArrowLeft,
+  Printer,
+  Share2,
 } from 'lucide-react';
 import { Vehicle } from '../../types/vehicle';
 import {
@@ -93,12 +95,15 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
     driverLicense: '',
     ageConfirmation: false,
   });
+  const [phonePrefix, setPhonePrefix] = useState<string>('+57');
+  const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
 
   // Feedback y resultados
   const [createdReservation, setCreatedReservation] = useState<Reservation | null>(null);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
+  const [copiedSummary, setCopiedSummary] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   // Lista viva de reservas para detección reactiva de conflictos en tiempo real
@@ -216,6 +221,19 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
       return;
     }
 
+    const finalPhone = phoneNumber.trim()
+      ? `${phonePrefix} ${phoneNumber.trim()}`.trim()
+      : clientInfo.phone.trim();
+
+    if (!finalPhone) {
+      setSubmissionError(
+        language === 'ES'
+          ? 'Por favor ingresa un número de teléfono móvil o WhatsApp.'
+          : 'Please enter a valid mobile or WhatsApp phone number.'
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmissionError(null);
 
@@ -227,8 +245,14 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
         pickupTime,
         returnTime,
         deliveryLocation,
-        deliveryAddress: deliveryLocation === 'HOTEL_RESIDENCE' ? deliveryAddress : undefined,
-        client: clientInfo,
+        deliveryAddress:
+          deliveryLocation === 'HOTEL_RESIDENCE' || deliveryLocation === 'AIRPORT'
+            ? deliveryAddress.trim() || undefined
+            : undefined,
+        client: {
+          ...clientInfo,
+          phone: finalPhone,
+        },
         notes: notes.trim() || undefined,
       });
 
@@ -277,9 +301,17 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
     } catch (_) {}
 
     const targetPhone = settings.whatsappPhone || '573009115898';
-    const url = generateWhatsAppReservationLink(createdReservation, targetPhone);
+    const pricingDisplay = {
+      dailyRateText: formatPrice(createdReservation.pricing.dailyRate),
+      rentalTotalText: formatPrice(createdReservation.pricing.rentalTotal),
+      securityDepositText: formatPrice(createdReservation.pricing.securityDeposit),
+      totalEstimatedText: formatPrice(
+        createdReservation.pricing.rentalTotal + createdReservation.pricing.securityDeposit
+      ),
+    };
+    const url = generateWhatsAppReservationLink(createdReservation, targetPhone, pricingDisplay);
     window.open(url, '_blank', 'noopener,noreferrer');
-  }, [createdReservation, settings.whatsappPhone]);
+  }, [createdReservation, settings.whatsappPhone, formatPrice]);
 
   const handleCopyReservationCode = useCallback(() => {
     if (!createdReservation) return;
@@ -288,31 +320,58 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
     setTimeout(() => setCopiedCode(false), 2500);
   }, [createdReservation]);
 
+  const handleCopySummary = useCallback(() => {
+    if (!createdReservation) return;
+    const locationStr = `${getDeliveryLabel(createdReservation.deliveryLocation)}${
+      createdReservation.deliveryAddress ? ` (${createdReservation.deliveryAddress})` : ''
+    }`;
+    const totalEst = formatPrice(
+      createdReservation.pricing.rentalTotal + createdReservation.pricing.securityDeposit
+    );
+    const summaryText = [
+      `🚗 *Reserva ${createdReservation.id}* - ${createdReservation.vehicleName} (${createdReservation.vehiclePlate})`,
+      `📅 *Fechas:* ${createdReservation.startDate} al ${createdReservation.endDate} (${createdReservation.pricing.days} días)`,
+      `⏰ *Horario:* ${createdReservation.pickupTime} - ${createdReservation.returnTime}`,
+      `📍 *Entrega:* ${locationStr}`,
+      `👤 *Titular:* ${createdReservation.client.fullName} (Doc: ${createdReservation.client.documentId})`,
+      `💰 *Total Estimado:* ${totalEst}`,
+      `🌟 *Elite Wheels Boutique Car Rental*`,
+    ].join('\n');
+
+    navigator.clipboard.writeText(summaryText);
+    setCopiedSummary(true);
+    setTimeout(() => setCopiedSummary(false), 2500);
+  }, [createdReservation, formatPrice]);
+
+  const handlePrintVoucher = useCallback(() => {
+    window.print();
+  }, []);
+
   if (!isOpen || !activeVehicle) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 overflow-hidden animate-fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 overflow-hidden animate-fade-in print:p-0 print:bg-white print:static print:inset-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="booking-modal-title"
     >
       {/* Backdrop explícito con soporte de clic para cerrar afuera */}
       <div
-        className="fixed inset-0 bg-carbon-950/85 backdrop-blur-xl transition-opacity cursor-pointer -z-10"
+        className="fixed inset-0 bg-carbon-950/85 backdrop-blur-xl transition-opacity cursor-pointer -z-10 print:hidden"
         onClick={onClose}
         aria-hidden="true"
       />
 
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-3xl rounded-t-3xl sm:rounded-2xl bg-carbon-900 border-t sm:border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[88dvh] sm:max-h-[90vh] z-10 animate-slide-up sm:animate-fade-in"
+        className="relative w-full max-w-3xl rounded-t-3xl sm:rounded-2xl bg-carbon-900 border-t sm:border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[88dvh] sm:max-h-[90vh] z-10 animate-slide-up sm:animate-fade-in print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:bg-white"
       >
         {/* Píldora de arrastre táctil superior para smartphones */}
-        <div className="w-12 h-1 rounded-full bg-carbon-700/80 mx-auto mt-2.5 mb-1 sm:hidden flex-shrink-0" />
+        <div className="w-12 h-1 rounded-full bg-carbon-700/80 mx-auto mt-2.5 mb-1 sm:hidden flex-shrink-0 print:hidden" />
         
         {/* Encabezado Superior con Stepper (Fijo, no se desplaza) */}
-        <div className="flex items-center justify-between p-3.5 sm:p-5 border-b border-carbon-800 bg-carbon-850/90 gap-2.5 flex-shrink-0">
+        <div className="flex items-center justify-between p-3.5 sm:p-5 border-b border-carbon-800 bg-carbon-850/90 gap-2.5 flex-shrink-0 print:hidden">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
               <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-widest text-gold-400 truncate">
@@ -552,7 +611,12 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => setDeliveryLocation('AIRPORT')}
+                    onClick={() => {
+                      setDeliveryLocation('AIRPORT');
+                      if (!deliveryAddress || deliveryAddress.includes('Hotel')) {
+                        setDeliveryAddress('Aeropuerto JMC (Rionegro / Medellín - MDE)');
+                      }
+                    }}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       deliveryLocation === 'AIRPORT'
                         ? 'bg-gold-500/10 border-gold-500/50 text-silver-100 shadow-sm'
@@ -569,7 +633,12 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => setDeliveryLocation('HOTEL_RESIDENCE')}
+                    onClick={() => {
+                      setDeliveryLocation('HOTEL_RESIDENCE');
+                      if (deliveryAddress.includes('Aeropuerto')) {
+                        setDeliveryAddress('');
+                      }
+                    }}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       deliveryLocation === 'HOTEL_RESIDENCE'
                         ? 'bg-gold-500/10 border-gold-500/50 text-silver-100 shadow-sm'
@@ -585,11 +654,67 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                   </button>
                 </div>
 
+                {deliveryLocation === 'AIRPORT' && (
+                  <div className="animate-fade-in pt-1 space-y-2">
+                    <label className="block text-[11px] text-silver-400">
+                      {language === 'ES' ? 'Terminal Aérea para Entrega Meet & Greet *' : 'Airport for Meet & Greet Handover *'}
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                      {[
+                        'Aeropuerto JMC (Rionegro / Medellín - MDE)',
+                        'Aeropuerto Olaya Herrera (Medellín - EOH)',
+                        'Aeropuerto El Dorado (Bogotá - BOG)',
+                        'Aeropuerto Alfonso Bonilla (Cali - CLO)',
+                      ].map((apt) => (
+                        <button
+                          key={apt}
+                          type="button"
+                          onClick={() => setDeliveryAddress(apt)}
+                          className={`px-3 py-2 rounded-lg text-left text-xs border transition-all truncate ${
+                            deliveryAddress === apt
+                              ? 'bg-gold-500/20 border-gold-500 text-gold-300 font-semibold'
+                              : 'bg-carbon-800 border-carbon-750 text-silver-400 hover:text-silver-200'
+                          }`}
+                        >
+                          ✈️ {apt}
+                        </button>
+                      ))}
+                    </div>
+                    <input
+                      type="text"
+                      value={deliveryAddress}
+                      onChange={(e) => setDeliveryAddress(e.target.value)}
+                      placeholder={
+                        language === 'ES'
+                          ? 'O especifica aerolínea, número de vuelo o hangar privado...'
+                          : 'Or specify flight number or private hangar...'
+                      }
+                      className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-800 border border-carbon-700 text-silver-200 text-xs focus:outline-none focus:border-gold-500"
+                    />
+                  </div>
+                )}
+
                 {deliveryLocation === 'HOTEL_RESIDENCE' && (
-                  <div className="animate-fade-in pt-1">
-                    <label htmlFor="flow-delivery-addr" className="block text-[11px] text-silver-400 mb-1">
+                  <div className="animate-fade-in pt-1 space-y-2">
+                    <label htmlFor="flow-delivery-addr" className="block text-[11px] text-silver-400">
                       {language === 'ES' ? 'Dirección exacta o Nombre del Hotel *' : 'Exact address or Hotel name *'}
                     </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {['El Poblado', 'Llanogrande', 'Laureles', 'Envigado', 'Zona Rosa Bogotá'].map((zone) => (
+                        <button
+                          key={zone}
+                          type="button"
+                          onClick={() =>
+                            setDeliveryAddress((prev) =>
+                              prev && !prev.includes(zone) ? `${prev}, ${zone}` : zone
+                            )
+                          }
+                          className="text-[10px] px-2.5 py-1 rounded bg-carbon-800 border border-carbon-700 text-silver-400 hover:text-gold-400 hover:border-gold-500/50 transition-colors"
+                        >
+                          + {zone}
+                        </button>
+                      ))}
+                    </div>
                     <input
                       id="flow-delivery-addr"
                       type="text"
@@ -598,8 +723,8 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                       onChange={(e) => setDeliveryAddress(e.target.value)}
                       placeholder={
                         language === 'ES'
-                          ? 'Ej. Hotel Four Seasons / Penthouse 1201'
-                          : 'e.g. Four Seasons Hotel / Penthouse 1201'
+                          ? 'Ej. Hotel The Charlee / Hotel Click Clack / Penthouse Poblado'
+                          : 'e.g. The Charlee Hotel / Penthouse Poblado'
                       }
                       className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-800 border border-carbon-700 text-silver-200 text-base sm:text-xs focus:outline-none focus:border-gold-500"
                     />
@@ -741,15 +866,35 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                     <Phone className="w-3 h-3 text-gold-400" />
                     {language === 'ES' ? 'Teléfono Móvil / WhatsApp *' : 'Mobile Phone / WhatsApp *'}
                   </label>
-                  <input
-                    id="kyc-phone"
-                    type="tel"
-                    required
-                    value={clientInfo.phone}
-                    onChange={(e) => setClientInfo({ ...clientInfo, phone: e.target.value })}
-                    placeholder="+1 555 123 4567"
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-base sm:text-xs focus:outline-none focus:border-gold-500"
-                  />
+                  <div className="flex gap-2">
+                    <select
+                      aria-label={language === 'ES' ? 'Prefijo de país' : 'Country prefix'}
+                      value={phonePrefix}
+                      onChange={(e) => setPhonePrefix(e.target.value)}
+                      className="px-2.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-gold-300 text-xs focus:outline-none focus:border-gold-500 font-mono font-bold"
+                    >
+                      <option value="+57">🇨🇴 +57</option>
+                      <option value="+1">🇺🇸 +1</option>
+                      <option value="+34">🇪🇸 +34</option>
+                      <option value="+52">🇲🇽 +52</option>
+                      <option value="+507">🇵🇦 +507</option>
+                      <option value="+58">🇻🇪 +58</option>
+                      <option value="+56">🇨🇱 +56</option>
+                      <option value="+54">🇦🇷 +54</option>
+                    </select>
+                    <input
+                      id="kyc-phone"
+                      type="tel"
+                      required
+                      value={phoneNumber || clientInfo.phone}
+                      onChange={(e) => {
+                        setPhoneNumber(e.target.value);
+                        setClientInfo({ ...clientInfo, phone: e.target.value });
+                      }}
+                      placeholder="300 123 4567"
+                      className="flex-1 px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-200 text-base sm:text-xs focus:outline-none focus:border-gold-500 font-mono"
+                    />
+                  </div>
                 </div>
 
                 {/* Correo Electrónico */}
@@ -906,98 +1051,120 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
               </div>
 
               {/* Voucher Card Formal */}
-              <div className="p-5 rounded-2xl bg-carbon-850 border border-carbon-800 text-left text-xs space-y-4 max-w-lg mx-auto shadow-xl">
+              <div
+                id="official-booking-voucher"
+                className="p-5 sm:p-7 rounded-2xl bg-carbon-850 border border-carbon-800 text-left text-xs space-y-4 max-w-lg mx-auto shadow-xl print:max-w-none print:bg-white print:border print:border-gray-300 print:text-black print:p-6"
+              >
                 
+                {/* Cabecera del Voucher con Logo para Impresión */}
+                <div className="hidden print:flex items-center justify-between pb-4 border-b-2 border-black">
+                  <div>
+                    <h2 className="text-xl font-black text-black uppercase tracking-tight">ELITE WHEELS</h2>
+                    <p className="text-[11px] text-gray-600">Boutique Luxury Car Rental • Colombia</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-gray-500 uppercase font-mono block">Código de Reserva</span>
+                    <span className="text-base font-bold font-mono text-black">{createdReservation.id}</span>
+                  </div>
+                </div>
+
                 {/* Cabecera del Voucher */}
-                <div className="flex items-center gap-3 pb-3 border-b border-carbon-750">
+                <div className="flex items-center gap-3 pb-3 border-b border-carbon-750 print:border-gray-200">
                   <img
                     src={createdReservation.vehicleImage}
                     alt={createdReservation.vehicleName}
-                    className="w-16 h-11 object-cover rounded-lg border border-carbon-700"
+                    className="w-16 h-11 object-cover rounded-lg border border-carbon-700 print:border-gray-300"
                   />
                   <div>
-                    <span className="text-[10px] text-gold-400 font-semibold uppercase">
+                    <span className="text-[10px] text-gold-400 print:text-gray-500 font-semibold uppercase">
                       {language === 'ES' ? 'Vehículo Asignado' : 'Assigned Vehicle'}
                     </span>
-                    <h5 className="text-sm font-bold text-silver-100 font-display">
+                    <h5 className="text-sm font-bold text-silver-100 print:text-black font-display">
                       {createdReservation.vehicleName}
                     </h5>
-                    <span className="text-silver-500 font-mono text-[11px]">
+                    <span className="text-silver-500 print:text-gray-600 font-mono text-[11px]">
                       {language === 'ES' ? 'Placa:' : 'Plate:'} {createdReservation.vehiclePlate}
                     </span>
                   </div>
                 </div>
 
                 {/* Datos de Agenda y Entrega */}
-                <div className="grid grid-cols-2 gap-3 pb-3 border-b border-carbon-750">
+                <div className="grid grid-cols-2 gap-3 pb-3 border-b border-carbon-750 print:border-gray-200">
                   <div>
-                    <span className="text-silver-500 text-[10px] block uppercase">
+                    <span className="text-silver-500 print:text-gray-500 text-[10px] block uppercase">
                       {language === 'ES' ? 'Periodo de Reserva' : 'Booking Period'}
                     </span>
-                    <span className="font-semibold text-silver-200">
+                    <span className="font-semibold text-silver-200 print:text-black">
                       {createdReservation.startDate} {language === 'ES' ? 'al' : 'to'} {createdReservation.endDate}
                     </span>
-                    <span className="text-silver-500 block text-[11px]">
+                    <span className="text-silver-500 print:text-gray-600 block text-[11px]">
                       ({createdReservation.pricing.days} {language === 'ES' ? 'día(s)' : 'day(s)'} • {createdReservation.pickupTime})
                     </span>
                   </div>
                   <div>
-                    <span className="text-silver-500 text-[10px] block uppercase">
+                    <span className="text-silver-500 print:text-gray-500 text-[10px] block uppercase">
                       {language === 'ES' ? 'Lugar de Entrega' : 'Delivery Location'}
                     </span>
-                    <span className="font-semibold text-silver-200">
+                    <span className="font-semibold text-silver-200 print:text-black">
                       {getDeliveryLabel(createdReservation.deliveryLocation)}
                     </span>
+                    {createdReservation.deliveryAddress && (
+                      <span className="text-silver-500 print:text-gray-600 block text-[11px] truncate">
+                        {createdReservation.deliveryAddress}
+                      </span>
+                    )}
                   </div>
                 </div>
 
                 {/* Titular */}
-                <div className="pb-3 border-b border-carbon-750">
-                  <span className="text-silver-500 text-[10px] block uppercase">
+                <div className="pb-3 border-b border-carbon-750 print:border-gray-200">
+                  <span className="text-silver-500 print:text-gray-500 text-[10px] block uppercase">
                     {language === 'ES' ? 'Titular / Conductor' : 'Primary Driver'}
                   </span>
-                  <span className="font-semibold text-silver-200">{createdReservation.client.fullName}</span>
-                  <div className="text-silver-400 text-[11px] flex gap-3 mt-0.5">
-                    <span>ID: {createdReservation.client.documentId}</span>
+                  <span className="font-semibold text-silver-200 print:text-black">{createdReservation.client.fullName}</span>
+                  <div className="text-silver-400 print:text-gray-600 text-[11px] flex gap-3 mt-0.5">
+                    <span>Doc: {createdReservation.client.documentId}</span>
                     <span>•</span>
                     <span>{language === 'ES' ? 'Licencia:' : 'License:'} {createdReservation.client.driverLicense}</span>
+                    <span>•</span>
+                    <span>Tel: {createdReservation.client.phone}</span>
                   </div>
                 </div>
 
                 {/* Desglose Financiero Final */}
                 <div className="space-y-1.5 pt-1">
-                  <div className="flex justify-between text-silver-400">
+                  <div className="flex justify-between text-silver-400 print:text-gray-700">
                     <span>
                       {language === 'ES' ? 'Subtotal Renta' : 'Rental Subtotal'} ({createdReservation.pricing.days}{' '}
                       {language === 'ES' ? 'días' : 'days'}):
                     </span>
-                    <span className="font-semibold text-silver-200">
+                    <span className="font-semibold text-silver-200 print:text-black">
                       {formatPrice(createdReservation.pricing.rentalTotal)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-silver-400">
+                  <div className="flex justify-between text-silver-400 print:text-gray-700">
                     <span>
                       {language === 'ES'
                         ? 'Depósito de Garantía (Reembolsable):'
                         : 'Security Deposit (Refundable):'}
                     </span>
-                    <span className="font-semibold text-silver-200">
+                    <span className="font-semibold text-silver-200 print:text-black">
                       {formatPrice(createdReservation.pricing.securityDeposit)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-silver-400">
+                  <div className="flex justify-between text-silver-400 print:text-gray-700">
                     <span>
                       {language === 'ES' ? 'Seguro VIP a Todo Riesgo:' : 'VIP Comprehensive Insurance:'}
                     </span>
-                    <span className="font-semibold text-emerald-400">
+                    <span className="font-semibold text-emerald-400 print:text-emerald-700">
                       {language === 'ES' ? 'Incluido ($0)' : 'Included ($0)'}
                     </span>
                   </div>
-                  <div className="pt-2 border-t border-carbon-750 flex justify-between text-sm font-bold text-silver-100">
+                  <div className="pt-2 border-t border-carbon-750 print:border-gray-300 flex justify-between text-sm font-bold text-silver-100 print:text-black">
                     <span>
                       {language === 'ES' ? 'Total Estimado al Despacho:' : 'Estimated Total at Handover:'}
                     </span>
-                    <span className="font-mono text-gold-400 text-base">
+                    <span className="font-mono text-gold-400 print:text-black text-base">
                       {formatPrice(
                         createdReservation.pricing.rentalTotal +
                           createdReservation.pricing.securityDeposit
@@ -1006,10 +1173,15 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                   </div>
                 </div>
 
+                {/* Nota de validez para impresión */}
+                <div className="hidden print:block pt-3 border-t border-gray-300 text-[10px] text-gray-500">
+                  <p>Este comprobante certifica la solicitud de reserva en Elite Wheels Showroom. Entrega sujeta a validación física de documentos de identidad y licencia de conducción en el momento del despacho.</p>
+                </div>
+
               </div>
 
               {/* Botones de Acción (Nivel Pro & Máxima Conversión) */}
-              <div className="space-y-3 max-w-lg mx-auto pt-2">
+              <div className="space-y-3 max-w-lg mx-auto pt-2 print:hidden">
                 {/* Botón Principal: WhatsApp Oficial Verde Concierge */}
                 <button
                   type="button"
@@ -1032,7 +1204,37 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
                   </div>
                 </button>
 
-                {/* Botón Secundario: Finalizar y Volver sin fricción */}
+                {/* Acciones Secundarias: Imprimir / PDF y Copiar Resumen */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={handlePrintVoucher}
+                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 hover:border-gold-500/40 text-silver-200 hover:text-gold-300 text-xs font-semibold transition-all cursor-pointer shadow-sm"
+                  >
+                    <Printer className="w-4 h-4 text-gold-400" />
+                    <span>{language === 'ES' ? 'Imprimir / PDF' : 'Print / PDF'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleCopySummary}
+                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 hover:border-gold-500/40 text-silver-200 hover:text-gold-300 text-xs font-semibold transition-all cursor-pointer shadow-sm"
+                  >
+                    {copiedSummary ? (
+                      <>
+                        <Check className="w-4 h-4 text-emerald-400" />
+                        <span className="text-emerald-400">{language === 'ES' ? '¡Copiado!' : 'Copied!'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Share2 className="w-4 h-4 text-gold-400" />
+                        <span>{language === 'ES' ? 'Compartir' : 'Share'}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Botón Terciario: Finalizar y Volver sin fricción */}
                 <button
                   type="button"
                   onClick={() => {
