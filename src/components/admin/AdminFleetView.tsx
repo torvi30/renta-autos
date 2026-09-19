@@ -357,6 +357,13 @@ export const AdminFleetView: React.FC<AdminFleetViewProps> = ({
                 <img
                   src={vehicle.mainImage}
                   alt={vehicle.model}
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (!target.dataset.triedFallback) {
+                      target.dataset.triedFallback = 'true';
+                      target.src = '/vehicles/toyota-4runner-blanca-blindada.jpg';
+                    }
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 
