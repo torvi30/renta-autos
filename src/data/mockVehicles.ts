@@ -24,7 +24,7 @@ export const MOCK_VEHICLES: Vehicle[] = [
       'Cámara 360° con Sensores de Proximidad 8 Zonas'
     ],
     status: 'AVAILABLE',
-    mainImage: '/vehicles/toyota-prado-txl-negra.jpg',
+    mainImage: '/vehicles/gala-toyota-prado-txl-plata.jpg',
     specs: {
       acceleration0to100: '9.8 s',
       horsepower: 204,
@@ -33,17 +33,10 @@ export const MOCK_VEHICLES: Vehicle[] = [
     },
     gallery: {
       exteriorImages: [
-        '/vehicles/toyota-prado-txl-negra.jpg',
-        'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=85',
-        'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=85'
+        '/vehicles/gala-toyota-prado-txl-plata.jpg'
       ],
-      interiorImages: [
-        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85',
-        'https://images.unsplash.com/photo-1541348263662-e0c8666524e0?auto=format&fit=crop&w=1200&q=85'
-      ],
-      detailImages: [
-        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=85'
-      ]
+      interiorImages: [],
+      detailImages: []
     },
     isFeatured: true,
     createdAt: '2026-03-01T10:00:00Z',
@@ -72,7 +65,7 @@ export const MOCK_VEHICLES: Vehicle[] = [
       'Suspensión Deportiva Reforzada para Peso Adicional'
     ],
     status: 'AVAILABLE',
-    mainImage: '/vehicles/toyota-4runner-blanca-blindada.jpg',
+    mainImage: '/vehicles/gala-toyota-4runner-blanca-rines-negros.jpg',
     specs: {
       acceleration0to100: '8.4 s',
       horsepower: 270,
@@ -81,16 +74,10 @@ export const MOCK_VEHICLES: Vehicle[] = [
     },
     gallery: {
       exteriorImages: [
-        '/vehicles/toyota-4runner-blanca-blindada.jpg',
-        'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=85',
-        'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=85'
+        '/vehicles/gala-toyota-4runner-blanca-rines-negros.jpg'
       ],
-      interiorImages: [
-        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85'
-      ],
-      detailImages: [
-        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=85'
-      ]
+      interiorImages: [],
+      detailImages: []
     },
     isFeatured: true,
     createdAt: '2026-03-01T10:00:00Z',
@@ -165,7 +152,7 @@ export const MOCK_VEHICLES: Vehicle[] = [
       'Climatizador Automático Dual Bizona'
     ],
     status: 'AVAILABLE',
-    mainImage: '/vehicles/kia-sportage-gris-2022.jpg',
+    mainImage: '/vehicles/gala-kia-sportage-plata.jpg',
     specs: {
       acceleration0to100: '8.9 s',
       horsepower: 187,
@@ -174,15 +161,10 @@ export const MOCK_VEHICLES: Vehicle[] = [
     },
     gallery: {
       exteriorImages: [
-        '/vehicles/kia-sportage-gris-2022.jpg',
-        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85'
+        '/vehicles/gala-kia-sportage-plata.jpg'
       ],
-      interiorImages: [
-        'https://images.unsplash.com/photo-1541348263662-e0c8666524e0?auto=format&fit=crop&w=1200&q=85'
-      ],
-      detailImages: [
-        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=85'
-      ]
+      interiorImages: [],
+      detailImages: []
     },
     isFeatured: true,
     createdAt: '2026-03-01T10:00:00Z',
@@ -257,7 +239,7 @@ export const MOCK_VEHICLES: Vehicle[] = [
       'Monitoreo de Punto Ciego y Alerta de Tráfico Cruzado'
     ],
     status: 'AVAILABLE',
-    mainImage: '/vehicles/mazda-3-blanco-2018.jpg',
+    mainImage: '/vehicles/gala-mazda3-blanco.jpg',
     specs: {
       acceleration0to100: '8.2 s',
       horsepower: 153,
@@ -266,15 +248,10 @@ export const MOCK_VEHICLES: Vehicle[] = [
     },
     gallery: {
       exteriorImages: [
-        '/vehicles/mazda-3-blanco-2018.jpg',
-        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85'
+        '/vehicles/gala-mazda3-blanco.jpg'
       ],
-      interiorImages: [
-        'https://images.unsplash.com/photo-1541348263662-e0c8666524e0?auto=format&fit=crop&w=1200&q=85'
-      ],
-      detailImages: [
-        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=85'
-      ]
+      interiorImages: [],
+      detailImages: []
     },
     isFeatured: true,
     createdAt: '2026-03-01T10:00:00Z',
