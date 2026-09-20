@@ -37,6 +37,12 @@ export interface CompanySettings {
     depositRefundHours: number;
   };
 
+  // 6. Tasas de Cambio Comerciales Fijas (Dólar, Euro, Peso Colombiano)
+  rates: {
+    usdToCop: number;
+    usdToEur: number;
+  };
+
   updatedAt?: string;
 }
 
@@ -74,6 +80,10 @@ export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
     certificationText: 'Flota Certificada 100% Original',
     minAge: 25,
     depositRefundHours: 48,
+  },
+  rates: {
+    usdToCop: 4150,
+    usdToEur: 0.92,
   },
   updatedAt: new Date().toISOString(),
 };

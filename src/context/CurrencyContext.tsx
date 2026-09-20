@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { useSettings } from './SettingsContext';
 
 export type CurrencyCode = 'USD' | 'EUR' | 'COP';
 
@@ -51,18 +52,39 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 const LOCAL_STORAGE_KEY = 'elite_wheels_selected_currency';
 
 export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { settings } = useSettings();
   const [currency, setCurrencyState] = useState<CurrencyCode>('USD');
+
+  // Calcular las configuraciones dinámicas basadas en los ajustes guardados por el admin
+  const dynamicConfigs: Record<CurrencyCode, CurrencyConfig> = useMemo(() => {
+    const copRate = Number(settings?.rates?.usdToCop) || 4150;
+    const eurRate = Number(settings?.rates?.usdToEur) || 0.92;
+
+    return {
+      USD: {
+        ...CURRENCY_CONFIGS.USD,
+      },
+      EUR: {
+        ...CURRENCY_CONFIGS.EUR,
+        rateAgainstUSD: eurRate,
+      },
+      COP: {
+        ...CURRENCY_CONFIGS.COP,
+        rateAgainstUSD: copRate,
+      },
+    };
+  }, [settings?.rates]);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY) as CurrencyCode;
-      if (saved && CURRENCY_CONFIGS[saved]) {
+      if (saved && dynamicConfigs[saved]) {
         setCurrencyState(saved);
       }
     } catch (e) {
       console.warn('Error al leer divisa guardada:', e);
     }
-  }, []);
+  }, [dynamicConfigs]);
 
   const setCurrency = (newCurrency: CurrencyCode) => {
     setCurrencyState(newCurrency);
@@ -73,7 +95,7 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  const config = CURRENCY_CONFIGS[currency];
+  const config = dynamicConfigs[currency] || dynamicConfigs.USD;
 
   const convertPrice = (amountInUSD: number): number => {
     return Math.round(amountInUSD * config.rateAgainstUSD);

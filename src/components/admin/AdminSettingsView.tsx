@@ -23,6 +23,7 @@ import {
   Zap,
   Check,
   AlertCircle,
+  DollarSign,
 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { luxuryAlert } from '../../context/AlertContext';
@@ -33,12 +34,16 @@ import {
   testFirebaseConnection,
 } from '../../services/firebase';
 
-type SettingsTab = 'brand' | 'contact' | 'hero' | 'social' | 'policies' | 'cloud';
+type SettingsTab = 'brand' | 'contact' | 'finance' | 'hero' | 'social' | 'policies' | 'cloud';
 
 export const AdminSettingsView: React.FC = () => {
   const { settings, updateSettings, isSaving, getWhatsAppLink } = useSettings();
   const [formData, setFormData] = useState<CompanySettings>({
     ...settings,
+    rates: settings.rates || {
+      usdToCop: 4150,
+      usdToEur: 0.92,
+    },
     hero: settings.hero || {
       badge: 'CONCESIONARIO SHOWROOM VIP • FLOTA 2026',
       titleLine1: 'TU VIAJE.',
@@ -96,6 +101,16 @@ export const AdminSettingsView: React.FC = () => {
       ...prev,
       policies: {
         ...prev.policies,
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleRatesChange = (field: keyof CompanySettings['rates'], value: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      rates: {
+        ...(prev.rates || { usdToCop: 4150, usdToEur: 0.92 }),
         [field]: value,
       },
     }));
@@ -200,6 +215,7 @@ export const AdminSettingsView: React.FC = () => {
   const tabButtons: { id: SettingsTab; label: string; icon: any }[] = [
     { id: 'brand', label: 'Marca & Logo', icon: ImageIcon },
     { id: 'contact', label: 'Contacto & WhatsApp', icon: Phone },
+    { id: 'finance', label: 'Tasas de Divisas', icon: DollarSign },
     { id: 'hero', label: 'Portada (Hero)', icon: Sliders },
     { id: 'social', label: 'Redes Sociales', icon: Share2 },
     { id: 'policies', label: 'Políticas & Requisitos', icon: FileCheck2 },
@@ -573,7 +589,148 @@ export const AdminSettingsView: React.FC = () => {
             </div>
           )}
 
-          {/* PESTAÑA 3: PORTADA & HERO */}
+          {/* PESTAÑA 3: TASAS DE DIVISAS & CONVERSIÓN COMERCIAL */}
+          {activeTab === 'finance' && (
+            <div className="bg-carbon-900/80 border border-carbon-800 p-6 rounded-2xl space-y-6 shadow-lg animate-fade-in">
+              <div className="flex items-center justify-between border-b border-carbon-800 pb-3 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-gold-400" />
+                  <h3 className="text-base font-bold text-white uppercase tracking-wider font-display">
+                    Tasas Comerciales de Conversión de Monedas
+                  </h3>
+                </div>
+                <span className="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-gold-500/20 text-gold-300 border border-gold-500/30">
+                  DÓLAR • PESO COLOMBIANO • EURO
+                </span>
+              </div>
+
+              {/* Mensaje de Explicación y Protección de Margen */}
+              <div className="p-4 rounded-xl bg-carbon-850/80 border border-carbon-750 flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-gold-400 flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-silver-300 leading-relaxed">
+                  <span className="font-bold text-white block mb-0.5">Control Total para el Administrador:</span>
+                  Aquí defines las tasas de cambio comerciales exactas para liquidar el dólar y el euro. 
+                  Los clientes pueden ver las tarifas en <strong className="text-gold-400">USD</strong>, <strong className="text-gold-400">COP</strong> o <strong className="text-gold-400">EUR</strong> en toda la web y cotizarán con base en estos valores configurados por ti.
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* 1. TASA USD -> COP */}
+                <div className="p-5 rounded-2xl bg-carbon-950/60 border border-carbon-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">🇨🇴</span>
+                      <label className="text-xs font-bold text-silver-200 uppercase tracking-wider">
+                        Tasa Dólar a Peso Colombiano (USD ➔ COP)
+                      </label>
+                    </div>
+                    <span className="text-xs font-mono font-bold text-gold-400">1 USD = $ COP</span>
+                  </div>
+
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-silver-400">$</span>
+                    <input
+                      type="number"
+                      step="10"
+                      min="1000"
+                      max="10000"
+                      value={formData.rates?.usdToCop || 4150}
+                      onChange={(e) => handleRatesChange('usdToCop', Number(e.target.value))}
+                      placeholder="4150"
+                      className="w-full bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl pl-8 pr-3.5 py-3 text-sm font-mono font-bold focus:outline-none focus:border-gold-500 transition-colors"
+                    />
+                  </div>
+
+                  <p className="text-[11px] text-silver-400 leading-snug">
+                    Valor en pesos colombianos por cada $1 USD.
+                    <br />
+                    <span className="text-gold-400/90 font-mono">
+                      Ej: Auto de $240 USD/d = ${(240 * (formData.rates?.usdToCop || 4150)).toLocaleString('es-CO')} COP/d
+                    </span>
+                  </p>
+                </div>
+
+                {/* 2. TASA USD -> EUR */}
+                <div className="p-5 rounded-2xl bg-carbon-950/60 border border-carbon-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">🇪🇺</span>
+                      <label className="text-xs font-bold text-silver-200 uppercase tracking-wider">
+                        Tasa Dólar a Euro (USD ➔ EUR)
+                      </label>
+                    </div>
+                    <span className="text-xs font-mono font-bold text-gold-400">1 USD = € EUR</span>
+                  </div>
+
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-silver-400">€</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.5"
+                      max="2"
+                      value={formData.rates?.usdToEur || 0.92}
+                      onChange={(e) => handleRatesChange('usdToEur', Number(e.target.value))}
+                      placeholder="0.92"
+                      className="w-full bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl pl-8 pr-3.5 py-3 text-sm font-mono font-bold focus:outline-none focus:border-gold-500 transition-colors"
+                    />
+                  </div>
+
+                  <p className="text-[11px] text-silver-400 leading-snug">
+                    Valor en euros por cada $1 USD.
+                    <br />
+                    <span className="text-gold-400/90 font-mono">
+                      Ej: Auto de $240 USD/d = €{Math.round(240 * (formData.rates?.usdToEur || 0.92))} EUR/d
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Simulador de Tarifas en Tiempo Real */}
+              <div className="p-5 rounded-2xl bg-gradient-to-r from-carbon-950 via-carbon-900 to-carbon-950 border border-gold-500/30 space-y-3">
+                <div className="flex items-center gap-2 text-gold-400 text-xs font-bold uppercase tracking-wider">
+                  <Sparkles className="w-4 h-4" />
+                  <span>Simulador de Tarifas con las Tasas Actuales</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-center">
+                  <div className="p-3 rounded-xl bg-carbon-850 border border-carbon-750">
+                    <div className="text-[11px] text-silver-400 uppercase font-bold">Vehículo Económico / SUV</div>
+                    <div className="text-sm font-bold text-white font-mono mt-1">$120 USD/día</div>
+                    <div className="text-xs text-gold-400 font-mono mt-0.5 font-bold">
+                      ${(120 * (formData.rates?.usdToCop || 4150)).toLocaleString('es-CO')} COP
+                    </div>
+                    <div className="text-[11px] text-silver-400 font-mono">
+                      €{Math.round(120 * (formData.rates?.usdToEur || 0.92))} EUR
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-carbon-850 border border-gold-500/40 shadow-sm">
+                    <div className="text-[11px] text-gold-400 uppercase font-bold">Toyota 4Runner SR5 (Tu Carro)</div>
+                    <div className="text-sm font-bold text-white font-mono mt-1">$240 USD/día</div>
+                    <div className="text-xs text-gold-400 font-mono mt-0.5 font-bold">
+                      ${(240 * (formData.rates?.usdToCop || 4150)).toLocaleString('es-CO')} COP
+                    </div>
+                    <div className="text-[11px] text-silver-400 font-mono">
+                      €{Math.round(240 * (formData.rates?.usdToEur || 0.92))} EUR
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-carbon-850 border border-carbon-750">
+                    <div className="text-[11px] text-silver-400 uppercase font-bold">Superdeportivo / Exótico</div>
+                    <div className="text-sm font-bold text-white font-mono mt-1">$450 USD/día</div>
+                    <div className="text-xs text-gold-400 font-mono mt-0.5 font-bold">
+                      ${(450 * (formData.rates?.usdToCop || 4150)).toLocaleString('es-CO')} COP
+                    </div>
+                    <div className="text-[11px] text-silver-400 font-mono">
+                      €{Math.round(450 * (formData.rates?.usdToEur || 0.92))} EUR
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PESTAÑA 4: PORTADA & HERO */}
           {activeTab === 'hero' && (
             <div className="bg-carbon-900/80 border border-carbon-800 p-6 rounded-2xl space-y-5 shadow-lg animate-fade-in">
               <div className="flex items-center justify-between border-b border-carbon-800 pb-3">
