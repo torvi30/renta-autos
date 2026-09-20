@@ -39,6 +39,12 @@ export const VehicleShowcase: React.FC<VehicleShowcaseProps> = ({
     setCurrentFit(fitMode);
   }, [fitMode]);
 
+  // Resetear estados al cambiar la URL de la imagen
+  useEffect(() => {
+    setImageError(false);
+    setImageLoaded(false);
+  }, [imageUrl]);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -118,6 +124,16 @@ export const VehicleShowcase: React.FC<VehicleShowcaseProps> = ({
     setImageLoaded(true);
   };
 
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const target = e.currentTarget;
+    if (!target.dataset.retried && imageUrl && !imageUrl.startsWith('data:')) {
+      target.dataset.retried = 'true';
+      target.src = `${imageUrl}${imageUrl.includes('?') ? '&' : '?'}retry=${Date.now()}`;
+      return;
+    }
+    setImageError(true);
+  };
+
   const aspectRatioClass = {
     '16/9': 'aspect-[16/9]',
     '21/9': 'aspect-[21/9]',
@@ -167,7 +183,7 @@ export const VehicleShowcase: React.FC<VehicleShowcaseProps> = ({
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
           onLoad={handleImageLoaded}
-          onError={() => setImageError(true)}
+          onError={handleImageError}
           className={`absolute inset-0 w-full h-full ${
             currentFit === 'contain' ? 'object-contain p-1 sm:p-2' : 'object-cover'
           } transition-opacity duration-500 group-hover:scale-[1.02] ${
