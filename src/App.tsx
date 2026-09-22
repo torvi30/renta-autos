@@ -22,6 +22,7 @@ import { CurrencyProvider } from './context/CurrencyContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { AlertProvider } from './context/AlertContext';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 
 // Code-Splitting dinámico para máxima velocidad de carga (Fase 11)
@@ -349,7 +350,9 @@ export const App: React.FC = () => {
         <LanguageProvider>
           <AuthProvider>
             <AlertProvider>
-              <AppContent />
+              <ErrorBoundary>
+                <AppContent />
+              </ErrorBoundary>
             </AlertProvider>
           </AuthProvider>
         </LanguageProvider>

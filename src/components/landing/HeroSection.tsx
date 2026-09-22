@@ -80,7 +80,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     }
   }, [currentIndex]);
 
-  const activeVehicle = showroomVehicles[currentIndex] || showroomVehicles[0] || vehicles[0];
+  const activeVehicle = showroomVehicles[currentIndex] || showroomVehicles[0] || vehicles[0] || null;
 
   const prevIndex = showroomVehicles.length > 0 ? (currentIndex - 1 + showroomVehicles.length) % showroomVehicles.length : 0;
   const nextIndex = showroomVehicles.length > 0 ? (currentIndex + 1) % showroomVehicles.length : 0;
@@ -136,6 +136,22 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     }
     setTouchStartX(null);
   };
+
+  if (!activeVehicle) {
+    return (
+      <section
+        id="hero-pavilion"
+        className="relative pt-28 sm:pt-32 pb-16 flex flex-col justify-center items-center overflow-hidden bg-gradient-to-b from-carbon-950 via-carbon-900 to-carbon-950 min-h-[500px]"
+      >
+        <div className="text-center p-8">
+          <div className="w-12 h-12 rounded-full border-2 border-gold-500/20 border-t-gold-400 animate-spin mx-auto mb-4" />
+          <span className="text-xs font-mono font-bold uppercase tracking-widest text-gold-400">
+            {language === 'ES' ? 'Cargando Showroom VIP...' : 'Loading VIP Showroom...'}
+          </span>
+        </div>
+      </section>
+    );
+  }
 
   const whatsAppLink = getWhatsAppLink({
     vehicleName: `${activeVehicle.brand} ${activeVehicle.model} (${activeVehicle.year})`,
@@ -203,30 +219,30 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           {/* Flecha Flotante Anterior (Izquierda) - Estilo Concesionario VIP */}
           <button
             onClick={handlePrev}
-            aria-label={`Vehículo anterior: ${prevVehicle.brand} ${prevVehicle.model}`}
-            title={`Anterior: ${prevVehicle.brand} ${prevVehicle.model}`}
+            aria-label={`Vehículo anterior: ${prevVehicle?.brand || ''} ${prevVehicle?.model || ''}`}
+            title={`Anterior: ${prevVehicle?.brand || ''} ${prevVehicle?.model || ''}`}
             className="absolute left-1 sm:-left-7 top-1/2 -translate-y-1/2 z-40 w-9 h-9 sm:w-14 sm:h-14 rounded-full bg-carbon-950/80 hover:bg-gold-500 hover:text-carbon-950 border border-gold-500/30 hover:border-gold-400 text-silver-200 backdrop-blur-md shadow-xl transition-all duration-300 flex items-center justify-center group active:scale-90"
           >
             <ChevronLeft className="w-5 h-5 sm:w-7 sm:h-7 group-hover:-translate-x-1 transition-transform" />
             
             {/* Tooltip de previsualización */}
             <span className="hidden lg:group-hover:block absolute left-full ml-3 px-3 py-1.5 rounded-xl bg-carbon-900/95 border border-carbon-750 text-[11px] text-silver-200 whitespace-nowrap shadow-xl font-medium">
-              ← {prevVehicle.brand} {prevVehicle.model}
+              ← {prevVehicle?.brand || ''} {prevVehicle?.model || ''}
             </span>
           </button>
 
           {/* Flecha Flotante Siguiente (Derecha) - Estilo Concesionario VIP */}
           <button
             onClick={handleNext}
-            aria-label={`Siguiente vehículo: ${nextVehicle.brand} ${nextVehicle.model}`}
-            title={`Siguiente: ${nextVehicle.brand} ${nextVehicle.model}`}
+            aria-label={`Siguiente vehículo: ${nextVehicle?.brand || ''} ${nextVehicle?.model || ''}`}
+            title={`Siguiente: ${nextVehicle?.brand || ''} ${nextVehicle?.model || ''}`}
             className="absolute right-1 sm:-right-7 top-1/2 -translate-y-1/2 z-40 w-9 h-9 sm:w-14 sm:h-14 rounded-full bg-carbon-950/80 hover:bg-gold-500 hover:text-carbon-950 border border-gold-500/30 hover:border-gold-400 text-silver-200 backdrop-blur-md shadow-xl transition-all duration-300 flex items-center justify-center group active:scale-90"
           >
             <ChevronRight className="w-5 h-5 sm:w-7 sm:h-7 group-hover:translate-x-1 transition-transform" />
 
             {/* Tooltip de previsualización */}
             <span className="hidden lg:group-hover:block absolute right-full mr-3 px-3 py-1.5 rounded-xl bg-carbon-900/95 border border-carbon-750 text-[11px] text-silver-200 whitespace-nowrap shadow-xl font-medium">
-              {nextVehicle.brand} {nextVehicle.model} →
+              {nextVehicle?.brand || ''} {nextVehicle?.model || ''} →
             </span>
           </button>
 

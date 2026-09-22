@@ -55,16 +55,16 @@ export const getLocalVehicles = (): Vehicle[] => {
   try {
     const raw = localStorage.getItem(LOCAL_CACHE_KEY);
     if (!raw) {
-      return [];
+      return MOCK_VEHICLES;
     }
     const parsed = JSON.parse(raw) as Vehicle[];
     if (!Array.isArray(parsed) || parsed.length === 0) {
-      return [];
+      return MOCK_VEHICLES;
     }
     return parsed;
   } catch (error) {
     console.warn('Error al leer vehículos de la caché local:', error);
-    return [];
+    return MOCK_VEHICLES;
   }
 };
 
@@ -157,6 +157,7 @@ export const subscribeVehicles = (
       },
       (error) => {
         console.warn('Aviso en suscripción a Firestore (vehículos), manteniendo fallback:', error);
+        callback(MOCK_VEHICLES);
       }
     );
 
