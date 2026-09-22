@@ -17,7 +17,27 @@ const PENDING_REGISTRATIONS_KEY = 'PREMIUM_RENTAL_PENDING_REGISTRATIONS_V2';
 const PENDING_RESETS_KEY = 'PREMIUM_RENTAL_PENDING_RESETS_V2';
 
 /**
- * Cuentas preconfiguradas del sistema (credenciales válidas de dirección)
+ * Clean up legacy storage variables (e.g. usuario, token, nombre)
+ * to ensure 100% compliance with native Firebase Authentication SDK.
+ */
+export const cleanLegacyAuthStorage = (): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    const legacyKeys = ['usuario', 'token', 'nombre', 'user', 'authToken', 'currentUser'];
+    legacyKeys.forEach((key) => {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    });
+  } catch (e) {
+    // Ignore storage restrictions
+  }
+};
+
+// Immediately purge any legacy manual auth variables
+cleanLegacyAuthStorage();
+
+/**
+ * Pre-configured system accounts (corporate director credentials)
  */
 const DEFAULT_SYSTEM_ACCOUNTS: Record<string, { user: AuthUser; passwordHash: string }> = {
   'victortamayopine@gmail.com': {
@@ -777,6 +797,8 @@ export const logout = async (): Promise<void> => {
       console.warn('Firebase signOut warning:', e);
     }
   }
+
+  cleanLegacyAuthStorage();
 
   if (typeof window !== 'undefined') {
     try {

@@ -296,7 +296,7 @@ export const AdminContractModal: React.FC<AdminContractModalProps> = ({
             {/* Firma Arrendador */}
             <div className="md:col-span-5 text-center space-y-2">
               <div className="h-16 flex items-end justify-center">
-                <div className="font-serif italic text-base sm:text-lg text-gold-400 print:text-black font-bold border-b border-silver-400 print:border-black w-3/4 pb-1">
+                <div className="font-sans italic text-base sm:text-lg text-gold-400 print:text-black font-bold border-b border-silver-400 print:border-black w-3/4 pb-1">
                   Víctor Tamayo
                 </div>
               </div>
