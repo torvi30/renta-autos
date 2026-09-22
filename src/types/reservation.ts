@@ -27,7 +27,7 @@ export interface ReservationPricing {
 }
 
 export interface Reservation {
-  id: string; // Formato oficial RES-2026-XXXX
+  id: string; // Official format RES-YYYY-XXXX
   vehicleId: string;
   vehicleName: string;
   vehicleImage: string;

@@ -30,22 +30,22 @@ export type DepositResolution =
   | 'HOLD_FOR_ASSESSMENT';
 
 export interface VehicleInspection {
-  id: string; // Formato INSP-YYYY-XXXX
+  id: string; // Format INSP-YYYY-XXXX
   reservationId: string;
   vehicleId: string;
   vehicleName: string;
   vehiclePlate: string;
   clientName: string;
   type: InspectionType;
-  odometer: number; // Kilometraje en km
-  fuelLevel: number; // Porcentaje de 0 a 100
+  odometer: number; // Mileage in km
+  fuelLevel: number; // Percentage 0 to 100
   cleanliness: CleanlinessLevel;
   damages: DamageItem[];
   photos: string[];
   inspectorName: string;
   notes?: string;
   depositResolution?: DepositResolution;
-  deductionAmount?: number; // Monto deducido si aplica
+  deductionAmount?: number; // Deducted amount if applicable
   createdAt: string;
   updatedAt: string;
 }

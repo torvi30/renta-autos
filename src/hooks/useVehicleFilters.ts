@@ -125,7 +125,7 @@ export const useVehicleFilters = (vehicles: Vehicle[]) => {
     });
   }, [absoluteMaxPrice]);
 
-  // Contar filtros activos distintos de los valores por defecto
+  // Count active filters differing from defaults
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (filters.searchQuery.trim() !== '') count++;
@@ -138,7 +138,7 @@ export const useVehicleFilters = (vehicles: Vehicle[]) => {
     return count;
   }, [filters, absoluteMaxPrice]);
 
-  // Conteo de vehículos por categoría
+  // Vehicle counts by category
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = { ALL: vehicles.length };
     vehicles.forEach(v => {
@@ -147,7 +147,7 @@ export const useVehicleFilters = (vehicles: Vehicle[]) => {
     return counts;
   }, [vehicles]);
 
-  // Conteo de vehículos por estado
+  // Vehicle counts by operational status
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = { ALL: vehicles.length };
     vehicles.forEach(v => {
@@ -156,11 +156,11 @@ export const useVehicleFilters = (vehicles: Vehicle[]) => {
     return counts;
   }, [vehicles]);
 
-  // Filtrado y ordenamiento optimizado (useMemo)
+  // Optimized filtering and sorting (useMemo)
   const filteredVehicles = useMemo(() => {
     return vehicles
       .filter(vehicle => {
-        // 1. Búsqueda por texto (marca, modelo, descripción, features)
+        // 1. Text search (brand, model, description, features)
         if (filters.searchQuery.trim() !== '') {
           const query = filters.searchQuery.toLowerCase().trim();
           const matchBrand = vehicle.brand.toLowerCase().includes(query);
@@ -172,32 +172,32 @@ export const useVehicleFilters = (vehicles: Vehicle[]) => {
           }
         }
 
-        // 2. Filtro de Categoría
+        // 2. Category filter
         if (filters.selectedCategory !== 'ALL' && vehicle.category !== filters.selectedCategory) {
           return false;
         }
 
-        // 3. Filtro de Estado
+        // 3. Status filter
         if (filters.selectedStatus !== 'ALL' && vehicle.status !== filters.selectedStatus) {
           return false;
         }
 
-        // 4. Filtro de Transmisión
+        // 4. Transmission filter
         if (filters.selectedTransmission !== 'ALL' && vehicle.transmission !== filters.selectedTransmission) {
           return false;
         }
 
-        // 5. Filtro de Combustible
+        // 5. Fuel filter
         if (filters.selectedFuel !== 'ALL' && vehicle.fuel !== filters.selectedFuel) {
           return false;
         }
 
-        // 6. Filtro de Plazas mínimas
+        // 6. Minimum seats filter
         if (filters.minSeats > 0 && vehicle.seats < filters.minSeats) {
           return false;
         }
 
-        // 7. Filtro de Precio máximo
+        // 7. Maximum price filter
         if (vehicle.pricePerDay > filters.maxPrice) {
           return false;
         }

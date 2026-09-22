@@ -28,7 +28,7 @@ export const notifyVehicleListeners = (vehicles: Vehicle[]) => {
 };
 
 /**
- * Limpia recursivamente propiedades undefined para evitar que setDoc falle en Firestore
+ * Recursively cleans undefined properties to prevent setDoc from failing in Firestore
  */
 export const cleanFirestoreData = <T = any>(data: T): T => {
   if (data === null || data === undefined) return null as any;
@@ -48,7 +48,7 @@ export const cleanFirestoreData = <T = any>(data: T): T => {
 };
 
 /**
- * Obtener vehículos almacenados en la caché local / estado semilla
+ * Retrieve vehicles stored in local cache or fallback to initial mock fleet
  */
 export const getLocalVehicles = (): Vehicle[] => {
   if (typeof window === 'undefined') return MOCK_VEHICLES;
@@ -63,13 +63,13 @@ export const getLocalVehicles = (): Vehicle[] => {
     }
     return parsed;
   } catch (error) {
-    console.warn('Error al leer vehículos de la caché local:', error);
+    console.warn('Error reading vehicles from local cache:', error);
     return MOCK_VEHICLES;
   }
 };
 
 /**
- * Guardar vehículos en la caché local y notificar de inmediato a todos los componentes
+ * Save vehicles to local cache and immediately notify all subscribed components
  */
 export const saveLocalVehicles = (vehicles: Vehicle[]): void => {
   if (typeof window === 'undefined') return;
@@ -77,12 +77,12 @@ export const saveLocalVehicles = (vehicles: Vehicle[]): void => {
     localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(vehicles));
     notifyVehicleListeners(vehicles);
   } catch (error) {
-    console.error('Error al persistir vehículos en caché local:', error);
+    console.error('Error persisting vehicles to local cache:', error);
   }
 };
 
 /**
- * Obtener todos los vehículos (Cloud Firestore como fuente única de verdad)
+ * Fetch all vehicles with Cloud Firestore as single source of truth
  */
 export const fetchVehicles = async (): Promise<Vehicle[]> => {
   if (!db || !isFirebaseConfigured()) {
@@ -103,25 +103,25 @@ export const fetchVehicles = async (): Promise<Vehicle[]> => {
       cloudVehicles.push(docSnap.data() as Vehicle);
     });
 
-    // Cloud Firestore es la única fuente de la verdad
+    // Cloud Firestore is the single source of truth
     saveLocalVehicles(cloudVehicles);
     return cloudVehicles;
   } catch (error) {
-    console.warn('Error al consultar vehículos en Firestore, usando fallback local:', error);
+    console.warn('Error querying vehicles in Firestore, using local fallback:', error);
     const local = getLocalVehicles();
     return local.length > 0 ? local : MOCK_VEHICLES;
   }
 };
 
 /**
- * Suscripción reactiva en tiempo real a la colección de vehículos
+ * Real-time reactive subscription to the vehicles collection
  */
 export const subscribeVehicles = (
   callback: (vehicles: Vehicle[]) => void
 ): (() => void) => {
   vehicleListeners.add(callback);
 
-  // Emitir de inmediato los datos de caché para carga instantánea
+  // Immediately emit cached fleet for zero-latency initial paint
   const initialCache = getLocalVehicles();
   if (initialCache.length > 0) {
     callback(initialCache);
@@ -147,7 +147,7 @@ export const subscribeVehicles = (
             items.push(docSnap.data() as Vehicle);
           });
 
-          // Cloud Firestore es la única fuente de la verdad
+          // Cloud Firestore is the single source of truth
           localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(items));
           notifyVehicleListeners(items);
           callback(items);
@@ -156,7 +156,7 @@ export const subscribeVehicles = (
         }
       },
       (error) => {
-        console.warn('Aviso en suscripción a Firestore (vehículos), manteniendo fallback:', error);
+        console.warn('Firestore subscription notice (vehicles), maintaining fallback:', error);
         callback(MOCK_VEHICLES);
       }
     );
@@ -166,7 +166,7 @@ export const subscribeVehicles = (
       unsubscribe();
     };
   } catch (error) {
-    console.warn('Error al configurar listener de Firestore para vehículos:', error);
+    console.warn('Error configuring Firestore vehicle listener:', error);
     return () => {
       vehicleListeners.delete(callback);
     };
@@ -174,13 +174,13 @@ export const subscribeVehicles = (
 };
 
 /**
- * Actualizar estado operativo de un vehículo en Cloud Firestore y caché local
+ * Update vehicle operational status in Cloud Firestore and local cache
  */
 export const updateVehicleStatusInCloud = async (
   vehicleId: string,
   newStatus: VehicleStatus
 ): Promise<boolean> => {
-  // 1. Actualizar caché local de inmediato (optimistic update)
+  // 1. Update local cache immediately (optimistic UI update)
   const currentList = getLocalVehicles();
   const updatedList = currentList.map((v) =>
     v.id === vehicleId
@@ -189,7 +189,7 @@ export const updateVehicleStatusInCloud = async (
   );
   saveLocalVehicles(updatedList);
 
-  // 2. Si Firestore está activo, sincronizar en la nube
+  // 2. Synchronize to Cloud Firestore if connected
   if (db && isFirebaseConfigured()) {
     try {
       const docRef = doc(db, VEHICLES_COLLECTION, vehicleId);
@@ -199,7 +199,7 @@ export const updateVehicleStatusInCloud = async (
       });
       return true;
     } catch (error) {
-      console.warn('No se pudo actualizar el estado en Firestore directamente, intentando set con merge:', error);
+      console.warn('Direct updateDoc failed in Firestore, attempting setDoc with merge:', error);
       try {
         const vehicleToSave = updatedList.find((v) => v.id === vehicleId);
         if (vehicleToSave) {
@@ -208,7 +208,7 @@ export const updateVehicleStatusInCloud = async (
         }
         return true;
       } catch (innerError) {
-        console.error('Fallo al persistir estado en Cloud Firestore:', innerError);
+        console.error('Failed persisting vehicle status to Cloud Firestore:', innerError);
         return false;
       }
     }
@@ -218,7 +218,7 @@ export const updateVehicleStatusInCloud = async (
 };
 
 /**
- * Sembrado inicial de los 8 vehículos Showroom en Cloud Firestore
+ * Initial seeding of vehicles to Cloud Firestore
  */
 export const seedInitialVehiclesToFirestore = async (): Promise<{
   success: boolean;
@@ -229,7 +229,7 @@ export const seedInitialVehiclesToFirestore = async (): Promise<{
     return {
       success: false,
       count: 0,
-      message: 'Firebase no está configurado o no hay conexión activa.',
+      message: 'Firebase is not configured or offline.',
     };
   }
 
@@ -244,20 +244,20 @@ export const seedInitialVehiclesToFirestore = async (): Promise<{
     return {
       success: true,
       count: inserted,
-      message: `Se han sincronizado exitosamente ${inserted} vehículos de lujo en Cloud Firestore.`,
+      message: `Successfully synchronized ${inserted} luxury vehicles to Cloud Firestore.`,
     };
   } catch (error: any) {
-    console.error('Error al sembrar vehículos en Firestore:', error);
+    console.error('Error seeding vehicles to Firestore:', error);
     return {
       success: false,
       count: 0,
-      message: error?.message || 'Error al escribir los documentos en Cloud Firestore.',
+      message: error?.message || 'Error writing documents to Cloud Firestore.',
     };
   }
 };
 
 /**
- * Generar slug amigable para SEO (Regla 17)
+ * Generate SEO-friendly slug
  */
 export const generateVehicleSlug = (brand: string, model: string, year?: number): string => {
   const base = `${brand}-${model}${year ? `-${year}` : ''}`;
@@ -272,7 +272,7 @@ export const generateVehicleSlug = (brand: string, model: string, year?: number)
 };
 
 /**
- * Crear un nuevo vehículo en Cloud Firestore y caché local (Fase 8)
+ * Create a new vehicle in Cloud Firestore and local cache
  */
 export const createVehicle = async (
   vehicleData: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }
@@ -290,19 +290,19 @@ export const createVehicle = async (
     updatedAt: now,
   };
 
-  // 1. Guardar en local cache inmediatamente (al inicio de la lista para máxima visibilidad)
+  // 1. Save to local cache immediately (at the front of the list for instant visibility)
   const currentList = getLocalVehicles();
   const updatedList = [newVehicle, ...currentList.filter((v) => v.id !== id)];
   saveLocalVehicles(updatedList);
 
-  // 2. Persistir en Cloud Firestore con limpieza estricta de undefined
+  // 2. Persist to Cloud Firestore with strict cleanup of undefined fields
   if (db && isFirebaseConfigured()) {
     try {
       const docRef = doc(db, VEHICLES_COLLECTION, newVehicle.id);
       const cleaned = cleanFirestoreData(newVehicle);
       await setDoc(docRef, cleaned, { merge: true });
     } catch (error: any) {
-      console.error('Error al persistir vehículo en Cloud Firestore:', error);
+      console.error('Error persisting vehicle to Cloud Firestore:', error);
     }
   }
 
@@ -310,7 +310,7 @@ export const createVehicle = async (
 };
 
 /**
- * Actualizar datos de un vehículo existente (Fase 8)
+ * Update existing vehicle details
  */
 export const updateVehicle = async (
   vehicleId: string,
@@ -320,7 +320,7 @@ export const updateVehicle = async (
   const existing = currentList.find((v) => v.id === vehicleId);
 
   if (!existing) {
-    throw new Error(`Vehículo con ID ${vehicleId} no encontrado.`);
+    throw new Error(`Vehicle with ID ${vehicleId} not found.`);
   }
 
   const now = new Date().toISOString();
@@ -331,18 +331,18 @@ export const updateVehicle = async (
     updatedAt: now,
   };
 
-  // 1. Actualizar caché local
+  // 1. Update local cache
   const updatedList = currentList.map((v) => (v.id === vehicleId ? updatedVehicle : v));
   saveLocalVehicles(updatedList);
 
-  // 2. Actualizar en Cloud Firestore con limpieza estricta de undefined
+  // 2. Update Cloud Firestore with clean payload
   if (db && isFirebaseConfigured()) {
     try {
       const docRef = doc(db, VEHICLES_COLLECTION, vehicleId);
       const cleaned = cleanFirestoreData(updatedVehicle);
       await setDoc(docRef, cleaned, { merge: true });
     } catch (error: any) {
-      console.error('Error al actualizar vehículo en Cloud Firestore:', error);
+      console.error('Error updating vehicle in Cloud Firestore:', error);
     }
   }
 
@@ -350,21 +350,21 @@ export const updateVehicle = async (
 };
 
 /**
- * Eliminar un vehículo de la flota (Fase 8)
+ * Remove a vehicle from fleet
  */
 export const deleteVehicle = async (vehicleId: string): Promise<boolean> => {
-  // 1. Remover de caché local
+  // 1. Remove from local cache
   const currentList = getLocalVehicles();
   const filteredList = currentList.filter((v) => v.id !== vehicleId);
   saveLocalVehicles(filteredList);
 
-  // 2. Eliminar de Cloud Firestore
+  // 2. Delete from Cloud Firestore
   if (db && isFirebaseConfigured()) {
     try {
       const docRef = doc(db, VEHICLES_COLLECTION, vehicleId);
       await deleteDoc(docRef);
     } catch (error) {
-      console.error('Error al eliminar vehículo en Cloud Firestore:', error);
+      console.error('Error deleting vehicle in Cloud Firestore:', error);
     }
   }
 

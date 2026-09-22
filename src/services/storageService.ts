@@ -16,16 +16,15 @@ export interface UploadResult {
   storagePath: string;
 }
 
-const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB (Cloudinary maneja compresión y CDN)
-const MAX_VIDEO_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB (Cloudinary maneja transcodificación)
+const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB (Cloudinary handles compression and CDN)
+const MAX_VIDEO_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB (Cloudinary handles transcoding)
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 
 /**
- * Comprime automáticamente cualquier imagen a formato WebP en el navegador antes de subirla.
- * Reduce drásticamente el peso (hasta un 80-90%) respetando la calidad visual y blindando
- * el consumo de la cuota del plan gratuito Spark de Firebase Storage ($0).
+ * Automatically compresses any image to WebP format in the browser before upload.
+ * Drastically reduces payload size (up to 80-90%) preserving visual quality.
  */
 export const compressImageToWebP = async (
   file: File,
@@ -33,12 +32,12 @@ export const compressImageToWebP = async (
   maxHeight = 1080,
   quality = 0.85
 ): Promise<File> => {
-  // Si ya es un WebP pequeño menor a 400KB, retornar tal cual
+  // If already a small WebP under 400KB, return as-is
   if (file.type === 'image/webp' && file.size < 400 * 1024) {
     return file;
   }
 
-  // Si estamos en entorno sin DOM (ej. SSR o Node), retornar el archivo
+  // If in environment without DOM (e.g. SSR or Node), return file
   if (typeof window === 'undefined' || typeof document === 'undefined') {
     return file;
   }
@@ -54,7 +53,7 @@ export const compressImageToWebP = async (
     img.onload = () => {
       let { width, height } = img;
 
-      // Mantener proporción de aspecto sin exceder dimensiones máximas
+      // Maintain aspect ratio without exceeding maximum dimensions
       if (width > maxWidth || height > maxHeight) {
         const ratio = Math.min(maxWidth / width, maxHeight / height);
         width = Math.round(width * ratio);
@@ -67,7 +66,7 @@ export const compressImageToWebP = async (
 
       const ctx = canvas.getContext('2d');
       if (!ctx) {
-        resolve(file); // Fallback al archivo original si el canvas falla
+        resolve(file); // Fallback to original file if canvas fails
         return;
       }
 
@@ -102,8 +101,7 @@ export const compressImageToWebP = async (
 };
 
 /**
- * Subir una fotografía de vehículo a Cloudinary CDN (o Firebase Storage como fallback)
- * Aplica compresión WebP y CDN global para ultra-rendimiento sin servidor backend.
+ * Upload vehicle photo to Cloudinary CDN (or Firebase Storage fallback)
  */
 export const uploadVehiclePhoto = async (
   vehicleId: string,

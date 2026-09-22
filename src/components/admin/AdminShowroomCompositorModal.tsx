@@ -29,28 +29,28 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Estados de la imagen del carro
+  // Vehicle image state
   const [carImageSrc, setCarImageSrc] = useState<string>(initialCarImage || '');
   const [backdropLoaded, setBackdropLoaded] = useState(false);
   const [carLoaded, setCarLoaded] = useState(false);
 
-  // Referencias a los objetos Image en memoria
+  // In-memory Image object references
   const backdropImgRef = useRef<HTMLImageElement | null>(null);
   const carImgRef = useRef<HTMLImageElement | null>(null);
 
-  // Parámetros de ajuste del carro sobre la plataforma
+  // Vehicle position & lighting adjustment parameters
   const [scale, setScale] = useState<number>(0.92);
-  const [posX, setPosX] = useState<number>(0); // Desplazamiento desde el centro (-300 a 300)
-  const [posY, setPosY] = useState<number>(35); // Desplazamiento vertical para asentar en el disco (-150 a 150)
-  const [shadowOpacity, setShadowOpacity] = useState<number>(0.75); // Sombra bajo neumáticos
-  const [shadowSpread, setShadowSpread] = useState<number>(30); // Difuminado de la sombra
-  const [brightness, setBrightness] = useState<number>(100); // 70 a 130
-  const [contrast, setContrast] = useState<number>(102); // 70 a 130
-  const [showReflection, setShowReflection] = useState<boolean>(true); // Reflejo suave en el piso
+  const [posX, setPosX] = useState<number>(0); // Center offset (-300 to 300)
+  const [posY, setPosY] = useState<number>(35); // Vertical placement offset (-150 to 150)
+  const [shadowOpacity, setShadowOpacity] = useState<number>(0.75); // Tire contact shadow opacity
+  const [shadowSpread, setShadowSpread] = useState<number>(30); // Shadow blur spread
+  const [brightness, setBrightness] = useState<number>(100); // 70 to 130
+  const [contrast, setContrast] = useState<number>(102); // 70 to 130
+  const [showReflection, setShowReflection] = useState<boolean>(true); // Subtle floor reflection
 
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // 1. Cargar fondo oficial del Showroom
+  // 1. Load official Showroom studio backdrop
   useEffect(() => {
     if (!isOpen) return;
     const bg = new Image();
@@ -61,12 +61,12 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
       setBackdropLoaded(true);
     };
     bg.onerror = () => {
-      // Fallback si por alguna razón falla el backdrop
+      // Fallback if backdrop image fails
       bg.src = '/vehicles/toyota-4runner-blanca-blindada.jpg';
     };
   }, [isOpen]);
 
-  // 2. Cargar imagen del carro si existe
+  // 2. Load vehicle image if available
   useEffect(() => {
     if (!carImageSrc) {
       setCarLoaded(false);

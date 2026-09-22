@@ -1,10 +1,10 @@
 export interface CompanySettings {
-  // 1. Marca & Identidad
+  // 1. Brand & Identity
   companyName: string;
   logoUrl?: string;
   tagline: string;
 
-  // 2. Canales Concierge
+  // 2. Concierge Channels
   phone: string;
   whatsappPhone: string;
   email: string;
@@ -13,7 +13,7 @@ export interface CompanySettings {
   businessHours: string;
   pickupLocations: string[];
 
-  // 3. Contenido de Portada (Hero)
+  // 3. Hero Showcase Content
   hero: {
     badge: string;
     titleLine1: string;
@@ -21,7 +21,7 @@ export interface CompanySettings {
     description: string;
   };
 
-  // 4. Redes Sociales Oficiales
+  // 4. Official Social Links
   socialLinks: {
     instagram?: string;
     tiktok?: string;
@@ -29,7 +29,7 @@ export interface CompanySettings {
     youtube?: string;
   };
 
-  // 5. Políticas y Requisitos
+  // 5. Policies and Requirements
   policies: {
     coverageText: string;
     certificationText: string;
@@ -37,7 +37,7 @@ export interface CompanySettings {
     depositRefundHours: number;
   };
 
-  // 6. Tasas de Cambio Comerciales Fijas (Dólar, Euro, Peso Colombiano)
+  // 6. Fixed Commercial Exchange Rates (USD, EUR, COP)
   rates: {
     usdToCop: number;
     usdToEur: number;

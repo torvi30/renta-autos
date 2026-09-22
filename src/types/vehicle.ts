@@ -1,26 +1,30 @@
 export type VehicleStatus = 'AVAILABLE' | 'RENTED' | 'MAINTENANCE' | 'INACTIVE';
 
 export type VehicleCategory = 
+  | 'SPORTS' 
   | 'DEPORTIVO' 
+  | 'LUXURY_SUV' 
   | 'SUV_LUJO' 
+  | 'EXECUTIVE_SEDAN' 
   | 'SEDAN_EJECUTIVO' 
+  | 'EXOTIC' 
   | 'EXOTICO' 
   | 'CONVERTIBLE';
 
-export type TransmissionType = 'AUTOMATICA' | 'MANUAL';
+export type TransmissionType = 'AUTOMATIC' | 'AUTOMATICA' | 'MANUAL';
 
-export type FuelType = 'GASOLINA' | 'HIBRIDO' | 'ELECTRICO' | 'DIESEL';
+export type FuelType = 'GASOLINE' | 'GASOLINA' | 'HYBRID' | 'HIBRIDO' | 'ELECTRIC' | 'ELECTRICO' | 'DIESEL';
 
 export interface VehicleGallery {
-  // Regla 8: Máximo 12 fotografías organizadas por categoría
-  exteriorImages: string[]; // Frente, lateral, trasera, etc. (1-5)
-  interiorImages: string[]; // Tablero, volante, asientos (6-9)
-  detailImages: string[];   // Pantalla, rines, motor, baúl (10-12)
+  // Maximum 12 photographs organized by category
+  exteriorImages: string[]; // Front, sides, rear, etc. (1-5)
+  interiorImages: string[]; // Dashboard, steering wheel, seats (6-9)
+  detailImages: string[];   // Touchscreen, wheels, engine, trunk (10-12)
 }
 
 export interface Vehicle {
   id: string;
-  slug: string; // Para SEO / URL amigable (Regla 17)
+  slug: string; // SEO-friendly URL slug
   brand: string;
   model: string;
   year: number;
@@ -28,14 +32,14 @@ export interface Vehicle {
   category: VehicleCategory;
   description: string;
   pricePerDay: number;
-  currency: string; // 'USD'
+  currency: string; // e.g. 'USD'
   transmission: TransmissionType;
   fuel: FuelType;
   seats: number;
   features: string[];
   status: VehicleStatus;
   mainImage: string;
-  videoUrl?: string; // Video de exterior máx 15 segundos en loop silencioso (Regla 7, 9)
+  videoUrl?: string; // Showcase loop video (max 15s)
   specs?: {
     acceleration0to100?: string;
     horsepower?: number;

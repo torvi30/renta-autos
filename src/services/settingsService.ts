@@ -24,7 +24,7 @@ const sanitizeSettings = (settings: CompanySettings): CompanySettings => {
 };
 
 /**
- * Obtener configuración almacenada en caché local
+ * Get company settings from local cache
  */
 export const getLocalCompanySettings = (): CompanySettings => {
   if (typeof window === 'undefined') return DEFAULT_COMPANY_SETTINGS;
@@ -38,25 +38,25 @@ export const getLocalCompanySettings = (): CompanySettings => {
     localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(parsed));
     return parsed;
   } catch (error) {
-    console.warn('Error al leer configuración de caché local:', error);
+    console.warn('Error reading settings from local cache:', error);
     return DEFAULT_COMPANY_SETTINGS;
   }
 };
 
 /**
- * Persistir configuración en caché local
+ * Persist company settings in local cache
  */
 export const saveLocalCompanySettings = (settings: CompanySettings): void => {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(settings));
   } catch (error) {
-    console.error('Error al persistir configuración en caché local:', error);
+    console.error('Error persisting settings to local cache:', error);
   }
 };
 
 /**
- * Obtener configuración desde Cloud Firestore con fallback local
+ * Fetch company settings from Cloud Firestore with local fallback
  */
 export const fetchCompanySettings = async (): Promise<CompanySettings> => {
   const local = getLocalCompanySettings();
@@ -73,18 +73,18 @@ export const fetchCompanySettings = async (): Promise<CompanySettings> => {
       saveLocalCompanySettings(merged);
       return merged;
     } else {
-      // Sembrar por primera vez en Firestore
+      // First-time seeding in Firestore
       await setDoc(docRef, local);
       return local;
     }
   } catch (error) {
-    console.warn('Fallo al conectar con Firestore para configuración, usando local:', error);
+    console.warn('Failed connecting to Firestore for settings, using local fallback:', error);
     return local;
   }
 };
 
 /**
- * Actualizar configuración de la empresa en Firestore y caché local
+ * Update company settings in Firestore and local cache
  */
 export const updateCompanySettings = async (settings: CompanySettings): Promise<CompanySettings> => {
   const updated: CompanySettings = {
@@ -92,16 +92,16 @@ export const updateCompanySettings = async (settings: CompanySettings): Promise<
     updatedAt: new Date().toISOString(),
   };
 
-  // 1. Guardar en local inmediatamente (0ms latencia)
+  // 1. Save locally immediately (0ms latency)
   saveLocalCompanySettings(updated);
 
-  // 2. Sincronizar en la nube si está configurada
+  // 2. Synchronize to cloud if configured
   if (db && isFirebaseConfigured()) {
     try {
       const docRef = doc(db, SETTINGS_COLLECTION, COMPANY_DOC_ID);
       await setDoc(docRef, updated, { merge: true });
     } catch (error) {
-      console.warn('Error al guardar configuración en Firestore:', error);
+      console.warn('Error saving settings to Firestore:', error);
     }
   }
 
@@ -109,12 +109,12 @@ export const updateCompanySettings = async (settings: CompanySettings): Promise<
 };
 
 /**
- * Suscribirse a cambios en tiempo real de la configuración
+ * Subscribe to real-time company settings updates
  */
 export const subscribeCompanySettings = (
   callback: (settings: CompanySettings) => void
 ): (() => void) => {
-  // Emitir estado local inicial de inmediato
+  // Immediately emit initial local state
   callback(getLocalCompanySettings());
 
   if (!db || !isFirebaseConfigured()) {
@@ -134,13 +134,13 @@ export const subscribeCompanySettings = (
         }
       },
       (error) => {
-        console.warn('Error en suscripción a configuración de empresa:', error);
+        console.warn('Error in company settings subscription:', error);
       }
     );
 
     return unsubscribe;
   } catch (error) {
-    console.warn('Error inicializando suscripción a configuración:', error);
+    console.warn('Error initializing settings subscription:', error);
     return () => {};
   }
 };

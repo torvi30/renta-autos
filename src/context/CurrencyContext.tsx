@@ -55,7 +55,7 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const { settings } = useSettings();
   const [currency, setCurrencyState] = useState<CurrencyCode>('USD');
 
-  // Calcular las configuraciones dinámicas basadas en los ajustes guardados por el admin
+  // Calculate dynamic configurations based on rates saved in company settings
   const dynamicConfigs: Record<CurrencyCode, CurrencyConfig> = useMemo(() => {
     const copRate = Number(settings?.rates?.usdToCop) || 4150;
     const eurRate = Number(settings?.rates?.usdToEur) || 0.92;
@@ -82,7 +82,7 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setCurrencyState(saved);
       }
     } catch (e) {
-      console.warn('Error al leer divisa guardada:', e);
+      console.warn('Error reading saved currency:', e);
     }
   }, [dynamicConfigs]);
 
@@ -91,7 +91,7 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, newCurrency);
     } catch (e) {
-      console.warn('Error al guardar divisa:', e);
+      console.warn('Error saving currency preference:', e);
     }
   };
 
@@ -132,7 +132,7 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 export const useCurrency = (): CurrencyContextType => {
   const context = useContext(CurrencyContext);
   if (!context) {
-    throw new Error('useCurrency debe ser utilizado dentro de un CurrencyProvider');
+    throw new Error('useCurrency must be used within a CurrencyProvider');
   }
   return context;
 };

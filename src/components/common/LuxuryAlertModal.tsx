@@ -47,7 +47,7 @@ export const LuxuryAlertModal: React.FC<LuxuryAlertModalProps> = ({
   const showCancel = options?.showCancelButton ?? false;
   const isDestructive = options?.isDestructive ?? (type === 'warning' || type === 'error');
 
-  // Temporizador de auto-cierre con barra de progreso
+  // Auto-close countdown timer with progress bar
   useEffect(() => {
     if (!isOpen || !options?.timer) {
       setProgress(100);
@@ -72,7 +72,7 @@ export const LuxuryAlertModal: React.FC<LuxuryAlertModalProps> = ({
     return () => clearInterval(timerInterval);
   }, [isOpen, options?.timer, onConfirm]);
 
-  // Soporte de tecla ESC y Enter
+  // Support ESC and Enter key shortcuts
   useEffect(() => {
     if (!isOpen) return;
 
@@ -90,7 +90,7 @@ export const LuxuryAlertModal: React.FC<LuxuryAlertModalProps> = ({
 
   if (!isOpen || !options) return null;
 
-  // Paleta temática y configuración según el tipo de alerta
+  // Theme palette and configuration per alert type
   const typeConfig = {
     success: {
       badgeText: 'OPERACIÓN EXITOSA',

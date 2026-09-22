@@ -30,7 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const isManualScrollingRef = useRef(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Contador de 3 clics secretos en el logotipo para acceso de administrador
+  // Secret 3-click counter on logo for admin portal access
   const logoClickCountRef = useRef(0);
   const logoClickTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -42,27 +42,26 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
     scrollTimeoutRef.current = setTimeout(() => {
       isManualScrollingRef.current = false;
-    }, 1100); // Bloquea la sobreescritura durante el scroll suave
+    }, 1100); // Prevent scroll-event override during smooth scrolling
   };
 
-  // Referencias para detección de clics/toques fuera del cajón móvil
+  // References for outside-click / outside-touch detection on mobile drawer
   const mobileMenuRef = useRef<HTMLDivElement | null>(null);
   const mobileToggleBtnRef = useRef<HTMLButtonElement | null>(null);
 
-  // Cerrar menú móvil al hacer clic o touch fuera, o presionar Escape
+  // Close mobile menu on outside interaction or Escape key
   useEffect(() => {
     if (!isMobileMenuOpen) return;
 
     const handleOutsideInteraction = (event: MouseEvent | TouchEvent) => {
       const target = event.target as Node;
-      // Si el toque/clic es dentro del cajón móvil o sobre el botón de abrir/cerrar (X), ignorar
+      // Ignore click/touch inside mobile drawer or toggle button
       if (
         (mobileMenuRef.current && mobileMenuRef.current.contains(target)) ||
         (mobileToggleBtnRef.current && mobileToggleBtnRef.current.contains(target))
       ) {
         return;
       }
-      // Tocar o cliquear afuera cierra el menú inmediatamente
       setIsMobileMenuOpen(false);
     };
 
@@ -72,10 +71,10 @@ export const Navbar: React.FC<NavbarProps> = ({
       }
     };
 
-    // Bloquear scroll de la página de fondo mientras el menú está abierto
+    // Lock background page scroll while mobile drawer is open
     document.body.style.overflow = 'hidden';
 
-    // Escuchar tanto mousedown (escritorio) como touchstart (móvil) para respuesta táctil instantánea
+    // Listen to both mousedown (desktop) and touchstart (mobile) for instant tactile response
     document.addEventListener('mousedown', handleOutsideInteraction);
     document.addEventListener('touchstart', handleOutsideInteraction, { passive: true });
     window.addEventListener('keydown', handleKeyDown);
@@ -96,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
 
-      // Si el usuario acaba de hacer clic en un enlace del menú, no sobreescribir con el scroll en tránsito
+      // Do not override active section while manual smooth scroll is in transit
       if (isManualScrollingRef.current) return;
 
       if (currentRoute === 'home') {
@@ -107,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           { id: 'showroom', key: 'fleet' },
         ];
 
-        const scrollPosition = window.scrollY + 220; // Offset visual para compensar la barra superior
+        const scrollPosition = window.scrollY + 220; // Visual offset for navbar height
 
         for (const sec of sections) {
           const el = document.getElementById(sec.id);
@@ -120,7 +119,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           }
         }
 
-        // Si está en el Hero superior
+        // Default to top hero section
         setActiveSection('fleet');
       }
     };
@@ -138,7 +137,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const scrollToSection = (id: string) => {
     setIsMobileMenuOpen(false);
 
-    // Actualizar y bloquear la sección activa inmediatamente sin saltos durante el desplazamiento suave
+    // Lock active section immediately during smooth transition
     if (id === 'showroom') lockActiveSection('fleet');
     else if (id === 'experience') lockActiveSection('experience');
     else if (id === 'how-it-works') lockActiveSection('how-it-works');
@@ -172,7 +171,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
-  // Puerta secreta: 3 clics rápidos al logotipo activan el portal administrativo
+  // Secret admin doorway: 3 rapid clicks on logo navigate to admin portal
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
     logoClickCountRef.current += 1;

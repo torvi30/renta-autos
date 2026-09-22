@@ -24,7 +24,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
   const { t } = useLanguage();
   const whatsAppUrl = getWhatsAppLink();
 
-  // Puerta secreta alternativa: 3 clics en el logo del pie de página
+  // Alternative secret doorway: 3 clicks on footer logo to access admin
   const footerClickCountRef = useRef(0);
   const footerClickTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -103,13 +103,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
               </div>
             )}
 
-            {/* Redes Sociales Oficiales: Solo se muestran si el administrador las configuró */}
+            {/* Official Social Links: Displayed only if configured in admin */}
             {(() => {
               const isRealUrl = (url?: string) => {
                 if (!url) return false;
                 const trimmed = url.trim();
                 if (!trimmed) return false;
-                // Filtrar URLs dummy por defecto si no tienen cuenta o handle
+                // Filter default root URLs if no specific account handle is set
                 const dummyRoots = [
                   'https://instagram.com',
                   'https://instagram.com/',

@@ -53,7 +53,7 @@ export interface AuthResponse {
   tokenInfo?: {
     email: string;
     expiresInSeconds: number;
-    previewCode?: string; // Para entorno de demostración / preview de correo
+    previewCode?: string; // For demo / email preview environment
   };
 }
 
