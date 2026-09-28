@@ -17,24 +17,14 @@ import {
   Share2,
   FileCheck2,
   X,
-  Cloud,
-  Database,
   ShieldCheck,
-  Zap,
-  Check,
-  AlertCircle,
   DollarSign,
 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { luxuryAlert } from '../../context/AlertContext';
 import { CompanySettings } from '../../types/settings';
-import {
-  isFirebaseConfigured,
-  getFirebaseStatus,
-  testFirebaseConnection,
-} from '../../services/firebase';
 
-type SettingsTab = 'brand' | 'contact' | 'finance' | 'hero' | 'social' | 'policies' | 'cloud';
+type SettingsTab = 'brand' | 'contact' | 'finance' | 'hero' | 'social' | 'policies';
 
 export const AdminSettingsView: React.FC = () => {
   const { settings, updateSettings, isSaving, getWhatsAppLink } = useSettings();
@@ -171,47 +161,6 @@ export const AdminSettingsView: React.FC = () => {
     clientName: 'Víctor Tamayo (Prueba Staff)',
   });
 
-  const [isTestingFirebase, setIsTestingFirebase] = useState(false);
-  const [firebaseTestResult, setFirebaseTestResult] = useState<{
-    success: boolean;
-    message: string;
-    projectId?: string;
-    bucket?: string;
-    authReady?: boolean;
-    firestoreReady?: boolean;
-    storageReady?: boolean;
-  } | null>(null);
-
-  const handleTestFirebase = async () => {
-    setIsTestingFirebase(true);
-    setFirebaseTestResult(null);
-    try {
-      const result = await testFirebaseConnection();
-      setFirebaseTestResult(result);
-      if (result.success) {
-        luxuryAlert.success({
-          title: '¡Firebase Cloud 100% Conectado!',
-          message: `Proyecto ${result.projectId} activo con Firestore NoSQL, Storage WebP y Auth.`,
-          timer: 3500,
-        });
-      } else {
-        luxuryAlert.warning(
-          'Configuración Firebase Pendiente',
-          result.message
-        );
-      }
-    } catch (err: any) {
-      const errMsg = err?.message || 'Error inesperado al validar Firebase Cloud.';
-      setFirebaseTestResult({
-        success: false,
-        message: errMsg,
-      });
-      luxuryAlert.error('Error Firebase Cloud', errMsg);
-    } finally {
-      setIsTestingFirebase(false);
-    }
-  };
-
   const tabButtons: { id: SettingsTab; label: string; icon: any }[] = [
     { id: 'brand', label: 'Marca & Logo', icon: ImageIcon },
     { id: 'contact', label: 'Contacto & WhatsApp', icon: Phone },
@@ -219,7 +168,6 @@ export const AdminSettingsView: React.FC = () => {
     { id: 'hero', label: 'Portada (Hero)', icon: Sliders },
     { id: 'social', label: 'Redes Sociales', icon: Share2 },
     { id: 'policies', label: 'Políticas & Requisitos', icon: FileCheck2 },
-    { id: 'cloud', label: 'Firebase Cloud', icon: Database },
   ];
 
   return (
@@ -230,11 +178,11 @@ export const AdminSettingsView: React.FC = () => {
       {/* ========================================================================= */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-carbon-900/90 border border-carbon-800 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 shadow-inner">
+          <div className="w-12 h-12 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 shadow-inner flex-shrink-0">
             <Building2 className="w-6 h-6" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider font-display">
                 Personalización Total de Marca & Contenidos
               </h1>
@@ -251,7 +199,7 @@ export const AdminSettingsView: React.FC = () => {
         <button
           onClick={handleSubmit}
           disabled={isSaving}
-          className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black text-sm uppercase tracking-wider transition-all shadow-lg shadow-gold-500/20 hover:shadow-gold-500/40 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+          className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black text-sm uppercase tracking-wider transition-all shadow-lg shadow-gold-500/20 hover:shadow-gold-500/40 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 flex-shrink-0"
         >
           {isSaving ? (
             <>
@@ -277,8 +225,8 @@ export const AdminSettingsView: React.FC = () => {
         </div>
       )}
 
-      {/* Selector de Pestañas de Ajustes */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-carbon-800 scrollbar-none">
+      {/* Selector de Pestañas de Ajustes (Flexible y sin scroll lateral cortado) */}
+      <div className="flex flex-wrap items-center gap-2 pb-3 border-b border-carbon-800">
         {tabButtons.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -286,25 +234,25 @@ export const AdminSettingsView: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
                 isActive
                   ? 'bg-gold-500/20 border border-gold-500/50 text-gold-400 shadow-md shadow-gold-500/10'
                   : 'bg-carbon-900 border border-carbon-800 text-silver-400 hover:text-white hover:border-carbon-700'
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-4 h-4 flex-shrink-0" />
               <span>{tab.label}</span>
             </button>
           );
         })}
       </div>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 xl:grid-cols-12 gap-6 min-w-0">
         
         {/* ========================================================================= */}
-        {/* COLUMNA IZQUIERDA: FORMULARIO DINÁMICO POR PESTAÑA (7 Columnas)           */}
+        {/* COLUMNA IZQUIERDA: FORMULARIO DINÁMICO POR PESTAÑA (7 Columnas en XL)     */}
         {/* ========================================================================= */}
-        <div className="lg:col-span-7 space-y-6">
+        <div className="xl:col-span-7 space-y-6 min-w-0">
           
           {/* PESTAÑA 1: MARCA & LOGO OFICIAL */}
           {activeTab === 'brand' && (
@@ -443,13 +391,13 @@ export const AdminSettingsView: React.FC = () => {
               </div>
 
               {/* WhatsApp Oficial */}
-              <div className="space-y-1.5 bg-carbon-950/60 p-4 rounded-xl border border-carbon-800">
-                <label className="block text-xs font-bold text-silver-200 uppercase tracking-wider flex items-center justify-between">
+              <div className="space-y-1.5 bg-carbon-950/60 p-4 rounded-xl border border-carbon-800 min-w-0">
+                <label className="block text-xs font-bold text-silver-200 uppercase tracking-wider flex items-center justify-between flex-wrap gap-1">
                   <span>Número de WhatsApp para Enlace Directo (wa.me) *</span>
                   <span className="text-[10px] text-emerald-400 font-mono">Código país + número</span>
                 </label>
-                <div className="flex items-center gap-2">
-                  <div className="px-3 py-2.5 rounded-xl bg-carbon-900 border border-carbon-750 text-silver-300 font-mono text-sm">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="px-3 py-2.5 rounded-xl bg-carbon-900 border border-carbon-750 text-silver-300 font-mono text-sm flex-shrink-0">
                     wa.me/
                   </div>
                   <input
@@ -457,7 +405,7 @@ export const AdminSettingsView: React.FC = () => {
                     value={formData.whatsappPhone}
                     onChange={(e) => handleChange('whatsappPhone', e.target.value.replace(/[^0-9]/g, ''))}
                     placeholder="573009115898"
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-carbon-900 border border-carbon-750 text-white font-mono text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                    className="flex-1 min-w-0 px-4 py-2.5 rounded-xl bg-carbon-900 border border-carbon-750 text-white font-mono text-sm focus:outline-none focus:border-emerald-500 transition-colors"
                     required
                   />
                 </div>
@@ -466,8 +414,8 @@ export const AdminSettingsView: React.FC = () => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-0">
+                <div className="space-y-1.5 min-w-0">
                   <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
                     Teléfono Visible en Footer / PBX
                   </label>
@@ -476,12 +424,12 @@ export const AdminSettingsView: React.FC = () => {
                     value={formData.phone}
                     onChange={(e) => handleChange('phone', e.target.value)}
                     placeholder="+57 (300) 911-5898"
-                    className="w-full px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white font-mono text-sm focus:outline-none focus:border-gold-500"
+                    className="w-full min-w-0 px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white font-mono text-sm focus:outline-none focus:border-gold-500"
                     required
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 min-w-0">
                   <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
                     Correo Concierge Oficial
                   </label>
@@ -490,7 +438,7 @@ export const AdminSettingsView: React.FC = () => {
                     value={formData.email}
                     onChange={(e) => handleChange('email', e.target.value)}
                     placeholder="concierge@premiumcarrental.com"
-                    className="w-full px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm focus:outline-none focus:border-gold-500"
+                    className="w-full min-w-0 px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm focus:outline-none focus:border-gold-500"
                     required
                   />
                 </div>
@@ -818,8 +766,8 @@ export const AdminSettingsView: React.FC = () => {
                 </span>
               </div>
 
-              <div className="space-y-4">
-                <div className="space-y-1.5">
+              <div className="space-y-4 min-w-0">
+                <div className="space-y-1.5 min-w-0">
                   <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
                     Instagram Oficial
                   </label>
@@ -828,11 +776,11 @@ export const AdminSettingsView: React.FC = () => {
                     value={formData.socialLinks.instagram || ''}
                     onChange={(e) => handleSocialChange('instagram', e.target.value)}
                     placeholder="https://instagram.com/tu_cuenta"
-                    className="w-full px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm focus:outline-none focus:border-gold-500 font-mono"
+                    className="w-full min-w-0 px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm focus:outline-none focus:border-gold-500 font-mono"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 min-w-0">
                   <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
                     TikTok Oficial
                   </label>
@@ -841,11 +789,11 @@ export const AdminSettingsView: React.FC = () => {
                     value={formData.socialLinks.tiktok || ''}
                     onChange={(e) => handleSocialChange('tiktok', e.target.value)}
                     placeholder="https://tiktok.com/@tu_cuenta"
-                    className="w-full px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm focus:outline-none focus:border-gold-500 font-mono"
+                    className="w-full min-w-0 px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm focus:outline-none focus:border-gold-500 font-mono"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 min-w-0">
                   <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
                     Facebook Oficial
                   </label>
@@ -854,11 +802,11 @@ export const AdminSettingsView: React.FC = () => {
                     value={formData.socialLinks.facebook || ''}
                     onChange={(e) => handleSocialChange('facebook', e.target.value)}
                     placeholder="https://facebook.com/tu_pagina"
-                    className="w-full px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm focus:outline-none focus:border-gold-500 font-mono"
+                    className="w-full min-w-0 px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm focus:outline-none focus:border-gold-500 font-mono"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 min-w-0">
                   <label className="block text-xs font-bold text-silver-300 uppercase tracking-wider">
                     YouTube Oficial (Opcional)
                   </label>
@@ -867,7 +815,7 @@ export const AdminSettingsView: React.FC = () => {
                     value={formData.socialLinks.youtube || ''}
                     onChange={(e) => handleSocialChange('youtube', e.target.value)}
                     placeholder="https://youtube.com/@tu_canal"
-                    className="w-full px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm focus:outline-none focus:border-gold-500 font-mono"
+                    className="w-full min-w-0 px-4 py-2.5 rounded-xl bg-carbon-950 border border-carbon-800 text-white text-sm focus:outline-none focus:border-gold-500 font-mono"
                   />
                 </div>
               </div>
@@ -945,370 +893,112 @@ export const AdminSettingsView: React.FC = () => {
             </div>
           )}
 
-          {/* PESTAÑA 6: ECOSISTEMA UNIFICADO FIREBASE CLOUD (FIRESTORE + STORAGE + AUTH) */}
-          {activeTab === 'cloud' && (
-            <div className="bg-carbon-900/80 border border-carbon-800 p-6 rounded-2xl space-y-6 shadow-lg animate-fade-in">
-              <div className="flex items-center justify-between border-b border-carbon-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <Database className="w-5 h-5 text-gold-400" />
-                  <h3 className="text-base font-bold text-white uppercase tracking-wider font-display">
-                    Ecosistema Firebase Cloud (100% Centralizado)
-                  </h3>
-                </div>
-                <span className={`text-[11px] font-mono px-2 py-0.5 rounded border ${
-                  isFirebaseConfigured()
-                    ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
-                    : 'text-amber-400 bg-amber-500/10 border-amber-500/30'
-                }`}>
-                  {isFirebaseConfigured() ? 'FIREBASE ONLINE (SPARK $0)' : 'CONFIGURACIÓN LOCAL'}
-                </span>
-              </div>
-
-              {/* Tarjeta de Estado y Diagnóstico de Firebase */}
-              <div className="p-5 rounded-2xl bg-carbon-950/70 border border-carbon-800 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                  <div>
-                    <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                      Google Firebase Cloud (Plan Gratuito Spark)
-                    </h4>
-                    <p className="text-xs text-silver-400 mt-1">
-                      Todo tu proyecto (base de datos NoSQL, almacenamiento de fotos con WebP y autenticación de usuarios) está centralizado en tu única consola de Google Firebase.
-                    </p>
-                  </div>
-                  <div className="self-start px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    <Check className="w-3.5 h-3.5" />
-                    <span>Conectado</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  <div className="p-3 rounded-xl bg-carbon-900 border border-carbon-800">
-                    <span className="text-[10px] uppercase font-bold text-silver-400 block">ID de Proyecto Firebase</span>
-                    <span className="text-xs font-mono font-bold text-white truncate block mt-0.5">
-                      {getFirebaseStatus().projectId || 'premium-car-rental-be15d'}
-                    </span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-carbon-900 border border-carbon-800">
-                    <span className="text-[10px] uppercase font-bold text-silver-400 block">Bucket de Almacenamiento</span>
-                    <span className="text-xs font-mono font-bold text-white truncate block mt-0.5">
-                      {getFirebaseStatus().bucket || 'premium-car-rental-be15d.firebasestorage.app'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Botón de Test de Diagnóstico en Vivo */}
-                <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={handleTestFirebase}
-                    disabled={isTestingFirebase}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-gold-500/20 to-amber-500/20 border border-gold-500/40 hover:bg-gold-500/30 text-gold-300 hover:text-gold-200 font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50"
-                  >
-                    {isTestingFirebase ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Verificando Servicios Firebase...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="w-4 h-4 text-gold-400" />
-                        <span>Verificar Conexión de Firebase Cloud</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* Resultado de la Prueba en Vivo */}
-                {firebaseTestResult && (
-                  <div className={`p-4 rounded-xl border text-xs space-y-2 animate-fade-in ${
-                    firebaseTestResult.success
-                      ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
-                      : 'bg-amber-500/10 border-amber-500/40 text-amber-300'
-                  }`}>
-                    <div className="flex items-center gap-2 font-bold">
-                      {firebaseTestResult.success ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      ) : (
-                        <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                      )}
-                      <span>{firebaseTestResult.message}</span>
-                    </div>
-
-                    <div className="pt-2 border-t border-emerald-500/20 grid grid-cols-3 gap-2 text-[11px] font-mono">
-                      <div className="p-2 rounded bg-carbon-900 border border-emerald-500/20 text-center">
-                        <span className="text-silver-400 block text-[9px] uppercase">Firestore NoSQL</span>
-                        <span className="text-emerald-400 font-bold">{firebaseTestResult.firestoreReady ? 'ACTIVO' : 'OFFLINE'}</span>
-                      </div>
-                      <div className="p-2 rounded bg-carbon-900 border border-emerald-500/20 text-center">
-                        <span className="text-silver-400 block text-[9px] uppercase">Storage WebP</span>
-                        <span className="text-emerald-400 font-bold">{firebaseTestResult.storageReady ? 'ACTIVO' : 'OFFLINE'}</span>
-                      </div>
-                      <div className="p-2 rounded bg-carbon-900 border border-emerald-500/20 text-center">
-                        <span className="text-silver-400 block text-[9px] uppercase">Auth SDK</span>
-                        <span className="text-emerald-400 font-bold">{firebaseTestResult.authReady ? 'ACTIVO' : 'OFFLINE'}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* 3 Pilares de Firebase Cloud */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                {/* Pilar 1: Storage */}
-                <div className="p-4 rounded-xl bg-carbon-950/60 border border-carbon-800 space-y-2">
-                  <div className="w-8 h-8 rounded-lg bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
-                    <Cloud className="w-4 h-4" />
-                  </div>
-                  <h5 className="font-bold text-white uppercase text-[11px]">Firebase Storage</h5>
-                  <p className="text-[11px] text-silver-400 leading-relaxed">
-                    Almacena fotos y videos de la flota. Integra compresión automática a WebP en el navegador antes de subir para ahorrar hasta un 85% de espacio.
-                  </p>
-                </div>
-
-                {/* Pilar 2: Firestore */}
-                <div className="p-4 rounded-xl bg-carbon-950/60 border border-carbon-800 space-y-2">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                    <Database className="w-4 h-4" />
-                  </div>
-                  <h5 className="font-bold text-white uppercase text-[11px]">Firestore (NoSQL)</h5>
-                  <p className="text-[11px] text-silver-400 leading-relaxed">
-                    Base de datos flexible sin esquemas SQL rígidos. Sincroniza vehículos, reservas, clientes e inspecciones en tiempo real.
-                  </p>
-                </div>
-
-                {/* Pilar 3: Auth */}
-                <div className="p-4 rounded-xl bg-carbon-950/60 border border-carbon-800 space-y-2">
-                  <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                  <h5 className="font-bold text-white uppercase text-[11px]">Firebase Auth</h5>
-                  <p className="text-[11px] text-silver-400 leading-relaxed">
-                    Seguridad y sesiones de administradores con contraseñas encriptadas y tokens seguros de Google sin backend intermedio.
-                  </p>
-                </div>
-              </div>
-
-              {/* Enlace directo a la Consola de Firebase */}
-              <div className="p-4 rounded-xl bg-carbon-950/40 border border-carbon-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-3 text-silver-300">
-                  <Sparkles className="w-4 h-4 text-gold-400 flex-shrink-0" />
-                  <span>Gestiona tus usuarios, fotos y colecciones en un solo lugar:</span>
-                </div>
-                <a
-                  href={`https://console.firebase.google.com/project/${getFirebaseStatus().projectId || 'premium-car-rental-be15d'}/overview`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-carbon-900 hover:bg-carbon-850 border border-carbon-700 text-gold-400 hover:text-gold-300 font-bold text-xs whitespace-nowrap transition-colors"
-                >
-                  <span>Abrir Consola Firebase</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-            </div>
-          )}
-
         </div>
 
         {/* ========================================================================= */}
-        {/* COLUMNA DERECHA: VISTA PREVIA EN VIVO & SIMULADOR (5 Columnas)            */}
+        {/* COLUMNA DERECHA: VISTA PREVIA EN VIVO & SIMULADOR (5 Columnas en XL)      */}
         {/* ========================================================================= */}
-        <div className="lg:col-span-5 space-y-6">
+        <div className="xl:col-span-5 space-y-6 min-w-0">
           
-          {activeTab === 'cloud' ? (
-            <div className="space-y-6 animate-fade-in">
-              {/* Card de Arquitectura Cloud Unificada */}
-              <div className="bg-gradient-to-br from-carbon-900 via-carbon-900/90 to-carbon-950 border border-carbon-800 p-5 rounded-2xl space-y-4 shadow-xl">
-                <div className="flex items-center justify-between border-b border-carbon-800 pb-3">
-                  <div className="flex items-center gap-2 text-gold-400 font-bold text-xs uppercase tracking-wider">
-                    <ShieldCheck className="w-4 h-4" />
-                    <span>Ecosistema 100% Firebase</span>
+          {/* Card de Prueba Inmediata de WhatsApp */}
+          <div className="bg-gradient-to-br from-emerald-950/40 via-carbon-900 to-carbon-950 border border-emerald-500/30 p-5 rounded-2xl space-y-3 shadow-xl min-w-0">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
+                <MessageSquare className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">Test en Vivo de WhatsApp</span>
+              </div>
+              <span className="text-[10px] font-mono text-silver-400 bg-carbon-900 px-2 py-0.5 rounded border border-carbon-800 truncate">
+                wa.me/{formData.whatsappPhone}
+              </span>
+            </div>
+
+            <p className="text-xs text-silver-300 leading-relaxed">
+              Haz clic abajo para simular un mensaje de reserva y comprobar que se abra tu WhatsApp oficial:
+            </p>
+
+            <a
+              href={testWhatsAppUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-carbon-950 font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20 active:scale-95 cursor-pointer"
+            >
+              <Phone className="w-4 h-4 text-carbon-950 fill-carbon-950 flex-shrink-0" />
+              <span>Probar Enlace WhatsApp Ahora</span>
+              <ExternalLink className="w-3.5 h-3.5 ml-1 flex-shrink-0" />
+            </a>
+          </div>
+
+          {/* SIMULADOR EN VIVO DEL HEADER / NAVBAR */}
+          <div className="bg-carbon-900/90 border border-carbon-800 p-5 rounded-2xl space-y-3 shadow-xl min-w-0">
+            <div className="flex items-center justify-between border-b border-carbon-800 pb-2">
+              <span className="text-xs font-bold text-white uppercase tracking-wider">
+                Vista Previa del Navbar
+              </span>
+              <span className="text-[10px] font-mono text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded">
+                Superior
+              </span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-carbon-950 border border-carbon-800 flex items-center justify-between gap-2 min-w-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                {formData.logoUrl ? (
+                  <img
+                    src={formData.logoUrl}
+                    alt={formData.companyName}
+                    className="h-8 max-w-[100px] object-contain flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-lg bg-carbon-900 border border-gold-500/40 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-4 h-4 text-gold-400" />
                   </div>
-                  <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                    CENTRALIZADO
+                )}
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[9px] font-bold text-gold-400 uppercase tracking-widest leading-none">
+                    PREMIUM
                   </span>
-                </div>
-
-                <p className="text-xs text-silver-300 leading-relaxed">
-                  Tu plataforma está 100% optimizada para operar con los servicios integrados de Google Firebase, sin requerir cuentas ni plataformas de terceros.
-                </p>
-
-                <div className="space-y-2.5 text-xs">
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-carbon-950 border border-carbon-800/80">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0">
-                      <Check className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h5 className="font-bold text-white text-[11px]">1 Sola Consola de Gestión</h5>
-                      <p className="text-[10px] text-silver-400">Todo en console.firebase.google.com sin cuentas adicionales.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-carbon-950 border border-carbon-800/80">
-                    <div className="w-8 h-8 rounded-lg bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 flex-shrink-0">
-                      <Zap className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h5 className="font-bold text-white text-[11px]">Compresión WebP Automática</h5>
-                      <p className="text-[10px] text-silver-400">Reduce hasta 85% el peso de fotos en el navegador, protegiendo tu almacenamiento.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-carbon-950 border border-carbon-800/80">
-                    <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 flex-shrink-0">
-                      <Database className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h5 className="font-bold text-white text-[11px]">0 Servidores Backend & 0 SQL</h5>
-                      <p className="text-[10px] text-silver-400">Todo corre en el navegador comunicándose directamente con la nube de Google.</p>
-                    </div>
-                  </div>
+                  <span className="text-xs font-black text-white uppercase font-display leading-tight truncate">
+                    {formData.companyName || 'CAR RENTAL'}
+                  </span>
                 </div>
               </div>
 
-              {/* Card de Estado Técnico en Vivo */}
-              <div className="bg-carbon-900/90 border border-carbon-800 p-5 rounded-2xl space-y-3 shadow-xl">
-                <div className="flex items-center justify-between border-b border-carbon-800 pb-2">
-                  <span className="text-xs font-bold text-white uppercase tracking-wider">
-                    Diagnóstico de Estado en Vivo
-                  </span>
-                  <span className="text-[10px] font-mono text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded">
-                    ENV CHECK
-                  </span>
-                </div>
-
-                <div className="space-y-2 text-xs font-mono">
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-carbon-950 border border-carbon-800">
-                    <span className="text-silver-400">Firestore NoSQL:</span>
-                    <span className="text-emerald-400 font-bold">ONLINE</span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-carbon-950 border border-carbon-800">
-                    <span className="text-silver-400">Firebase Storage:</span>
-                    <span className="text-emerald-400 font-bold">ONLINE (WebP Ready)</span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-carbon-950 border border-carbon-800">
-                    <span className="text-silver-400">Firebase Auth:</span>
-                    <span className="text-emerald-400 font-bold">ONLINE</span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-carbon-950 border border-carbon-800">
-                    <span className="text-silver-400">Servidor Backend:</span>
-                    <span className="text-gold-400 font-bold">INNECESARIO (0 MB)</span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-carbon-950 border border-carbon-800">
-                    <span className="text-silver-400">Estilos:</span>
-                    <span className="text-emerald-400 font-bold">100% Tailwind CSS</span>
-                  </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="px-2.5 py-1 rounded-lg bg-gold-500 text-carbon-950 font-black text-[10px] uppercase">
+                  Reservar
                 </div>
               </div>
             </div>
-          ) : (
-            <>
-              {/* Card de Prueba Inmediata de WhatsApp */}
-              <div className="bg-gradient-to-br from-emerald-950/40 via-carbon-900 to-carbon-950 border border-emerald-500/30 p-5 rounded-2xl space-y-3 shadow-xl">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
-                    <MessageSquare className="w-4 h-4" />
-                    <span>Test en Vivo de WhatsApp</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-silver-400 bg-carbon-900 px-2 py-0.5 rounded border border-carbon-800">
-                    wa.me/{formData.whatsappPhone}
-                  </span>
-                </div>
+          </div>
 
-                <p className="text-xs text-silver-300 leading-relaxed">
-                  Haz clic abajo para simular un mensaje de reserva y comprobar que se abra tu WhatsApp oficial:
-                </p>
+          {/* SIMULADOR EN VIVO DEL HERO (PORTADA) */}
+          <div className="bg-carbon-900/90 border border-carbon-800 p-5 rounded-2xl space-y-3 shadow-xl min-w-0">
+            <div className="flex items-center justify-between border-b border-carbon-800 pb-2">
+              <span className="text-xs font-bold text-white uppercase tracking-wider">
+                Vista Previa de la Portada
+              </span>
+              <span className="text-[10px] font-mono text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded">
+                Hero
+              </span>
+            </div>
 
-                <a
-                  href={testWhatsAppUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-carbon-950 font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20"
-                >
-                  <Phone className="w-4 h-4 text-carbon-950 fill-carbon-950" />
-                  <span>Probar Enlace WhatsApp Ahora</span>
-                  <ExternalLink className="w-3.5 h-3.5 ml-1" />
-                </a>
+            <div className="p-5 rounded-xl bg-carbon-950 border border-carbon-800 text-center space-y-2 min-w-0">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-carbon-900 border border-gold-500/40 text-[9px] font-bold text-gold-400 uppercase max-w-full">
+                <Sparkles className="w-3 h-3 text-gold-400 flex-shrink-0" />
+                <span className="truncate">{formData.hero.badge}</span>
               </div>
 
-              {/* SIMULADOR EN VIVO DEL HEADER / NAVBAR */}
-              <div className="bg-carbon-900/90 border border-carbon-800 p-5 rounded-2xl space-y-3 shadow-xl">
-                <div className="flex items-center justify-between border-b border-carbon-800 pb-2">
-                  <span className="text-xs font-bold text-white uppercase tracking-wider">
-                    Vista Previa del Navbar
-                  </span>
-                  <span className="text-[10px] font-mono text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded">
-                    Superior
-                  </span>
-                </div>
+              <h4 className="text-lg font-black uppercase text-white font-display leading-tight break-words">
+                {formData.hero.titleLine1} <br />
+                <span className="bg-gradient-to-r from-gold-300 via-gold-400 to-amber-500 bg-clip-text text-transparent">
+                  {formData.hero.titleLine2}
+                </span>
+              </h4>
 
-                <div className="p-3.5 rounded-xl bg-carbon-950 border border-carbon-800 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {formData.logoUrl ? (
-                      <img
-                        src={formData.logoUrl}
-                        alt={formData.companyName}
-                        className="h-8 max-w-[120px] object-contain"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-lg bg-carbon-900 border border-gold-500/40 flex items-center justify-center">
-                        <Sparkles className="w-4 h-4 text-gold-400" />
-                      </div>
-                    )}
-                    <div className="flex flex-col">
-                      <span className="text-[9px] font-bold text-gold-400 uppercase tracking-widest leading-none">
-                        PREMIUM
-                      </span>
-                      <span className="text-xs font-black text-white uppercase font-display leading-tight">
-                        {formData.companyName || 'CAR RENTAL'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-silver-400 hidden sm:inline font-mono">Showroom • Catálogo</span>
-                    <div className="px-2.5 py-1 rounded-lg bg-gold-500 text-carbon-950 font-black text-[10px] uppercase">
-                      Reservar
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* SIMULADOR EN VIVO DEL HERO (PORTADA) */}
-              <div className="bg-carbon-900/90 border border-carbon-800 p-5 rounded-2xl space-y-3 shadow-xl">
-                <div className="flex items-center justify-between border-b border-carbon-800 pb-2">
-                  <span className="text-xs font-bold text-white uppercase tracking-wider">
-                    Vista Previa de la Portada
-                  </span>
-                  <span className="text-[10px] font-mono text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded">
-                    Hero
-                  </span>
-                </div>
-
-                <div className="p-5 rounded-xl bg-carbon-950 border border-carbon-800 text-center space-y-2">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-carbon-900 border border-gold-500/40 text-[9px] font-bold text-gold-400 uppercase">
-                    <Sparkles className="w-3 h-3 text-gold-400" />
-                    <span className="truncate max-w-[240px]">{formData.hero.badge}</span>
-                  </div>
-
-                  <h4 className="text-lg font-black uppercase text-white font-display leading-tight">
-                    {formData.hero.titleLine1} <br />
-                    <span className="bg-gradient-to-r from-gold-300 via-gold-400 to-amber-500 bg-clip-text text-transparent">
-                      {formData.hero.titleLine2}
-                    </span>
-                  </h4>
-
-                  <p className="text-[11px] text-silver-400 line-clamp-2 italic">
-                    "{formData.hero.description}"
-                  </p>
-                </div>
-              </div>
-            </>
-          )}
+              <p className="text-[11px] text-silver-400 line-clamp-2 italic">
+                "{formData.hero.description}"
+              </p>
+            </div>
+          </div>
 
         </div>
 

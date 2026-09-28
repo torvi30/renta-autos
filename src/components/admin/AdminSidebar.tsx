@@ -96,7 +96,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
       {/* Contenedor de la Barra Lateral con mayor ancho y legibilidad */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-72 bg-carbon-900/98 border-r border-carbon-800/90 backdrop-blur-2xl flex flex-col justify-between transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 shadow-2xl ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-72 bg-carbon-900/98 border-r border-carbon-800/90 backdrop-blur-2xl flex flex-col justify-between transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 lg:h-full lg:flex-shrink-0 overflow-y-auto shadow-2xl ${
           isOpenMobile ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

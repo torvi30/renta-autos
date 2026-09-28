@@ -280,7 +280,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
     : 0;
 
   return (
-    <div className="min-h-screen bg-carbon-950 text-silver-100 flex selection:bg-gold-500/20 selection:text-gold-400">
+    <div className="h-screen w-screen overflow-hidden bg-carbon-950 text-silver-100 flex selection:bg-gold-500/20 selection:text-gold-400">
       
       {/* Toast Flotante de Notificaciones */}
       {toastMessage && (
@@ -303,10 +303,10 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
       />
 
       {/* 2. Área de Contenido Principal */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-gradient-to-b from-carbon-950 via-carbon-900/30 to-carbon-950">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-gradient-to-b from-carbon-950 via-carbon-900/30 to-carbon-950">
         
-        {/* Cabecera Superior Ejecutiva con Mayor Presencia y Letra Grande */}
-        <header className="border-b border-carbon-800/80 bg-carbon-900/95 backdrop-blur-2xl sticky top-0 z-30 px-3.5 sm:px-8 lg:px-10 py-3 sm:py-5 flex items-center justify-between shadow-xl">
+        {/* Cabecera Superior Ejecutiva Fija (Nunca se baja ni se oculta al hacer scroll) */}
+        <header className="flex-shrink-0 border-b border-carbon-800/80 bg-carbon-900/95 backdrop-blur-2xl z-30 px-3.5 sm:px-8 lg:px-10 py-3 sm:py-5 flex items-center justify-between shadow-xl">
           <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
             {/* Botón Hamburguesa en Móvil */}
             <button
@@ -392,8 +392,8 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
           </div>
         </header>
 
-        {/* Contenedor de la Vista Activa con Scroll */}
-        <main className="flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-10 w-full max-w-[1680px] mx-auto space-y-6 sm:space-y-7">
+        {/* Contenedor de la Vista Activa con Scroll Vertical Propio (Sin Scroll Horizontal) */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3.5 sm:p-6 lg:p-10 w-full max-w-[1680px] mx-auto space-y-6 sm:space-y-7">
           
           {/* Alerta de Solicitudes Pendientes con Letra Clara */}
           {pendingCount > 0 && currentTab !== 'reservations' && (
