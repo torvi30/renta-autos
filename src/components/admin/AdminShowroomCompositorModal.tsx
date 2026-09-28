@@ -8,8 +8,9 @@ import {
   Check,
   RotateCcw,
   HelpCircle,
-  ExternalLink,
   Car,
+  Camera,
+  Wand2,
 } from 'lucide-react';
 
 interface AdminShowroomCompositorModalProps {
@@ -33,6 +34,7 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
   const [carImageSrc, setCarImageSrc] = useState<string>(initialCarImage || '');
   const [backdropLoaded, setBackdropLoaded] = useState(false);
   const [carLoaded, setCarLoaded] = useState(false);
+  const [compositeMode, setCompositeMode] = useState<'CINEMATIC_VIGNETTE' | 'STUDIO_CUTOUT'>('CINEMATIC_VIGNETTE');
 
   // In-memory Image object references
   const backdropImgRef = useRef<HTMLImageElement | null>(null);
@@ -84,7 +86,7 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
     };
   }, [carImageSrc]);
 
-  // 3. Renderizar el lienzo Canvas (Fusión de Fondo + Sombra + Carro + Reflejo)
+  // 3. Renderizar el lienzo Canvas (Modo Fusión Revista o Modo Plataforma 360)
   const renderComposite = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -99,93 +101,180 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
     // Limpiar
     ctx.clearRect(0, 0, width, height);
 
-    // Dibujar Fondo Showroom
-    if (backdropImgRef.current && backdropLoaded) {
-      ctx.drawImage(backdropImgRef.current, 0, 0, width, height);
-    } else {
-      // Fondo oscuro degradado de respaldo
-      const grad = ctx.createRadialGradient(width / 2, height / 2, 50, width / 2, height / 2, width / 2);
-      grad.addColorStop(0, '#1c1e24');
-      grad.addColorStop(1, '#0b0c10');
-      ctx.fillStyle = grad;
+    if (compositeMode === 'CINEMATIC_VIGNETTE') {
+      // ==========================================
+      // MODO 1: FUSIÓN REVISTA (CERO RECORTE)
+      // ==========================================
+      // Fondo oscuro editorial con degradado sutil
+      const baseGrad = ctx.createRadialGradient(width / 2, height * 0.45, 80, width / 2, height / 2, width * 0.72);
+      baseGrad.addColorStop(0, '#1a1d26');
+      baseGrad.addColorStop(0.6, '#0f1117');
+      baseGrad.addColorStop(1, '#07080b');
+      ctx.fillStyle = baseGrad;
       ctx.fillRect(0, 0, width, height);
-    }
 
-    // Si hay carro cargado, dibujarlo con sus efectos
-    if (carImgRef.current && carLoaded) {
-      const car = carImgRef.current;
+      if (carImgRef.current && carLoaded) {
+        const car = carImgRef.current;
+        const baseRatio = car.width / car.height;
 
-      // Calcular dimensiones del carro
-      const baseRatio = car.width / car.height;
-      const targetWidth = width * 0.72 * scale;
-      const targetHeight = targetWidth / baseRatio;
+        // Ajuste proporcional según escala
+        const targetWidth = width * 0.88 * scale;
+        const targetHeight = targetWidth / baseRatio;
+        const drawX = (width - targetWidth) / 2 + posX;
+        const drawY = (height - targetHeight) / 2 + posY;
 
-      const drawX = (width - targetWidth) / 2 + posX;
-      const drawY = (height - targetHeight) / 2 + posY + 40;
-
-      // A. Dibujar Sombra de Contacto debajo de las llantas
-      if (shadowOpacity > 0) {
+        // Dibujar foto del carro con calibración
         ctx.save();
-        const shadowY = drawY + targetHeight - 15;
-        const shadowWidth = targetWidth * 0.82;
-        const shadowHeight = shadowSpread;
-
-        ctx.beginPath();
-        ctx.ellipse(
-          drawX + targetWidth / 2,
-          shadowY,
-          shadowWidth / 2,
-          shadowHeight / 2,
-          0,
-          0,
-          2 * Math.PI
-        );
-        ctx.fillStyle = `rgba(0, 0, 0, ${shadowOpacity})`;
-        ctx.filter = `blur(${Math.round(shadowSpread / 2.2)}px)`;
-        ctx.fill();
+        ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(104%)`;
+        ctx.drawImage(car, drawX, drawY, targetWidth, targetHeight);
         ctx.restore();
 
-        // Sombra de oclusión focalizada más oscura justo bajo el chasis
-        ctx.save();
-        ctx.beginPath();
-        ctx.ellipse(
-          drawX + targetWidth / 2,
-          shadowY - 5,
-          shadowWidth * 0.42,
-          8,
-          0,
-          0,
-          2 * Math.PI
-        );
-        ctx.fillStyle = `rgba(0, 0, 0, ${Math.min(1, shadowOpacity * 1.3)})`;
-        ctx.filter = 'blur(6px)';
-        ctx.fill();
-        ctx.restore();
+        // Viñeta y Fusión Perimetral de Alta Gama
+        // 1. Degradado inferior (suelo showroom)
+        const bottomGrad = ctx.createLinearGradient(0, height * 0.62, 0, height);
+        bottomGrad.addColorStop(0, 'rgba(7, 8, 11, 0)');
+        bottomGrad.addColorStop(0.5, 'rgba(7, 8, 11, 0.65)');
+        bottomGrad.addColorStop(1, 'rgba(7, 8, 11, 0.98)');
+        ctx.fillStyle = bottomGrad;
+        ctx.fillRect(0, height * 0.62, width, height * 0.38);
+
+        // 2. Degradado superior (luces de techo tenues)
+        const topGrad = ctx.createLinearGradient(0, 0, 0, height * 0.3);
+        topGrad.addColorStop(0, 'rgba(7, 8, 11, 0.92)');
+        topGrad.addColorStop(1, 'rgba(7, 8, 11, 0)');
+        ctx.fillStyle = topGrad;
+        ctx.fillRect(0, 0, width, height * 0.3);
+
+        // 3. Degradado lateral izquierdo
+        const leftGrad = ctx.createLinearGradient(0, 0, width * 0.22, 0);
+        leftGrad.addColorStop(0, 'rgba(7, 8, 11, 0.95)');
+        leftGrad.addColorStop(1, 'rgba(7, 8, 11, 0)');
+        ctx.fillStyle = leftGrad;
+        ctx.fillRect(0, 0, width * 0.22, height);
+
+        // 4. Degradado lateral derecho
+        const rightGrad = ctx.createLinearGradient(width * 0.78, 0, width, 0);
+        rightGrad.addColorStop(0, 'rgba(7, 8, 11, 0)');
+        rightGrad.addColorStop(1, 'rgba(7, 8, 11, 0.95)');
+        ctx.fillStyle = rightGrad;
+        ctx.fillRect(width * 0.78, 0, width * 0.22, height);
+
+        // 5. Viñeta radial perimetral
+        const radialVig = ctx.createRadialGradient(width / 2, height / 2, width * 0.28, width / 2, height / 2, width * 0.65);
+        radialVig.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        radialVig.addColorStop(0.65, 'rgba(0, 0, 0, 0.2)');
+        radialVig.addColorStop(1, 'rgba(7, 8, 11, 0.88)');
+        ctx.fillStyle = radialVig;
+        ctx.fillRect(0, 0, width, height);
+
+        // 6. Línea sutil de reflejo dorado inferior
+        const accentLine = ctx.createLinearGradient(0, height - 3, width, height - 3);
+        accentLine.addColorStop(0, 'rgba(212, 175, 55, 0)');
+        accentLine.addColorStop(0.5, 'rgba(212, 175, 55, 0.35)');
+        accentLine.addColorStop(1, 'rgba(212, 175, 55, 0)');
+        ctx.fillStyle = accentLine;
+        ctx.fillRect(0, height - 3, width, 3);
+      }
+    } else {
+      // ==========================================
+      // MODO 2: PLATAFORMA 360 (CON RECORTE)
+      // ==========================================
+      // Dibujar Fondo Showroom
+      if (backdropImgRef.current && backdropLoaded) {
+        ctx.drawImage(backdropImgRef.current, 0, 0, width, height);
+      } else {
+        const grad = ctx.createRadialGradient(width / 2, height / 2, 50, width / 2, height / 2, width / 2);
+        grad.addColorStop(0, '#1c1e24');
+        grad.addColorStop(1, '#0b0c10');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, width, height);
       }
 
-      // B. Dibujar Reflejo Sutil Invertido en las baldosas
-      if (showReflection) {
+      if (carImgRef.current && carLoaded) {
+        const car = carImgRef.current;
+        const baseRatio = car.width / car.height;
+        const targetWidth = width * 0.72 * scale;
+        const targetHeight = targetWidth / baseRatio;
+
+        const drawX = (width - targetWidth) / 2 + posX;
+        const drawY = (height - targetHeight) / 2 + posY + 40;
+
+        // A. Sombra de Contacto debajo de las llantas
+        if (shadowOpacity > 0) {
+          ctx.save();
+          const shadowY = drawY + targetHeight - 15;
+          const shadowWidth = targetWidth * 0.82;
+          const shadowHeight = shadowSpread;
+
+          ctx.beginPath();
+          ctx.ellipse(
+            drawX + targetWidth / 2,
+            shadowY,
+            shadowWidth / 2,
+            shadowHeight / 2,
+            0,
+            0,
+            2 * Math.PI
+          );
+          ctx.fillStyle = `rgba(0, 0, 0, ${shadowOpacity})`;
+          ctx.filter = `blur(${Math.round(shadowSpread / 2.2)}px)`;
+          ctx.fill();
+          ctx.restore();
+
+          // Sombra de oclusión focalizada más oscura justo bajo el chasis
+          ctx.save();
+          ctx.beginPath();
+          ctx.ellipse(
+            drawX + targetWidth / 2,
+            shadowY - 5,
+            shadowWidth * 0.42,
+            8,
+            0,
+            0,
+            2 * Math.PI
+          );
+          ctx.fillStyle = `rgba(0, 0, 0, ${Math.min(1, shadowOpacity * 1.3)})`;
+          ctx.filter = 'blur(6px)';
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // B. Reflejo Sutil Invertido en las baldosas
+        if (showReflection) {
+          ctx.save();
+          ctx.translate(0, drawY + targetHeight * 2 - 20);
+          ctx.scale(1, -1);
+          ctx.globalAlpha = 0.12;
+          ctx.filter = 'blur(3px)';
+          ctx.drawImage(car, drawX, drawY, targetWidth, targetHeight);
+          ctx.restore();
+        }
+
+        // C. Dibujar el Carro con Filtros de Iluminación
         ctx.save();
-        ctx.translate(0, drawY + targetHeight * 2 - 20);
-        ctx.scale(1, -1);
-        ctx.globalAlpha = 0.12;
-        ctx.filter = 'blur(3px)';
+        ctx.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
         ctx.drawImage(car, drawX, drawY, targetWidth, targetHeight);
         ctx.restore();
       }
-
-      // C. Dibujar el Carro con Filtros de Iluminación
-      ctx.save();
-      ctx.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
-      ctx.drawImage(car, drawX, drawY, targetWidth, targetHeight);
-      ctx.restore();
     }
   };
 
   // Redibujar cada vez que cambien los parámetros
   useEffect(() => {
     renderComposite();
-  }, [backdropLoaded, carLoaded, scale, posX, posY, shadowOpacity, shadowSpread, brightness, contrast, showReflection]);
+  }, [
+    compositeMode,
+    backdropLoaded,
+    carLoaded,
+    scale,
+    posX,
+    posY,
+    shadowOpacity,
+    shadowSpread,
+    brightness,
+    contrast,
+    showReflection,
+  ]);
 
   // Manejador de subida de archivo del carro
   const handleUploadCarFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,6 +289,80 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  // 🪄 Herramienta de 1 Clic: Quitar Fondo Claro/Blanco automáticamente en el navegador
+  const handleAutoRemoveBackground = () => {
+    if (!carImgRef.current || !carLoaded) return;
+    setIsProcessing(true);
+
+    setTimeout(() => {
+      try {
+        const img = carImgRef.current!;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = img.naturalWidth || img.width;
+        tempCanvas.height = img.naturalHeight || img.height;
+        const tCtx = tempCanvas.getContext('2d');
+        if (!tCtx) {
+          setIsProcessing(false);
+          return;
+        }
+
+        tCtx.drawImage(img, 0, 0);
+        const imgData = tCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        const data = imgData.data;
+        const w = tempCanvas.width;
+        const h = tempCanvas.height;
+
+        // Muestrear esquinas superiores y borde para detectar color dominante de fondo
+        const getPixel = (x: number, y: number) => {
+          const idx = (y * w + x) * 4;
+          return { r: data[idx], g: data[idx + 1], b: data[idx + 2] };
+        };
+
+        const p1 = getPixel(Math.min(10, w - 1), Math.min(10, h - 1));
+        const p2 = getPixel(Math.max(0, w - 11), Math.min(10, h - 1));
+        const p3 = getPixel(Math.floor(w / 2), Math.min(10, h - 1));
+
+        const targetR = (p1.r + p2.r + p3.r) / 3;
+        const targetG = (p1.g + p2.g + p3.g) / 3;
+        const targetB = (p1.b + p2.b + p3.b) / 3;
+
+        const threshold = 55;
+        const feather = 25;
+
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+
+          const dist = Math.sqrt(
+            Math.pow(r - targetR, 2) +
+            Math.pow(g - targetG, 2) +
+            Math.pow(b - targetB, 2)
+          );
+
+          // Si coincide con el color de borde o es fondo muy claro/cielo
+          const isDealerLightWall = r > 210 && g > 210 && b > 210;
+
+          if (dist < threshold || (isDealerLightWall && dist < threshold + 30)) {
+            data[i + 3] = 0; // Transparente
+          } else if (dist < threshold + feather) {
+            const factor = (dist - threshold) / feather;
+            data[i + 3] = Math.round(data[i + 3] * factor);
+          }
+        }
+
+        tCtx.putImageData(imgData, 0, 0);
+        const newSrc = tempCanvas.toDataURL('image/png');
+        setCarImageSrc(newSrc);
+        setCompositeMode('STUDIO_CUTOUT');
+      } catch (err) {
+        console.error('Error al quitar fondo:', err);
+      } finally {
+        setIsProcessing(false);
+      }
+    }, 50);
   };
 
   // Guardar y exportar la foto final combinada
@@ -222,9 +385,9 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
 
   // Resetear controles a valores óptimos
   const handleResetControls = () => {
-    setScale(0.92);
+    setScale(compositeMode === 'CINEMATIC_VIGNETTE' ? 1.0 : 0.92);
     setPosX(0);
-    setPosY(35);
+    setPosY(compositeMode === 'CINEMATIC_VIGNETTE' ? 0 : 35);
     setShadowOpacity(0.75);
     setShadowSpread(30);
     setBrightness(100);
@@ -256,14 +419,14 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-sm sm:text-base font-black text-white font-display">
-                  Taller de Montaje Showroom Oficial (Foto Estática 3/4)
+                  Auto-Estudio Showroom (Fusión y Ajuste en 1 Clic)
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hidden sm:inline-block">
-                  Sin giros • 100% Nítido
+                  Cero Esfuerzo • Calidad Portada
                 </span>
               </div>
               <p className="text-xs text-silver-400 mt-0.5">
-                {vehicleName ? <span className="text-gold-400 font-bold">{vehicleName}</span> : 'Vehículo'} · Monta la foto recortada sobre la plataforma de estudio con reflejo y sombra oficial.
+                {vehicleName ? <span className="text-gold-400 font-bold">{vehicleName}</span> : 'Vehículo'} · Sube cualquier foto real de tu carro sin preocuparte por fondos complicados.
               </p>
             </div>
           </div>
@@ -293,14 +456,14 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
                     <Car className="w-8 h-8" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-white">Sube la foto de tu carro</h4>
+                    <h4 className="text-sm font-bold text-white">Sube cualquier foto de tu carro</h4>
                     <p className="text-xs text-silver-400 max-w-sm mt-1">
-                      Sube la foto recortada en PNG (la que recortas en 2 segundos desde tu celular manteniendo el dedo presionado) o una foto en JPG.
+                      Puedes subir una foto normal tomada con celular (en la calle, parqueadero o concesionario) o una foto ya recortada.
                     </p>
                   </div>
                   <label className="px-4 py-2.5 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black rounded-xl text-xs flex items-center gap-2 cursor-pointer shadow-lg transition-transform active:scale-95">
                     <Upload className="w-4 h-4" />
-                    <span>Seleccionar Foto de Mi Carro</span>
+                    <span>Seleccionar Foto del Carro</span>
                     <input
                       type="file"
                       accept="image/png,image/webp,image/jpeg"
@@ -312,33 +475,80 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
               )}
             </div>
 
-            {/* BARRA INFORMATIVA DE AYUDA RÁPIDA */}
+            {/* BARRA INFORMATIVA DE AYUDA Y HERRAMIENTAS RÁPIDAS */}
             <div className="p-3.5 rounded-xl bg-carbon-850 border border-carbon-750 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2 text-silver-300">
                 <HelpCircle className="w-4 h-4 text-gold-400 flex-shrink-0" />
                 <span>
-                  <strong>Tip de recorte fácil:</strong> En iPhone o Android, mantén presionado el carro en tu galería de fotos y dale <em>"Guardar imagen recortada"</em>.
+                  <strong>Recomendación:</strong> Con <em>"Fusión Revista"</em> no necesitas recortar el fondo; la viñeta oscura lo integra al showroom de lujo.
                 </span>
               </div>
-              <a
-                href="https://www.photoroom.com/es/herramientas/borrador-de-fondo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gold-400 hover:text-gold-300 font-bold inline-flex items-center gap-1 hover:underline whitespace-nowrap text-[11px]"
-              >
-                <span>Recortar foto online gratis</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
+              {carLoaded && (
+                <button
+                  type="button"
+                  onClick={handleAutoRemoveBackground}
+                  disabled={isProcessing}
+                  className="text-gold-400 hover:text-gold-300 bg-carbon-800 hover:bg-carbon-750 px-3 py-1.5 rounded-lg border border-gold-500/40 font-bold inline-flex items-center gap-1.5 whitespace-nowrap text-[11px] transition-colors cursor-pointer"
+                >
+                  <Wand2 className="w-3.5 h-3.5" />
+                  <span>🪄 Quitar Fondo Claro en 1 Clic</span>
+                </button>
+              )}
             </div>
           </div>
 
           {/* PANEL DE CONTROL LATERAL (4 COLUMNAS) */}
           <div className="lg:col-span-4 flex flex-col justify-between space-y-4 bg-carbon-850 p-4 sm:p-5 rounded-2xl border border-carbon-750">
             <div className="space-y-4">
+              
+              {/* SELECTOR DE MODO DE ESTUDIO */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-bold text-silver-400 uppercase tracking-wider">
+                  Modo de Presentación Showroom
+                </span>
+                <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-carbon-900 border border-carbon-750">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCompositeMode('CINEMATIC_VIGNETTE');
+                      setScale(1.0);
+                      setPosY(0);
+                    }}
+                    className={`py-2 px-2.5 rounded-lg text-xs font-bold flex flex-col items-center gap-1 transition-all ${
+                      compositeMode === 'CINEMATIC_VIGNETTE'
+                        ? 'bg-gradient-to-r from-gold-500 to-gold-400 text-carbon-950 shadow-md font-black'
+                        : 'text-silver-400 hover:text-white hover:bg-carbon-800'
+                    }`}
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span>Fusión Revista</span>
+                    <span className="text-[9px] opacity-80 font-normal">Sin Recorte</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCompositeMode('STUDIO_CUTOUT');
+                      setScale(0.92);
+                      setPosY(35);
+                    }}
+                    className={`py-2 px-2.5 rounded-lg text-xs font-bold flex flex-col items-center gap-1 transition-all ${
+                      compositeMode === 'STUDIO_CUTOUT'
+                        ? 'bg-gradient-to-r from-gold-500 to-gold-400 text-carbon-950 shadow-md font-black'
+                        : 'text-silver-400 hover:text-white hover:bg-carbon-800'
+                    }`}
+                  >
+                    <Car className="w-4 h-4" />
+                    <span>Plataforma 360</span>
+                    <span className="text-[9px] opacity-80 font-normal">Auto Recortado</span>
+                  </button>
+                </div>
+              </div>
+
               <div className="flex items-center justify-between border-b border-carbon-750 pb-2">
                 <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                   <Sliders className="w-3.5 h-3.5 text-gold-400" />
-                  Calibración de Estudio
+                  Calibración de Imagen
                 </span>
                 <button
                   type="button"
@@ -354,7 +564,7 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
               <div>
                 <label className="w-full py-2 bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-gold-400 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-sm">
                   <Upload className="w-3.5 h-3.5" />
-                  <span>{carLoaded ? 'Cambiar Foto del Carro' : 'Cargar Foto PNG'}</span>
+                  <span>{carLoaded ? 'Cambiar Foto de Entrada' : 'Cargar Foto'}</span>
                   <input
                     type="file"
                     accept="image/png,image/webp,image/jpeg"
@@ -369,7 +579,7 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
                 {/* Tamaño / Escala */}
                 <div>
                   <div className="flex justify-between text-xs text-silver-300 font-medium mb-1">
-                    <span>Tamaño del Carro:</span>
+                    <span>Zoom / Escala:</span>
                     <span className="font-mono text-gold-400">{Math.round(scale * 100)}%</span>
                   </div>
                   <input
@@ -383,15 +593,15 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
                   />
                 </div>
 
-                {/* Altura / Posición Y (Asentar en el disco) */}
+                {/* Altura / Posición Y */}
                 <div>
                   <div className="flex justify-between text-xs text-silver-300 font-medium mb-1">
-                    <span>Apoyar en Plataforma (Y):</span>
+                    <span>Posición Vertical (Y):</span>
                     <span className="font-mono text-gold-400">{posY}px</span>
                   </div>
                   <input
                     type="range"
-                    min="-100"
+                    min="-120"
                     max="150"
                     step="2"
                     value={posY}
@@ -403,7 +613,7 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
                 {/* Centrado Horizontal (X) */}
                 <div>
                   <div className="flex justify-between text-xs text-silver-300 font-medium mb-1">
-                    <span>Centrado Lateral (X):</span>
+                    <span>Posición Horizontal (X):</span>
                     <span className="font-mono text-gold-400">{posX}px</span>
                   </div>
                   <input
@@ -417,22 +627,39 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
                   />
                 </div>
 
-                {/* Intensidad de Sombra */}
-                <div>
-                  <div className="flex justify-between text-xs text-silver-300 font-medium mb-1">
-                    <span>Sombra Bajo Llantas:</span>
-                    <span className="font-mono text-gold-400">{Math.round(shadowOpacity * 100)}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.05"
-                    value={shadowOpacity}
-                    onChange={(e) => setShadowOpacity(parseFloat(e.target.value))}
-                    className="w-full accent-gold-500 cursor-pointer h-1.5 bg-carbon-700 rounded-lg"
-                  />
-                </div>
+                {/* Controles específicos del Modo Plataforma 360 */}
+                {compositeMode === 'STUDIO_CUTOUT' && (
+                  <>
+                    <div>
+                      <div className="flex justify-between text-xs text-silver-300 font-medium mb-1">
+                        <span>Sombra Bajo Llantas:</span>
+                        <span className="font-mono text-gold-400">{Math.round(shadowOpacity * 100)}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={shadowOpacity}
+                        onChange={(e) => setShadowOpacity(parseFloat(e.target.value))}
+                        className="w-full accent-gold-500 cursor-pointer h-1.5 bg-carbon-700 rounded-lg"
+                      />
+                    </div>
+
+                    <div className="pt-2 border-t border-carbon-750 flex items-center justify-between">
+                      <span className="text-xs text-silver-300 font-medium">Reflejo en Baldosa:</span>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={showReflection}
+                          onChange={(e) => setShowReflection(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-carbon-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-carbon-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-gold-500"></div>
+                      </label>
+                    </div>
+                  </>
+                )}
 
                 {/* Iluminación / Brillo */}
                 <div>
@@ -451,18 +678,21 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
                   />
                 </div>
 
-                {/* Reflejo en Suelo */}
-                <div className="pt-2 border-t border-carbon-750 flex items-center justify-between">
-                  <span className="text-xs text-silver-300 font-medium">Reflejo en Baldosa:</span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={showReflection}
-                      onChange={(e) => setShowReflection(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-9 h-5 bg-carbon-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-carbon-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-gold-500"></div>
-                  </label>
+                {/* Contraste */}
+                <div>
+                  <div className="flex justify-between text-xs text-silver-300 font-medium mb-1">
+                    <span>Contraste:</span>
+                    <span className="font-mono text-gold-400">{contrast}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="80"
+                    max="130"
+                    step="1"
+                    value={contrast}
+                    onChange={(e) => setContrast(parseInt(e.target.value))}
+                    className="w-full accent-gold-500 cursor-pointer h-1.5 bg-carbon-700 rounded-lg"
+                  />
                 </div>
               </div>
             </div>
@@ -476,7 +706,7 @@ export const AdminShowroomCompositorModal: React.FC<AdminShowroomCompositorModal
                 className="w-full py-3 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95"
               >
                 <Check className="w-4 h-4 stroke-[3]" />
-                <span>{isProcessing ? 'Guardando...' : 'Aplicar como Portada Oficial'}</span>
+                <span>{isProcessing ? 'Procesando...' : 'Aplicar como Portada Oficial'}</span>
               </button>
             </div>
 

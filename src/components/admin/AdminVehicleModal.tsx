@@ -1481,10 +1481,15 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                   {/* 1. Fotografía Principal Protagonista (Cover Photo) */}
                   <div className="p-5 rounded-2xl bg-carbon-850 border border-carbon-750 space-y-4 shadow-md">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-gold-400 uppercase tracking-wider flex items-center gap-1.5">
-                        <Star className="w-4 h-4 fill-gold-400 text-gold-400" />
-                        Fotografía Principal (Showroom Cover) *
-                      </label>
+                      <div>
+                        <label className="text-xs font-bold text-gold-400 uppercase tracking-wider flex items-center gap-1.5">
+                          <Star className="w-4 h-4 fill-gold-400 text-gold-400" />
+                          Fotografía Principal (Portada Oficial Showroom) *
+                        </label>
+                        <p className="text-[11px] text-silver-400 mt-0.5">
+                          Esta es la imagen de vitrina que ven los clientes. Con el <strong>Auto-Estudio</strong> puedes subir cualquier foto tomada con celular sin recortar fondos.
+                        </p>
+                      </div>
                       {isUploadingPhoto && (
                         <span className="text-xs text-gold-400 flex items-center gap-1">
                           <Loader2 className="w-3.5 h-3.5 animate-spin" /> Subiendo a la nube...
@@ -1531,7 +1536,7 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 text-xs font-black cursor-pointer border border-gold-400 shadow-md transition-all active:scale-95"
                           >
                             <Sparkles className="w-3.5 h-3.5" />
-                            <span>Taller de Montaje Showroom (Foto Estática 3/4)</span>
+                            <span>🪄 Auto-Estudio Showroom (Fusión y Ajuste en 1 Clic)</span>
                           </button>
 
                           <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-gold-500/20 to-gold-400/10 hover:from-gold-500/30 hover:to-gold-400/20 text-gold-300 text-xs font-bold cursor-pointer border border-gold-500/40 transition-all shadow-sm">
@@ -1660,10 +1665,10 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
                         <span className="text-xs font-bold text-silver-200 uppercase tracking-wider block">
-                          Ranuras de la Galería ({galleryImages.length}/12)
+                          Galería del Vehículo ({galleryImages.length}/12 Fotos)
                         </span>
                         <span className="text-[11px] text-silver-400">
-                          Haz clic en cualquier foto para hacerla portada (⭐), hacer zoom (🔍) o reordenar (⬅️ ➡️).
+                          Estas fotos se muestran cuando el cliente hace clic en el carro o en "Ver Detalle" (interiores, tablero, perfil y acabados).
                         </span>
                       </div>
 

@@ -36,8 +36,14 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
         isList ? 'flex-col md:flex-row' : 'flex-col'
       }`}
     >
-      {/* Contenedor del Showcase con Video Loop y fallback de foto */}
-      <div className={`relative overflow-hidden bg-carbon-950 ${isList ? 'w-full md:w-5/12 lg:w-4/12' : 'w-full'}`}>
+      {/* Contenedor del Showcase con Video Loop y fallback de foto - Clickeable en Móvil y Desktop */}
+      <div 
+        onClick={() => onSelectVehicle(vehicle)}
+        className={`relative overflow-hidden bg-carbon-950 cursor-pointer ${isList ? 'w-full md:w-5/12 lg:w-4/12' : 'w-full'}`}
+        role="button"
+        tabIndex={0}
+        aria-label={language === 'ES' ? `Ver ficha técnica y fotos de ${vehicle.brand} ${vehicle.model}` : `View specs and photos for ${vehicle.brand} ${vehicle.model}`}
+      >
         <VehicleShowcase
           videoUrl={vehicle.videoUrl}
           imageUrl={vehicle.mainImage}
@@ -81,13 +87,18 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
       {/* Contenido de la Tarjeta */}
       <div className={`flex flex-col flex-1 p-5 sm:p-6 justify-between ${isList ? 'md:py-6 md:px-8' : ''}`}>
         <div>
-          {/* Marca, Modelo y Año */}
-          <div className="flex items-start justify-between gap-2">
+          {/* Marca, Modelo y Año - Clickeable */}
+          <div 
+            onClick={() => onSelectVehicle(vehicle)}
+            className="flex items-start justify-between gap-2 cursor-pointer group/title"
+            role="button"
+            tabIndex={0}
+          >
             <div>
               <span className="text-xs font-semibold uppercase tracking-widest text-gold-400">
                 {vehicle.brand}
               </span>
-              <h3 className="text-xl font-bold text-silver-100 font-display mt-0.5 group-hover:text-gold-300 transition-colors">
+              <h3 className="text-xl font-bold text-silver-100 font-display mt-0.5 group-hover:text-gold-300 group-hover/title:text-gold-400 transition-colors">
                 {vehicle.model}
               </h3>
             </div>
