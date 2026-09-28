@@ -1018,68 +1018,72 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-7xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border border-carbon-750 shadow-2xl overflow-hidden flex flex-col max-h-[90dvh] sm:max-h-[95vh] animate-slide-up sm:animate-fade-in"
+        className="relative w-full max-w-full sm:max-w-7xl rounded-t-3xl sm:rounded-3xl bg-carbon-900 border-t border-x sm:border border-carbon-750 shadow-2xl overflow-hidden flex flex-col h-[94dvh] sm:h-auto sm:max-h-[95vh] animate-slide-up sm:animate-fade-in"
       >
         {/* Indicador de Arrastre para Móvil */}
-        <div className="w-10 h-1 rounded-full bg-carbon-600/70 mx-auto mt-2.5 sm:hidden flex-shrink-0" />
+        <div className="w-12 h-1.5 rounded-full bg-carbon-600/70 mx-auto mt-2.5 mb-1 sm:hidden flex-shrink-0" />
         
         {/* ======================================================== */}
         {/* CABECERA MAESTRA (ESTÁNDAR INGENIERÍA VIP)                */}
         {/* ======================================================== */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:px-8 border-b border-carbon-800 bg-gradient-to-r from-carbon-900 via-carbon-850 to-carbon-900 gap-3">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-gold-500/20 text-gold-400 border border-gold-500/30 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-gold-400" />
-                CENTRO DE INGENIERÍA DE FLOTA
-              </span>
-              <span className="text-carbon-600">•</span>
-              <span className="text-xs text-silver-400 font-mono">
-                {isEditMode ? `ID: ${vehicleToEdit?.id}` : 'Nueva Ficha de Superdeportivo'}
-              </span>
+        <div className="p-3.5 sm:p-5 md:px-8 border-b border-carbon-800 bg-gradient-to-r from-carbon-900 via-carbon-850 to-carbon-900 flex-shrink-0">
+          <div className="flex items-start justify-between gap-2.5">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
+                <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-gold-500/20 text-gold-400 border border-gold-500/30 flex items-center gap-1 flex-shrink-0">
+                  <Sparkles className="w-3 h-3 text-gold-400" />
+                  <span>CENTRO DE INGENIERÍA</span>
+                </span>
+                <span className="text-carbon-600 hidden xs:inline">•</span>
+                <span className="text-[11px] sm:text-xs text-silver-400 font-mono truncate">
+                  {isEditMode ? `ID: ${vehicleToEdit?.id}` : 'Nueva Ficha Showroom'}
+                </span>
+              </div>
+              <h2 className="text-base sm:text-2xl font-black text-white font-display tracking-tight flex items-center gap-2 leading-tight">
+                <Car className="w-5 h-5 sm:w-6 sm:h-6 text-gold-400 hidden sm:block flex-shrink-0" />
+                <span className="truncate">
+                  {isEditMode ? `Editar ${vehicleToEdit?.brand} ${vehicleToEdit?.model}` : 'Registrar Nuevo Vehículo'}
+                </span>
+              </h2>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-white font-display tracking-tight flex items-center gap-2">
-              <Car className="w-6 h-6 text-gold-400 hidden sm:block" />
-              <span>{isEditMode ? `Editar ${vehicleToEdit?.brand} ${vehicleToEdit?.model}` : 'Registrar Nuevo Superdeportivo en Flota'}</span>
-            </h2>
-          </div>
 
-          <div className="flex items-center gap-2">
-            {/* Toggle de Vista Previa en Móvil */}
-            <button
-              type="button"
-              onClick={() => setMobilePreviewOpen(!mobilePreviewOpen)}
-              className="lg:hidden px-3.5 py-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-gold-400 border border-gold-500/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-md"
-            >
-              <Eye className="w-4 h-4" />
-              <span>{mobilePreviewOpen ? 'Volver a Formulario' : 'Ver Vista Previa'}</span>
-            </button>
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              {/* Toggle de Vista Previa en Móvil */}
+              <button
+                type="button"
+                onClick={() => setMobilePreviewOpen(!mobilePreviewOpen)}
+                className="lg:hidden px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-gold-400 border border-gold-500/40 text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all shadow-md active:scale-95"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>{mobilePreviewOpen ? 'Formulario' : 'Vista Previa'}</span>
+              </button>
 
-            <button
-              onClick={onClose}
-              className="p-2.5 rounded-xl bg-carbon-800 text-silver-400 hover:text-white hover:bg-carbon-750 transition-colors border border-carbon-700"
-              aria-label="Cerrar modal"
-            >
-              <X className="w-5 h-5" />
-            </button>
+              <button
+                onClick={onClose}
+                className="p-1.5 sm:p-2.5 rounded-xl bg-carbon-800 text-silver-400 hover:text-white hover:bg-carbon-750 transition-colors border border-carbon-700 active:scale-95"
+                aria-label="Cerrar modal"
+              >
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* ======================================================== */}
         {/* BARRA DE ACCIONES RÁPIDAS: PLANTILLAS PRE-CONFIGURADAS   */}
         {/* ======================================================== */}
-        <div className="px-5 sm:px-8 py-3 bg-carbon-950/70 border-b border-carbon-800 flex items-center gap-2 overflow-x-auto scrollbar-none">
-          <span className="text-xs font-bold text-silver-300 whitespace-nowrap flex items-center gap-1.5 flex-shrink-0">
+        <div className="px-3.5 sm:px-8 py-2.5 sm:py-3 bg-carbon-950/70 border-b border-carbon-800 flex items-center gap-2 overflow-x-auto scrollbar-none flex-shrink-0">
+          <span className="text-[11px] sm:text-xs font-bold text-silver-300 whitespace-nowrap flex items-center gap-1 flex-shrink-0">
             <Sparkles className="w-3.5 h-3.5 text-gold-400" />
-            {isEditMode ? 'Reemplazar con Plantilla Oficial:' : 'Plantillas 1-Clic:'}
+            {isEditMode ? 'Plantilla Oficial:' : 'Plantillas 1-Clic:'}
           </span>
-          <div className="flex items-center gap-2 flex-nowrap">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap">
             {LUXURY_PRESETS.map((preset) => (
               <button
                 key={preset.id}
                 type="button"
                 onClick={() => handleApplyPreset(preset)}
-                className="px-3 py-1 rounded-lg text-xs font-semibold bg-carbon-800/90 hover:bg-gold-500/20 text-silver-300 hover:text-gold-300 border border-carbon-700 hover:border-gold-500/40 transition-all whitespace-nowrap flex items-center gap-1.5"
+                className="px-2.5 sm:px-3 py-1 rounded-lg text-[11px] sm:text-xs font-semibold bg-carbon-800/90 hover:bg-gold-500/20 text-silver-300 hover:text-gold-300 border border-carbon-700 hover:border-gold-500/40 transition-all whitespace-nowrap flex items-center gap-1 active:scale-95"
               >
                 <span>{preset.name}</span>
               </button>
@@ -1089,20 +1093,20 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
 
         {/* Banner Inteligente de Sugerencia para sincronizar a formato oficial de estudio */}
         {((brand.toUpperCase().includes('TOYOTA') && (model.includes('2022') || plate.toUpperCase() === 'FRE334' || plate.toUpperCase().includes('FRE')))) && (
-          <div className="mx-5 sm:mx-8 mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-gold-500/20 via-gold-400/10 to-carbon-900 border border-gold-500/50 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl animate-fade-in">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gold-500/20 text-gold-400 border border-gold-500/40 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-5 h-5 text-gold-400" />
+          <div className="mx-3.5 sm:mx-8 mt-2.5 sm:mt-3 p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-gold-500/20 via-gold-400/10 to-carbon-900 border border-gold-500/50 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl animate-fade-in flex-shrink-0">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gold-500/20 text-gold-400 border border-gold-500/40 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-gold-400" />
               </div>
               <div>
-                <div className="font-bold text-white text-xs sm:text-sm flex items-center gap-2">
-                  <span>Sincronizar a Formato Oficial Showroom (Tu Toyota 4Runner Real)</span>
+                <div className="font-bold text-white text-xs sm:text-sm flex flex-wrap items-center gap-1.5">
+                  <span>Sincronizar a Formato Oficial Showroom (4Runner)</span>
                   <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                     Estudio 360°
                   </span>
                 </div>
-                <div className="text-[11px] text-silver-300 mt-0.5">
-                  Monta tu 4Runner real en la plataforma giratoria del showroom y ajusta la ficha a SUV de Lujo (270 CV, $240/día).
+                <div className="text-[10px] sm:text-[11px] text-silver-300 mt-0.5">
+                  Monta tu 4Runner real en la plataforma giratoria del showroom (270 CV, $240/día).
                 </div>
               </div>
             </div>
@@ -1130,25 +1134,25 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                 setPresetSuccessToast('✨ Montaje oficial Showroom aplicado exitosamente a tu Toyota 4Runner');
                 setTimeout(() => setPresetSuccessToast(null), 4000);
               }}
-              className="px-4 py-2 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black rounded-xl text-xs transition-all shadow-md active:scale-95 whitespace-nowrap self-start sm:self-auto flex items-center gap-1.5"
+              className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 font-black rounded-xl text-xs transition-all shadow-md active:scale-95 whitespace-nowrap flex items-center justify-center gap-1.5"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>Aplicar Formato Oficial 1-Clic</span>
+              <span>Aplicar Formato Oficial</span>
             </button>
           </div>
         )}
 
         {/* Toast Notifier para Presets */}
         {presetSuccessToast && (
-          <div className="mx-5 sm:mx-8 mt-3 p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/50 text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-fade-in shadow-lg">
+          <div className="mx-3.5 sm:mx-8 mt-2.5 sm:mt-3 p-2.5 sm:p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/50 text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-fade-in shadow-lg flex-shrink-0">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-            <span>{presetSuccessToast}</span>
+            <span className="truncate">{presetSuccessToast}</span>
           </div>
         )}
 
         {/* Mensaje de Error si ocurre */}
         {errorMessage && (
-          <div className="mx-5 sm:mx-8 mt-3 p-3 rounded-xl bg-rose-950/60 border border-rose-500/50 text-rose-300 text-xs font-semibold flex items-center gap-2 animate-fade-in shadow-lg">
+          <div className="mx-3.5 sm:mx-8 mt-2.5 sm:mt-3 p-2.5 sm:p-3 rounded-xl bg-rose-950/60 border border-rose-500/50 text-rose-300 text-xs font-semibold flex items-center gap-2 animate-fade-in shadow-lg flex-shrink-0">
             <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0" />
             <span>{errorMessage}</span>
           </div>
@@ -1157,32 +1161,35 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
         {/* ======================================================== */}
         {/* CUERPO PRINCIPAL: DUAL PANE (FORMULARIO + LIVE PREVIEW)  */}
         {/* ======================================================== */}
-        <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+        <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-0">
           
           {/* PANEL IZQUIERDO: FORMULARIO MAESTRO (7 COLUMNAS) */}
           <div
-            className={`lg:col-span-7 xl:col-span-7 flex flex-col border-r border-carbon-800 bg-carbon-900/95 overflow-hidden ${
+            className={`lg:col-span-7 xl:col-span-7 flex flex-col border-r border-carbon-800 bg-carbon-900/95 overflow-hidden min-h-0 ${
               mobilePreviewOpen ? 'hidden lg:flex' : 'flex'
             }`}
           >
             {/* Pestañas de Navegación del Formulario */}
-            <div className="flex border-b border-carbon-800 bg-carbon-850/60 px-5 sm:px-8 gap-2 pt-3">
+            <div className="flex border-b border-carbon-800 bg-carbon-850/60 px-3.5 sm:px-8 gap-1.5 sm:gap-2 pt-2 sm:pt-3 overflow-x-auto scrollbar-none flex-shrink-0">
               {[
                 {
                   id: 'general',
-                  label: '1. Datos & Mecánica',
+                  fullLabel: '1. Datos & Mecánica',
+                  shortLabel: '1. Datos',
                   icon: Gauge,
                   completed: Boolean(brand && model && plate && pricePerDay),
                 },
                 {
                   id: 'media',
-                  label: `2. Galería & Multimedia (${galleryImages.length}/12)`,
+                  fullLabel: `2. Galería & Multimedia (${galleryImages.length}/12)`,
+                  shortLabel: `2. Galería (${galleryImages.length}/12)`,
                   icon: Camera,
                   completed: Boolean(mainImage && galleryImages.length > 0),
                 },
                 {
                   id: 'specs',
-                  label: '3. Equipamiento & Reseña',
+                  fullLabel: '3. Equipamiento & Reseña',
+                  shortLabel: '3. Equipamiento',
                   icon: Zap,
                   completed: Boolean(features.length > 0),
                 },
@@ -1194,16 +1201,17 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center gap-2 px-4 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all ${
+                    className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold border-b-2 transition-all whitespace-nowrap flex-shrink-0 ${
                       isActive
                         ? 'border-gold-500 text-gold-400 bg-carbon-900/90 rounded-t-xl shadow-sm'
                         : 'border-transparent text-silver-400 hover:text-silver-200'
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
-                    <span>{tab.label}</span>
+                    <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="hidden sm:inline">{tab.fullLabel}</span>
+                    <span className="sm:hidden">{tab.shortLabel}</span>
                     {tab.completed && (
-                      <Check className="w-3.5 h-3.5 text-emerald-400 ml-0.5" />
+                      <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 ml-0.5 flex-shrink-0" />
                     )}
                   </button>
                 );
@@ -1211,18 +1219,18 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
             </div>
 
             {/* Scroll del Formulario */}
-            <form onSubmit={handleSubmit} id="vehicle-form" className="overflow-y-auto p-5 sm:p-8 space-y-6 flex-1">
+            <form onSubmit={handleSubmit} id="vehicle-form" className="overflow-y-auto overflow-x-hidden p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6 flex-1 w-full max-w-full">
               
               {/* ======================================================== */}
               {/* PESTAÑA 1: DATOS GENERALES Y MECÁNICA                    */}
               {/* ======================================================== */}
               {activeTab === 'general' && (
-                <div className="space-y-6 animate-fade-in">
+                <div className="space-y-4 sm:space-y-6 animate-fade-in">
                   
                   {/* Fila 1: Marca, Modelo, Año */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-silver-200 uppercase tracking-wider mb-2">
+                      <label className="block text-[11px] sm:text-xs font-bold text-silver-200 uppercase tracking-wider mb-1.5 sm:mb-2">
                         Marca del Fabricante *
                       </label>
                       <input
@@ -1231,12 +1239,12 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                         value={brand}
                         onChange={(e) => setBrand(e.target.value)}
                         placeholder="Ej. Porsche, Ferrari, Lamborghini"
-                        className="w-full text-sm font-semibold bg-carbon-800/90 border border-carbon-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all shadow-inner"
+                        className="w-full min-w-0 text-xs sm:text-sm font-semibold bg-carbon-800/90 border border-carbon-700 text-white rounded-xl px-3.5 py-2.5 sm:px-4 sm:py-3 focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all shadow-inner"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-silver-200 uppercase tracking-wider mb-2">
+                      <label className="block text-[11px] sm:text-xs font-bold text-silver-200 uppercase tracking-wider mb-1.5 sm:mb-2">
                         Modelo & Versión *
                       </label>
                       <input
@@ -1245,12 +1253,12 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                         value={model}
                         onChange={(e) => setModel(e.target.value)}
                         placeholder="Ej. 911 GT3 RS, F8 Tributo"
-                        className="w-full text-sm font-semibold bg-carbon-800/90 border border-carbon-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all shadow-inner"
+                        className="w-full min-w-0 text-xs sm:text-sm font-semibold bg-carbon-800/90 border border-carbon-700 text-white rounded-xl px-3.5 py-2.5 sm:px-4 sm:py-3 focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all shadow-inner"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-silver-200 uppercase tracking-wider mb-2">
+                      <label className="block text-[11px] sm:text-xs font-bold text-silver-200 uppercase tracking-wider mb-1.5 sm:mb-2">
                         Año de Matrícula *
                       </label>
                       <input
@@ -1260,16 +1268,16 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                         max={2027}
                         value={year}
                         onChange={(e) => setYear(Number(e.target.value))}
-                        className="w-full text-sm font-mono font-semibold bg-carbon-800/90 border border-carbon-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-gold-500 transition-all shadow-inner"
+                        className="w-full min-w-0 text-xs sm:text-sm font-mono font-semibold bg-carbon-800/90 border border-carbon-700 text-white rounded-xl px-3.5 py-2.5 sm:px-4 sm:py-3 focus:outline-none focus:border-gold-500 transition-all shadow-inner"
                       />
                     </div>
                   </div>
 
                   {/* Fila 2: Placa, Categoría, Tarifa Diaria */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="text-xs font-bold text-silver-200 uppercase tracking-wider">
+                      <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                        <label className="text-[11px] sm:text-xs font-bold text-silver-200 uppercase tracking-wider">
                           Placa Oficial *
                         </label>
                         <button
@@ -1286,18 +1294,18 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                         value={plate}
                         onChange={(e) => setPlate(e.target.value.toUpperCase())}
                         placeholder="Ej. LUX-911"
-                        className="w-full text-sm font-mono font-black bg-carbon-800/90 border border-carbon-700 text-gold-400 rounded-xl px-4 py-3 focus:outline-none focus:border-gold-500 transition-all shadow-inner uppercase tracking-wider"
+                        className="w-full min-w-0 text-xs sm:text-sm font-mono font-black bg-carbon-800/90 border border-carbon-700 text-gold-400 rounded-xl px-3.5 py-2.5 sm:px-4 sm:py-3 focus:outline-none focus:border-gold-500 transition-all shadow-inner uppercase tracking-wider"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-silver-200 uppercase tracking-wider mb-2">
+                      <label className="block text-[11px] sm:text-xs font-bold text-silver-200 uppercase tracking-wider mb-1.5 sm:mb-2">
                         Categoría Showroom *
                       </label>
                       <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value as VehicleCategory)}
-                        className="w-full text-sm font-medium bg-carbon-800/90 border border-carbon-700 text-silver-100 rounded-xl px-4 py-3 focus:outline-none focus:border-gold-500 transition-all"
+                        className="w-full min-w-0 text-xs sm:text-sm font-medium bg-carbon-800/90 border border-carbon-700 text-silver-100 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:border-gold-500 transition-all"
                       >
                         <option value="DEPORTIVO">Deportivo de Alto Rendimiento</option>
                         <option value="SUV_LUJO">SUV de Ultra-Lujo</option>
@@ -1308,11 +1316,11 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-silver-200 uppercase tracking-wider mb-2">
+                      <label className="block text-[11px] sm:text-xs font-bold text-silver-200 uppercase tracking-wider mb-1.5 sm:mb-2">
                         Tarifa Diaria ($USD) *
                       </label>
                       <div className="relative">
-                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gold-400 font-black text-sm">
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gold-400 font-black text-xs sm:text-sm">
                           $
                         </span>
                         <input
@@ -1323,86 +1331,86 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                           step={50}
                           value={pricePerDay}
                           onChange={(e) => setPricePerDay(Number(e.target.value))}
-                          className="w-full text-sm font-mono font-black text-gold-400 bg-carbon-800/90 border border-carbon-700 rounded-xl pl-8 pr-4 py-3 focus:outline-none focus:border-gold-500 transition-all shadow-inner"
+                          className="w-full min-w-0 text-xs sm:text-sm font-mono font-black text-gold-400 bg-carbon-800/90 border border-carbon-700 rounded-xl pl-7 sm:pl-8 pr-3.5 sm:pr-4 py-2.5 sm:py-3 focus:outline-none focus:border-gold-500 transition-all shadow-inner"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Slug SEO Preview (Regla 17) */}
-                  <div className="p-3.5 rounded-xl bg-carbon-850 border border-carbon-800 flex items-center justify-between text-xs">
-                    <span className="text-silver-400">URL pública amigable para SEO (Regla 17):</span>
-                    <span className="font-mono text-gold-400 bg-carbon-900 px-2 py-1 rounded border border-carbon-750">
+                  <div className="p-3 sm:p-3.5 rounded-xl bg-carbon-850 border border-carbon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs">
+                    <span className="text-silver-400 text-[11px] sm:text-xs">URL pública SEO (Regla 17):</span>
+                    <span className="font-mono text-gold-400 bg-carbon-900 px-2 py-1 rounded border border-carbon-750 text-[11px] sm:text-xs break-all">
                       /vehicles/{calculatedSlug}
                     </span>
                   </div>
 
                   {/* Ficha Mecánica y Telemetría */}
-                  <div className="p-5 rounded-2xl bg-carbon-850/80 border border-carbon-800 space-y-4 shadow-lg">
-                    <div className="flex items-center justify-between">
+                  <div className="p-3.5 sm:p-5 rounded-2xl bg-carbon-850/80 border border-carbon-800 space-y-3 sm:space-y-4 shadow-lg">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                       <span className="text-xs font-bold text-gold-400 uppercase tracking-widest flex items-center gap-1.5">
-                        <Gauge className="w-4 h-4" />
-                        Telemetría & Ficha Técnica de Rendimiento
+                        <Gauge className="w-4 h-4 flex-shrink-0" />
+                        <span>Telemetría & Ficha Técnica</span>
                       </span>
-                      <span className="text-[11px] text-silver-400">Especificaciones oficiales</span>
+                      <span className="text-[10px] sm:text-[11px] text-silver-400">Especificaciones oficiales</span>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
                       <div>
-                        <label className="block text-xs text-silver-300 font-semibold mb-1.5">Potencia (CV / HP)</label>
+                        <label className="block text-[11px] sm:text-xs text-silver-300 font-semibold mb-1 truncate">Potencia (CV / HP)</label>
                         <input
                           type="number"
                           min={200}
                           max={1800}
                           value={horsepower}
                           onChange={(e) => setHorsepower(Number(e.target.value))}
-                          className="w-full text-xs font-mono font-bold bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-3.5 py-2.5 focus:border-gold-500 focus:outline-none"
+                          className="w-full min-w-0 text-xs font-mono font-bold bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-2.5 sm:px-3.5 py-2 sm:py-2.5 focus:border-gold-500 focus:outline-none"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs text-silver-300 font-semibold mb-1.5">0-100 km/h</label>
+                        <label className="block text-[11px] sm:text-xs text-silver-300 font-semibold mb-1 truncate">0-100 km/h</label>
                         <input
                           type="text"
                           value={acceleration}
                           onChange={(e) => setAcceleration(e.target.value)}
                           placeholder="Ej. 2.9s"
-                          className="w-full text-xs font-mono font-bold bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-3.5 py-2.5 focus:border-gold-500 focus:outline-none"
+                          className="w-full min-w-0 text-xs font-mono font-bold bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-2.5 sm:px-3.5 py-2 sm:py-2.5 focus:border-gold-500 focus:outline-none"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs text-silver-300 font-semibold mb-1.5">Velocidad Punta</label>
+                        <label className="block text-[11px] sm:text-xs text-silver-300 font-semibold mb-1 truncate">Velocidad Punta</label>
                         <input
                           type="number"
                           min={200}
                           max={450}
                           value={topSpeed}
                           onChange={(e) => setTopSpeed(Number(e.target.value))}
-                          className="w-full text-xs font-mono font-bold bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-3.5 py-2.5 focus:border-gold-500 focus:outline-none"
+                          className="w-full min-w-0 text-xs font-mono font-bold bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-2.5 sm:px-3.5 py-2 sm:py-2.5 focus:border-gold-500 focus:outline-none"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs text-silver-300 font-semibold mb-1.5">Plazas</label>
+                        <label className="block text-[11px] sm:text-xs text-silver-300 font-semibold mb-1 truncate">Plazas</label>
                         <input
                           type="number"
                           min={1}
                           max={7}
                           value={seats}
                           onChange={(e) => setSeats(Number(e.target.value))}
-                          className="w-full text-xs font-mono font-bold bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-3.5 py-2.5 focus:border-gold-500 focus:outline-none"
+                          className="w-full min-w-0 text-xs font-mono font-bold bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-2.5 sm:px-3.5 py-2 sm:py-2.5 focus:border-gold-500 focus:outline-none"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 pt-1 sm:pt-2">
                       <div>
-                        <label className="block text-xs text-silver-300 font-semibold mb-1.5">Transmisión</label>
+                        <label className="block text-[11px] sm:text-xs text-silver-300 font-semibold mb-1">Transmisión</label>
                         <select
                           value={transmission}
                           onChange={(e) => setTransmission(e.target.value as TransmissionType)}
-                          className="w-full text-xs bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-3.5 py-2.5 focus:border-gold-500 focus:outline-none"
+                          className="w-full min-w-0 text-xs bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-2.5 sm:px-3.5 py-2 sm:py-2.5 focus:border-gold-500 focus:outline-none truncate"
                         >
                           <option value="AUTOMATICA">Automática Doble Embrague (PDK/DCT)</option>
                           <option value="MANUAL">Manual 6/7 Velocidades</option>
@@ -1410,11 +1418,11 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-xs text-silver-300 font-semibold mb-1.5">Combustible</label>
+                        <label className="block text-[11px] sm:text-xs text-silver-300 font-semibold mb-1">Combustible</label>
                         <select
                           value={fuel}
                           onChange={(e) => setFuel(e.target.value as FuelType)}
-                          className="w-full text-xs bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-3.5 py-2.5 focus:border-gold-500 focus:outline-none"
+                          className="w-full min-w-0 text-xs bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-2.5 sm:px-3.5 py-2 sm:py-2.5 focus:border-gold-500 focus:outline-none truncate"
                         >
                           <option value="GASOLINA">Gasolina Premium 98 Octanos</option>
                           <option value="HIBRIDO">Híbrido Enchufable (PHEV)</option>
@@ -1423,11 +1431,11 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-xs text-silver-300 font-semibold mb-1.5">Estado Operativo</label>
+                        <label className="block text-[11px] sm:text-xs text-silver-300 font-semibold mb-1">Estado Operativo</label>
                         <select
                           value={status}
                           onChange={(e) => setStatus(e.target.value as VehicleStatus)}
-                          className="w-full text-xs font-bold bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-3.5 py-2.5 focus:border-gold-500 focus:outline-none"
+                          className="w-full min-w-0 text-xs font-bold bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-2.5 sm:px-3.5 py-2 sm:py-2.5 focus:border-gold-500 focus:outline-none truncate"
                         >
                           <option value="AVAILABLE">🟢 Disponible para Renta</option>
                           <option value="RENTED">🔵 Alquilado (En uso)</option>
@@ -1445,27 +1453,27 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
               {/* PESTAÑA 2: GESTOR MULTIMEDIA PROFESIONAL (REGLAS 7, 8, 9)*/}
               {/* ======================================================== */}
               {activeTab === 'media' && (
-                <div className="space-y-6 animate-fade-in">
+                <div className="space-y-4 sm:space-y-6 animate-fade-in">
                   
                   {/* Cumplimiento de Regla 8: Contador y distribución */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-carbon-850 to-carbon-800 border border-carbon-750 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gold-500/15 text-gold-400 flex items-center justify-center flex-shrink-0 border border-gold-500/30">
-                        <Camera className="w-5 h-5" />
+                  <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-carbon-850 to-carbon-800 border border-carbon-750 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 shadow-md">
+                    <div className="flex items-center gap-2.5 sm:gap-3">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gold-500/15 text-gold-400 flex items-center justify-center flex-shrink-0 border border-gold-500/30">
+                        <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
                       <div>
-                        <div className="text-sm font-bold text-white">
+                        <div className="text-xs sm:text-sm font-bold text-white">
                           Galería Oficial de 12 Fotografías (Regla 8)
                         </div>
-                        <div className="text-xs text-silver-400">
+                        <div className="text-[10px] sm:text-xs text-silver-400">
                           1-5 Exterior • 6-9 Habitáculo VIP • 10-12 Detalles & Mecánica
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
                       <span
-                        className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-black border ${
+                        className={`px-3 py-1 rounded-full text-[11px] sm:text-xs font-mono font-black border ${
                           galleryImages.length === 12
                             ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
                             : galleryImages.length >= 6
@@ -1479,14 +1487,14 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                   </div>
 
                   {/* 1. Fotografía Principal Protagonista (Cover Photo) */}
-                  <div className="p-5 rounded-2xl bg-carbon-850 border border-carbon-750 space-y-4 shadow-md">
-                    <div className="flex items-center justify-between">
+                  <div className="p-3.5 sm:p-5 rounded-2xl bg-carbon-850 border border-carbon-750 space-y-3 sm:space-y-4 shadow-md">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                       <div>
-                        <label className="text-xs font-bold text-gold-400 uppercase tracking-wider flex items-center gap-1.5">
-                          <Star className="w-4 h-4 fill-gold-400 text-gold-400" />
-                          Fotografía Principal (Portada Oficial Showroom) *
+                        <label className="text-[11px] sm:text-xs font-bold text-gold-400 uppercase tracking-wider flex items-center gap-1.5">
+                          <Star className="w-3.5 h-3.5 fill-gold-400 text-gold-400 flex-shrink-0" />
+                          <span>Fotografía Principal (Portada Oficial Showroom) *</span>
                         </label>
-                        <p className="text-[11px] text-silver-400 mt-0.5">
+                        <p className="text-[10px] sm:text-[11px] text-silver-400 mt-0.5">
                           Esta es la imagen de vitrina que ven los clientes. Con el <strong>Auto-Estudio</strong> puedes subir cualquier foto tomada con celular sin recortar fondos.
                         </p>
                       </div>
@@ -1497,9 +1505,9 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                       )}
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4">
                       {mainImage ? (
-                        <div className="relative group w-44 h-28 rounded-xl overflow-hidden border-2 border-gold-500/60 shadow-xl flex-shrink-0 bg-carbon-950">
+                        <div className="relative group w-full sm:w-44 h-44 sm:h-28 rounded-xl overflow-hidden border-2 border-gold-500/60 shadow-xl flex-shrink-0 bg-carbon-950">
                           <img
                             src={mainImage}
                             alt="Portada del vehículo"
@@ -1515,13 +1523,13 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                           </button>
                         </div>
                       ) : (
-                        <div className="w-44 h-28 rounded-xl bg-carbon-800 border-2 border-dashed border-carbon-700 flex flex-col items-center justify-center text-silver-500 text-xs">
+                        <div className="w-full sm:w-44 h-36 sm:h-28 rounded-xl bg-carbon-800 border-2 border-dashed border-carbon-700 flex flex-col items-center justify-center text-silver-500 text-xs flex-shrink-0">
                           <Camera className="w-6 h-6 mb-1 text-carbon-600" />
                           <span>Sin Portada</span>
                         </div>
                       )}
 
-                      <div className="flex-1 space-y-2.5 w-full">
+                      <div className="flex-1 space-y-2.5 w-full min-w-0">
                         <input
                           type="url"
                           value={mainImage}
@@ -1529,19 +1537,19 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                           placeholder="Pega una URL (https://images.unsplash.com/...)"
                           className="w-full text-xs font-mono bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-gold-500"
                         />
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2">
                           <button
                             type="button"
                             onClick={() => setIsCompositorOpen(true)}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 text-xs font-black cursor-pointer border border-gold-400 shadow-md transition-all active:scale-95"
+                            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 text-xs font-black cursor-pointer border border-gold-400 shadow-md transition-all active:scale-95 text-center"
                           >
-                            <Sparkles className="w-3.5 h-3.5" />
-                            <span>🪄 Auto-Estudio Showroom (Fusión y Ajuste en 1 Clic)</span>
+                            <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
+                            <span>🪄 Auto-Estudio Showroom (1 Clic)</span>
                           </button>
 
-                          <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-gold-500/20 to-gold-400/10 hover:from-gold-500/30 hover:to-gold-400/20 text-gold-300 text-xs font-bold cursor-pointer border border-gold-500/40 transition-all shadow-sm">
-                            <Upload className="w-3.5 h-3.5" />
-                            <span>Subir Archivo Local (WebP/JPG)</span>
+                          <label className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 rounded-xl bg-gradient-to-r from-gold-500/20 to-gold-400/10 hover:from-gold-500/30 hover:to-gold-400/20 text-gold-300 text-xs font-bold cursor-pointer border border-gold-500/40 transition-all shadow-sm text-center active:scale-95">
+                            <Upload className="w-3.5 h-3.5 flex-shrink-0" />
+                            <span>Subir Archivo Local</span>
                             <input
                               type="file"
                               accept="image/png,image/jpeg,image/webp"
@@ -1555,18 +1563,18 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                   </div>
 
                   {/* Selector de Estudio Showroom Oficial (Plataforma Giratoria 360°) */}
-                  <div className="p-5 rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-gold-500/40 space-y-4 shadow-xl">
+                  <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-b from-carbon-850 to-carbon-900 border border-gold-500/40 space-y-3 sm:space-y-4 shadow-xl">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-lg bg-gold-500/20 text-gold-400 border border-gold-500/30 flex items-center justify-center font-black text-sm flex-shrink-0">
                           ✨
                         </div>
                         <div>
-                          <h5 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-2">
-                            Catálogo Oficial de Estudio Showroom (Plataforma Giratoria 360°)
+                          <h5 className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-white flex items-center gap-2">
+                            Catálogo Oficial de Estudio Showroom (Plataforma 360°)
                           </h5>
-                          <p className="text-[11px] text-silver-400">
-                            Haz clic en cualquier vehículo para usar su fotografía profesional de estudio con plataforma giratoria e iluminación de concesionario.
+                          <p className="text-[10px] sm:text-[11px] text-silver-400">
+                            Haz clic en cualquier vehículo para usar su fotografía profesional de estudio con iluminación de concesionario.
                           </p>
                         </div>
                       </div>
@@ -1576,7 +1584,7 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                     </div>
 
                     {/* Grid de miniaturas con selector de 1 clic */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 max-h-72 overflow-y-auto pr-1">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 max-h-72 overflow-y-auto pr-1">
                       {OFFICIAL_STUDIO_TURNTABLE_PHOTOS.map((studioCar) => {
                         const isSelected = mainImage === studioCar.url;
                         return (
@@ -1626,21 +1634,21 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                     </div>
 
                     {/* Guía de Fotografía de Estudio e Inteligencia Artificial (IA) */}
-                    <div className="p-3.5 rounded-xl bg-carbon-950/70 border border-carbon-750 text-xs text-silver-300 space-y-2">
+                    <div className="p-3 sm:p-3.5 rounded-xl bg-carbon-950/70 border border-carbon-750 text-xs text-silver-300 space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="font-bold text-white flex items-center gap-1.5 text-xs">
-                          <Sparkles className="w-3.5 h-3.5 text-gold-400" />
-                          <span>¿Cómo lograr que un carro nuevo se vea igual a estos?</span>
+                          <Sparkles className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
+                          <span>¿Cómo lograr fotos de estudio como estas?</span>
                         </div>
-                        <span className="text-[10px] font-mono text-gold-400">Guía Showroom VIP</span>
+                        <span className="text-[10px] font-mono text-gold-400">Guía VIP</span>
                       </div>
-                      <p className="text-[11px] text-silver-400 leading-relaxed">
-                        Los vehículos de la flota usan <strong>fotografía de estudio en plataforma giratoria (turntable)</strong>:
-                        un pedestal circular oscuro en el piso, fondo negro difuso de concesionario sin distracciones de calle ni árboles, e iluminación cenital difusa (aros de luz).
+                      <p className="text-[10px] sm:text-[11px] text-silver-400 leading-relaxed">
+                        Los vehículos usan <strong>fotografía de estudio en plataforma giratoria (turntable)</strong>:
+                        un pedestal circular oscuro, fondo negro difuso sin distracciones e iluminación cenital difusa (aros de luz).
                       </p>
                       <div className="pt-2 border-t border-carbon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <span className="text-[10px] text-silver-400 font-mono">
-                          Fórmula de IA (Midjourney / ChatGPT / Gemini) para cualquier modelo:
+                        <span className="text-[10px] text-silver-400 font-mono truncate">
+                          Fórmula de IA para Midjourney / ChatGPT / Gemini:
                         </span>
                         <button
                           type="button"
@@ -1651,7 +1659,7 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                             setPresetSuccessToast('📋 Prompt maestro de IA copiado al portapapeles');
                             setTimeout(() => setPresetSuccessToast(null), 3500);
                           }}
-                          className="px-3 py-1.5 bg-carbon-800 hover:bg-gold-500/20 text-gold-400 border border-carbon-700 hover:border-gold-500/40 rounded-lg text-[10px] font-bold transition-all self-start sm:self-auto flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
+                          className="w-full sm:w-auto px-3 py-1.5 bg-carbon-800 hover:bg-gold-500/20 text-gold-400 border border-carbon-700 hover:border-gold-500/40 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
                         >
                           <Copy className="w-3.5 h-3.5" />
                           <span>Copiar Prompt Maestro de IA</span>
@@ -1661,26 +1669,26 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                   </div>
 
                   {/* 2. Galería de hasta 12 Fotos con Slots Categorizados */}
-                  <div className="p-5 rounded-2xl bg-carbon-850 border border-carbon-750 space-y-4 shadow-md">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="p-3.5 sm:p-5 rounded-2xl bg-carbon-850 border border-carbon-750 space-y-3 sm:space-y-4 shadow-md">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                       <div>
                         <span className="text-xs font-bold text-silver-200 uppercase tracking-wider block">
                           Galería del Vehículo ({galleryImages.length}/12 Fotos)
                         </span>
-                        <span className="text-[11px] text-silver-400">
-                          Estas fotos se muestran cuando el cliente hace clic en el carro o en "Ver Detalle" (interiores, tablero, perfil y acabados).
+                        <span className="text-[10px] sm:text-[11px] text-silver-400">
+                          Estas fotos se muestran al hacer clic en el carro o en "Ver Detalle" (interiores, tablero, perfil y acabados).
                         </span>
                       </div>
 
                       {/* Botón Multi-Subida de Fotos */}
                       <label
-                        className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                        className={`inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer w-full sm:w-auto active:scale-95 ${
                           galleryImages.length >= 12
                             ? 'opacity-40 cursor-not-allowed bg-carbon-800 text-silver-500 border-carbon-750'
                             : 'bg-carbon-800 hover:bg-carbon-750 text-gold-400 border-gold-500/40 hover:border-gold-500'
                         }`}
                       >
-                        <Upload className="w-4 h-4" />
+                        <Upload className="w-4 h-4 flex-shrink-0" />
                         <span>Subir Varias Fotos a la Vez</span>
                         <input
                           type="file"
@@ -1701,12 +1709,12 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                           value={newPhotoUrl}
                           onChange={(e) => setNewPhotoUrl(e.target.value)}
                           placeholder="O pega una URL de fotografía..."
-                          className="flex-1 text-xs font-mono bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-gold-500"
+                          className="flex-1 min-w-0 text-xs font-mono bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-3 sm:px-3.5 py-2 sm:py-2.5 focus:outline-none focus:border-gold-500"
                         />
                         <button
                           type="button"
                           onClick={handleAddPhotoUrl}
-                          className="px-4 py-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-gold-400 text-xs font-bold border border-carbon-750 flex items-center gap-1"
+                          className="px-3.5 sm:px-4 py-2 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-gold-400 text-xs font-bold border border-carbon-750 flex items-center gap-1 flex-shrink-0 active:scale-95"
                         >
                           <Plus className="w-4 h-4" />
                           <span>Añadir</span>
@@ -1715,7 +1723,7 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                     )}
 
                     {/* Grid Visual de Ranuras (Slot Matrix) */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 pt-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 pt-1">
                       {galleryImages.map((img, idx) => {
                         let categoryLabel = 'Exterior';
                         if (idx >= 5 && idx < 9) categoryLabel = 'Cockpit';
@@ -1733,7 +1741,17 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                               #{idx + 1} {categoryLabel}
                             </div>
 
-                            {/* Acciones en Hover */}
+                            {/* Botón de borrado directo en móvil para accesibilidad táctil */}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveGalleryPhoto(idx)}
+                              title="Eliminar foto"
+                              className="sm:hidden absolute top-1 right-1 p-1 bg-rose-950/90 text-rose-300 rounded-md border border-rose-500/50 z-10"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+
+                            {/* Acciones en Hover (Desktop) */}
                             <div className="absolute inset-0 bg-carbon-950/80 backdrop-blur-xs flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity p-1">
                               <button
                                 type="button"
@@ -1801,7 +1819,7 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                       <span className="text-[11px] font-bold text-silver-400 mb-2 block">
                         📸 Banco Rápido de Fotos HD (Clic para añadir a galería):
                       </span>
-                      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none">
                         {STOCK_PHOTOS.map((stock, i) => (
                           <button
                             key={i}
@@ -1812,7 +1830,7 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                                 setGalleryImages([...galleryImages, stock.url]);
                               }
                             }}
-                            className="px-2.5 py-1 rounded-lg bg-carbon-800 hover:bg-carbon-750 text-[10px] font-medium text-silver-300 hover:text-gold-300 border border-carbon-750 whitespace-nowrap transition-colors flex-shrink-0 disabled:opacity-40"
+                            className="px-2.5 py-1 rounded-lg bg-carbon-800 hover:bg-carbon-750 text-[10px] font-medium text-silver-300 hover:text-gold-300 border border-carbon-750 whitespace-nowrap transition-colors flex-shrink-0 disabled:opacity-40 active:scale-95"
                           >
                             + {stock.label}
                           </button>
@@ -1822,19 +1840,19 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                   </div>
 
                   {/* 3. Video de Exterior en Loop (Reglas 7 y 9) */}
-                  <div className="p-5 rounded-2xl bg-carbon-850 border border-carbon-750 space-y-3 shadow-md">
-                    <div className="flex items-center justify-between">
+                  <div className="p-3.5 sm:p-5 rounded-2xl bg-carbon-850 border border-carbon-750 space-y-3 shadow-md">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                       <div>
                         <label className="text-xs font-bold text-silver-200 uppercase tracking-wider block">
                           Video Promocional en Loop Silencioso (Reglas 7 & 9)
                         </label>
-                        <span className="text-[11px] text-silver-400">
-                          Recomendado máx 15 segundos en formato MP4 o WebM para el showroom principal.
+                        <span className="text-[10px] sm:text-[11px] text-silver-400">
+                          Recomendado máx 15 segundos en formato MP4 o WebM para el showroom.
                         </span>
                       </div>
 
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-mono font-bold border ${
+                        className={`px-3 py-1 rounded-full text-xs font-mono font-bold border self-start sm:self-auto ${
                           videoUrl
                             ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
                             : 'bg-carbon-800 text-silver-400 border-carbon-700'
@@ -1844,17 +1862,17 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                       </span>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-center gap-3">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
                       <input
                         type="url"
                         value={videoUrl}
                         onChange={(e) => setVideoUrl(e.target.value)}
                         placeholder="https://.../video.mp4"
-                        className="flex-1 text-xs font-mono bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-3.5 py-2.5 w-full focus:outline-none focus:border-gold-500"
+                        className="flex-1 min-w-0 text-xs font-mono bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-3.5 py-2.5 w-full focus:outline-none focus:border-gold-500"
                       />
 
-                      <label className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-200 text-xs font-bold cursor-pointer border border-carbon-700 transition-colors whitespace-nowrap shadow-sm">
-                        <Video className="w-4 h-4 text-gold-400" />
+                      <label className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-200 text-xs font-bold cursor-pointer border border-carbon-700 transition-colors whitespace-nowrap shadow-sm active:scale-95">
+                        <Video className="w-4 h-4 text-gold-400 flex-shrink-0" />
                         <span>{isUploadingVideo ? 'Subiendo...' : 'Subir MP4 / WebM'}</span>
                         <input
                           type="file"
@@ -1873,20 +1891,20 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
               {/* PESTAÑA 3: EQUIPAMIENTO VIP Y RESEÑA EDITORIAL           */}
               {/* ======================================================== */}
               {activeTab === 'specs' && (
-                <div className="space-y-6 animate-fade-in">
+                <div className="space-y-4 sm:space-y-6 animate-fade-in">
                   
                   {/* Comodidades VIP */}
-                  <div className="p-5 rounded-2xl bg-carbon-850 border border-carbon-750 space-y-4 shadow-md">
+                  <div className="p-3.5 sm:p-5 rounded-2xl bg-carbon-850 border border-carbon-750 space-y-3 sm:space-y-4 shadow-md">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-silver-200 uppercase tracking-wider block">
-                        Equipamiento & Comodidades de Ultra-Lujo
+                      <span className="text-[11px] sm:text-xs font-bold text-silver-200 uppercase tracking-wider block">
+                        Equipamiento & Comodidades VIP
                       </span>
                       <span className="text-xs text-gold-400 font-mono font-bold">
                         {features.length} seleccionadas
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
                       {LUXURY_AMENITIES_PRESETS.map((amenity) => {
                         const isSelected = features.includes(amenity);
                         return (
@@ -1894,32 +1912,32 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                             key={amenity}
                             type="button"
                             onClick={() => toggleFeature(amenity)}
-                            className={`text-left p-3 rounded-xl text-xs font-semibold border flex items-center justify-between transition-all ${
+                            className={`text-left p-2.5 sm:p-3 rounded-xl text-xs font-semibold border flex items-center justify-between transition-all active:scale-[0.98] ${
                               isSelected
                                 ? 'bg-gold-500/15 border-gold-500/50 text-gold-300 shadow-sm'
                                 : 'bg-carbon-800/80 border-carbon-750 text-silver-400 hover:text-silver-200 hover:bg-carbon-800'
                             }`}
                           >
                             <span>{amenity}</span>
-                            {isSelected && <Check className="w-4 h-4 text-gold-400" />}
+                            {isSelected && <Check className="w-4 h-4 text-gold-400 flex-shrink-0 ml-1" />}
                           </button>
                         );
                       })}
                     </div>
 
                     {/* Añadir característica personalizada */}
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex flex-col sm:flex-row gap-2 pt-2">
                       <input
                         type="text"
                         value={customFeature}
                         onChange={(e) => setCustomFeature(e.target.value)}
-                        placeholder="Agregar equipamiento personalizado (ej. Nevera de Champán, Fibra de Carbono Forjada)..."
-                        className="flex-1 text-xs bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-gold-500"
+                        placeholder="Agregar equipamiento personalizado..."
+                        className="flex-1 min-w-0 text-xs bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-gold-500"
                       />
                       <button
                         type="button"
                         onClick={handleAddCustomFeature}
-                        className="px-4 py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-gold-400 text-xs font-bold border border-carbon-750 shadow-sm"
+                        className="px-4 py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-gold-400 text-xs font-bold border border-carbon-750 shadow-sm active:scale-95 text-center"
                       >
                         Añadir
                       </button>
@@ -1927,8 +1945,8 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                   </div>
 
                   {/* Reseña Editorial */}
-                  <div className="p-5 rounded-2xl bg-carbon-850 border border-carbon-750 space-y-2 shadow-md">
-                    <label className="block text-xs font-bold text-silver-200 uppercase tracking-wider">
+                  <div className="p-3.5 sm:p-5 rounded-2xl bg-carbon-850 border border-carbon-750 space-y-2 shadow-md">
+                    <label className="block text-[11px] sm:text-xs font-bold text-silver-200 uppercase tracking-wider">
                       Descripción Editorial para la Ficha Showroom VIP
                     </label>
                     <textarea
@@ -1936,7 +1954,7 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="Redacta la reseña destacando la exclusividad, ingeniería, sensaciones de manejo y nivel de confort para el cliente VIP..."
-                      className="w-full text-xs leading-relaxed bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl p-4 focus:outline-none focus:border-gold-500 transition-colors"
+                      className="w-full text-xs leading-relaxed bg-carbon-800 border border-carbon-700 text-silver-100 rounded-xl p-3 sm:p-4 focus:outline-none focus:border-gold-500 transition-colors"
                     />
                   </div>
 
@@ -1946,18 +1964,18 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
             </form>
 
             {/* Footer de Acciones del Formulario */}
-            <div className="p-5 sm:px-8 border-t border-carbon-800 bg-carbon-850/80 flex items-center justify-between gap-3">
-              <div className="text-xs text-silver-400 hidden sm:flex items-center gap-1.5 font-medium">
-                <ShieldCheck className="w-4 h-4 text-gold-400" />
-                <span>Sincronización dual en Cloud Firestore ($0 Spark) y Local Cache.</span>
+            <div className="p-3 sm:p-4 sm:px-8 border-t border-carbon-800 bg-carbon-850/95 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 flex-shrink-0">
+              <div className="text-xs text-silver-400 hidden md:flex items-center gap-1.5 font-medium">
+                <ShieldCheck className="w-4 h-4 text-gold-400 flex-shrink-0" />
+                <span className="truncate">Sincronización dual en Cloud Firestore y Local Cache.</span>
               </div>
 
-              <div className="flex items-center gap-3 ml-auto">
+              <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto sm:ml-auto">
                 <button
                   type="button"
                   onClick={onClose}
                   disabled={isSubmitting}
-                  className="px-5 py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-300 text-xs font-bold border border-carbon-700 transition-colors"
+                  className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-300 text-xs font-bold border border-carbon-700 transition-colors text-center active:scale-95"
                 >
                   Cancelar
                 </button>
@@ -1966,15 +1984,15 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                   type="submit"
                   form="vehicle-form"
                   disabled={isSubmitting}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 text-xs font-black shadow-xl transition-all hover:scale-105 disabled:opacity-50"
+                  className="flex-2 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-carbon-950 text-xs font-black shadow-xl transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 whitespace-nowrap text-center"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Guardando Ficha...</span>
+                      <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+                      <span>Guardando...</span>
                     </>
                   ) : (
-                    <span>{isEditMode ? 'Guardar Cambios' : 'Publicar Vehículo en Flota'}</span>
+                    <span>{isEditMode ? 'Guardar Cambios' : 'Publicar en Flota'}</span>
                   )}
                 </button>
               </div>
@@ -1985,7 +2003,7 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
           {/* PANEL DERECHO: VISTA PREVIA EN VIVO (SHOWROOM SIMULATOR) */}
           {/* ======================================================== */}
           <div
-            className={`lg:col-span-5 xl:col-span-5 p-5 sm:p-8 bg-gradient-to-b from-carbon-950 via-carbon-900 to-carbon-950 overflow-y-auto flex flex-col justify-between space-y-6 ${
+            className={`lg:col-span-5 xl:col-span-5 p-3.5 sm:p-6 md:p-8 bg-gradient-to-b from-carbon-950 via-carbon-900 to-carbon-950 overflow-y-auto overflow-x-hidden min-h-0 flex flex-col justify-between space-y-4 sm:space-y-6 ${
               mobilePreviewOpen ? 'flex' : 'hidden lg:flex'
             }`}
           >
