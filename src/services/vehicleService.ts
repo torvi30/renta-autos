@@ -11,7 +11,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 
-const LOCAL_CACHE_KEY = 'PREMIUM_RENTAL_VEHICLES_COLOMBIA_V9';
+const LOCAL_CACHE_KEY = 'PREMIUM_RENTAL_VEHICLES_COLOMBIA_V10';
 const VEHICLES_COLLECTION = 'vehicles';
 
 type VehicleChangeListener = (vehicles: Vehicle[]) => void;
@@ -100,12 +100,18 @@ export const fetchVehicles = async (): Promise<Vehicle[]> => {
 
     const cloudVehicles: Vehicle[] = [];
     snapshot.forEach((docSnap) => {
-      cloudVehicles.push(docSnap.data() as Vehicle);
+      const data = docSnap.data() as Vehicle;
+      if (data && data.brand && data.model && data.id) {
+        cloudVehicles.push(data);
+      }
     });
 
     // Cloud Firestore is the single source of truth
-    saveLocalVehicles(cloudVehicles);
-    return cloudVehicles;
+    if (cloudVehicles.length > 0) {
+      saveLocalVehicles(cloudVehicles);
+      return cloudVehicles;
+    }
+    return getLocalVehicles();
   } catch (error) {
     console.warn('Error querying vehicles in Firestore, using local fallback:', error);
     const local = getLocalVehicles();
@@ -144,13 +150,20 @@ export const subscribeVehicles = (
         if (!snapshot.empty) {
           const items: Vehicle[] = [];
           snapshot.forEach((docSnap) => {
-            items.push(docSnap.data() as Vehicle);
+            const data = docSnap.data() as Vehicle;
+            if (data && data.brand && data.model && data.id) {
+              items.push(data);
+            }
           });
 
           // Cloud Firestore is the single source of truth
-          localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(items));
-          notifyVehicleListeners(items);
-          callback(items);
+          if (items.length > 0) {
+            localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(items));
+            notifyVehicleListeners(items);
+            callback(items);
+          } else {
+            callback(MOCK_VEHICLES);
+          }
         } else {
           callback(MOCK_VEHICLES);
         }

@@ -33,10 +33,16 @@ export const MOCK_VEHICLES: Vehicle[] = [
     },
     gallery: {
       exteriorImages: [
-        '/vehicles/gala-toyota-prado-txl-plata.jpg'
+        '/vehicles/gallery/veh-txl-negra-2022/ext-1.jpg',
+        '/vehicles/gallery/veh-txl-negra-2022/ext-2.jpg'
       ],
-      interiorImages: [],
-      detailImages: []
+      interiorImages: [
+        '/vehicles/gallery/veh-txl-negra-2022/int-1.jpg',
+        '/vehicles/gallery/veh-txl-negra-2022/int-2.jpg'
+      ],
+      detailImages: [
+        '/vehicles/gallery/veh-txl-negra-2022/detail-1.jpg'
+      ]
     },
     isFeatured: true,
     createdAt: '2026-03-01T10:00:00Z',
@@ -74,10 +80,16 @@ export const MOCK_VEHICLES: Vehicle[] = [
     },
     gallery: {
       exteriorImages: [
-        '/vehicles/gala-toyota-4runner-blanca-rines-negros.jpg'
+        '/vehicles/gallery/veh-runner-blindada-2022/ext-1.jpg',
+        '/vehicles/gallery/veh-runner-blindada-2022/ext-2.jpg'
       ],
-      interiorImages: [],
-      detailImages: []
+      interiorImages: [
+        '/vehicles/gallery/veh-runner-blindada-2022/int-1.jpg',
+        '/vehicles/gallery/veh-runner-blindada-2022/int-2.jpg'
+      ],
+      detailImages: [
+        '/vehicles/gallery/veh-runner-blindada-2022/detail-1.jpg'
+      ]
     },
     isFeatured: true,
     createdAt: '2026-03-01T10:00:00Z',
@@ -115,14 +127,15 @@ export const MOCK_VEHICLES: Vehicle[] = [
     },
     gallery: {
       exteriorImages: [
-        '/vehicles/toyota-fortuner-sw4-2023.jpg',
-        'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=85'
+        '/vehicles/gallery/veh-fortuner-sw4-2023/ext-1.jpg',
+        '/vehicles/gallery/veh-fortuner-sw4-2023/ext-2.jpg'
       ],
       interiorImages: [
-        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85'
+        '/vehicles/gallery/veh-fortuner-sw4-2023/int-1.jpg',
+        '/vehicles/gallery/veh-fortuner-sw4-2023/int-2.jpg'
       ],
       detailImages: [
-        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=85'
+        '/vehicles/gallery/veh-fortuner-sw4-2023/detail-1.jpg'
       ]
     },
     isFeatured: true,
@@ -161,10 +174,16 @@ export const MOCK_VEHICLES: Vehicle[] = [
     },
     gallery: {
       exteriorImages: [
-        '/vehicles/gala-kia-sportage-plata.jpg'
+        '/vehicles/gallery/veh-sportage-gris-2022/ext-1.jpg',
+        '/vehicles/gallery/veh-sportage-gris-2022/ext-2.jpg'
       ],
-      interiorImages: [],
-      detailImages: []
+      interiorImages: [
+        '/vehicles/gallery/veh-sportage-gris-2022/int-1.jpg',
+        '/vehicles/gallery/veh-sportage-gris-2022/int-2.jpg'
+      ],
+      detailImages: [
+        '/vehicles/gallery/veh-sportage-gris-2022/detail-1.jpg'
+      ]
     },
     isFeatured: true,
     createdAt: '2026-03-01T10:00:00Z',
@@ -202,14 +221,15 @@ export const MOCK_VEHICLES: Vehicle[] = [
     },
     gallery: {
       exteriorImages: [
-        '/vehicles/kia-sportage-blanca-2022.jpg',
-        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85'
+        '/vehicles/gallery/veh-sportage-blanca-2022/ext-1.jpg',
+        '/vehicles/gallery/veh-sportage-blanca-2022/ext-2.jpg'
       ],
       interiorImages: [
-        'https://images.unsplash.com/photo-1541348263662-e0c8666524e0?auto=format&fit=crop&w=1200&q=85'
+        '/vehicles/gallery/veh-sportage-blanca-2022/int-1.jpg',
+        '/vehicles/gallery/veh-sportage-blanca-2022/int-2.jpg'
       ],
       detailImages: [
-        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=85'
+        '/vehicles/gallery/veh-sportage-blanca-2022/detail-1.jpg'
       ]
     },
     isFeatured: true,
@@ -248,10 +268,16 @@ export const MOCK_VEHICLES: Vehicle[] = [
     },
     gallery: {
       exteriorImages: [
-        '/vehicles/gala-mazda3-blanco.jpg'
+        '/vehicles/gallery/veh-mazda3-blanco-2018/ext-1.jpg',
+        '/vehicles/gallery/veh-mazda3-blanco-2018/ext-2.jpg'
       ],
-      interiorImages: [],
-      detailImages: []
+      interiorImages: [
+        '/vehicles/gallery/veh-mazda3-blanco-2018/int-1.jpg',
+        '/vehicles/gallery/veh-mazda3-blanco-2018/int-2.jpg'
+      ],
+      detailImages: [
+        '/vehicles/gallery/veh-mazda3-blanco-2018/detail-1.jpg'
+      ]
     },
     isFeatured: true,
     createdAt: '2026-03-01T10:00:00Z',
@@ -289,14 +315,15 @@ export const MOCK_VEHICLES: Vehicle[] = [
     },
     gallery: {
       exteriorImages: [
-        '/vehicles/suzuki-swift-sport-2022.jpg',
-        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85'
+        '/vehicles/gallery/veh-suzuki-swift-sport-2022/ext-1.jpg',
+        '/vehicles/gallery/veh-suzuki-swift-sport-2022/ext-2.jpg'
       ],
       interiorImages: [
-        'https://images.unsplash.com/photo-1541348263662-e0c8666524e0?auto=format&fit=crop&w=1200&q=85'
+        '/vehicles/gallery/veh-suzuki-swift-sport-2022/int-1.jpg',
+        '/vehicles/gallery/veh-suzuki-swift-sport-2022/int-2.jpg'
       ],
       detailImages: [
-        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=85'
+        '/vehicles/gallery/veh-suzuki-swift-sport-2022/detail-1.jpg'
       ]
     },
     isFeatured: true,
@@ -335,14 +362,15 @@ export const MOCK_VEHICLES: Vehicle[] = [
     },
     gallery: {
       exteriorImages: [
-        '/vehicles/mercedes-amg-g63.jpg',
-        'https://images.unsplash.com/photo-1520031441872-265e4ff70366?auto=format&fit=crop&w=1200&q=80'
+        '/vehicles/gallery/veh-mercedes-g63-amg/ext-1.jpg',
+        '/vehicles/gallery/veh-mercedes-g63-amg/ext-2.jpg'
       ],
       interiorImages: [
-        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80'
+        '/vehicles/gallery/veh-mercedes-g63-amg/int-1.jpg',
+        '/vehicles/gallery/veh-mercedes-g63-amg/int-2.jpg'
       ],
       detailImages: [
-        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=80'
+        '/vehicles/gallery/veh-mercedes-g63-amg/detail-1.jpg'
       ]
     },
     isFeatured: true,
@@ -381,14 +409,15 @@ export const MOCK_VEHICLES: Vehicle[] = [
     },
     gallery: {
       exteriorImages: [
-        '/vehicles/aston-martin-dbx.jpg',
-        'https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1200&q=80'
+        '/vehicles/gallery/veh-aston-martin-dbx/ext-1.jpg',
+        '/vehicles/gallery/veh-aston-martin-dbx/ext-2.jpg'
       ],
       interiorImages: [
-        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80'
+        '/vehicles/gallery/veh-aston-martin-dbx/int-1.jpg',
+        '/vehicles/gallery/veh-aston-martin-dbx/int-2.jpg'
       ],
       detailImages: [
-        'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=80'
+        '/vehicles/gallery/veh-aston-martin-dbx/detail-1.jpg'
       ]
     },
     isFeatured: true,
