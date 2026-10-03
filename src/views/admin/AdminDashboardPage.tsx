@@ -6,6 +6,7 @@ import {
   updateReservationStatus,
   updateReservation,
   deleteReservation,
+  deleteReservationsByVehicleId,
   subscribeReservations,
   seedInitialReservationsToFirestore,
   generateWhatsAppReservationLink,
@@ -171,10 +172,12 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
   const handleDeleteVehicle = async (vehicleId: string) => {
     try {
       await deleteVehicle(vehicleId);
+      await deleteReservationsByVehicleId(vehicleId);
+      setReservations(getStoredReservations());
       luxuryAlert.success({
         title: 'Vehículo Retirado',
-        message: 'El superdeportivo ha sido retirado de la flota activa.',
-        timer: 2000,
+        message: 'El vehículo y sus reservas asociadas han sido retirados de la flota activa.',
+        timer: 2500,
       });
     } catch (err: any) {
       luxuryAlert.error({
@@ -266,7 +269,13 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
     }
   };
 
-  const pendingCount = reservations.filter((r) => r.status === 'PENDING').length;
+  // Filtrar reservas para que solo se muestren y contabilicen las de vehículos que existen activamente en la flota
+  const activeReservations = React.useMemo(() => {
+    if (!vehicles || vehicles.length === 0) return reservations;
+    return reservations.filter((r) => vehicles.some((v) => v.id === r.vehicleId));
+  }, [reservations, vehicles]);
+
+  const pendingCount = activeReservations.filter((r) => r.status === 'PENDING').length;
   const availableVehiclesCount = vehicles.filter((v) => v.status === 'AVAILABLE').length;
 
   // Promedio de tarifa diaria (ADR)
@@ -427,7 +436,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
               {/* Tarjetas de Métricas de Alto Impacto con Navegación Directa */}
               <AdminMetricsGrid
                 vehicles={vehicles}
-                reservations={reservations}
+                reservations={activeReservations}
                 onSelectTab={setCurrentTab}
               />
 
@@ -451,7 +460,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
                     className="inline-flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 border border-carbon-700 text-xs sm:text-sm font-bold text-silver-200 hover:text-gold-400 transition-colors shadow-sm flex-shrink-0 cursor-pointer"
                   >
                     <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold-400" />
-                    <span>Reservas ({reservations.length})</span>
+                    <span>Reservas ({activeReservations.length})</span>
                     {pendingCount > 0 && (
                       <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                     )}
@@ -506,7 +515,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
                             Solicitudes de Reserva & Contratos VIP
                           </h3>
                           <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-carbon-800 text-gold-400 border border-gold-500/30">
-                            {reservations.length} Totales
+                            {activeReservations.length} Totales
                           </span>
                         </div>
                         <p className="text-xs sm:text-sm text-silver-300 mt-1">
@@ -523,12 +532,12 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
                     </div>
 
                     <div className="space-y-4 pt-4">
-                      {reservations.length === 0 ? (
+                      {activeReservations.length === 0 ? (
                         <div className="py-14 text-center text-silver-400 text-sm font-medium">
                           No hay solicitudes de reserva registradas por el momento.
                         </div>
                       ) : (
-                        reservations.slice(0, 4).map((r) => {
+                        activeReservations.slice(0, 4).map((r) => {
                           const isPending = r.status === 'PENDING';
                           const isConfirmed = r.status === 'CONFIRMED';
                           const isActive = r.status === 'ACTIVE';
@@ -881,7 +890,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
             <div className="animate-fade-in">
               <AdminReservationsView
                 vehicles={vehicles}
-                reservations={reservations}
+                reservations={activeReservations}
                 onUpdateStatus={handleUpdateReservationStatus}
                 onUpdateReservation={handleUpdateReservation}
                 onDeleteReservation={handleDeleteReservation}
@@ -894,7 +903,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
           {/* ============================================================ */}
           {currentTab === 'clients' && (
             <div className="animate-fade-in">
-              <AdminClientsView reservations={reservations} />
+              <AdminClientsView reservations={activeReservations} />
             </div>
           )}
 
@@ -905,7 +914,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
             <div className="animate-fade-in">
               <AdminCalendarView
                 vehicles={vehicles}
-                reservations={reservations}
+                reservations={activeReservations}
                 onUpdateReservationStatus={handleUpdateReservationStatus}
                 onUpdateReservation={handleUpdateReservation}
                 onDeleteReservation={handleDeleteReservation}
@@ -922,7 +931,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
             <div className="animate-fade-in">
               <AdminAnalyticsView
                 vehicles={vehicles}
-                reservations={reservations}
+                reservations={activeReservations}
               />
             </div>
           )}

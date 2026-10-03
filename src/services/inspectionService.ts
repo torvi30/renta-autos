@@ -13,28 +13,27 @@ import {
 } from '../types/inspection';
 
 const INSPECTIONS_COLLECTION = 'inspections';
-const LOCAL_STORAGE_KEY = 'elite_wheels_inspections_cache';
+const LOCAL_STORAGE_KEY = 'elite_wheels_inspections_v2';
 
-// Mock de inspecciones de ejemplo iniciales para demostración
+// Mock de inspecciones de ejemplo iniciales para demostración con flota real
 const INITIAL_MOCK_INSPECTIONS: VehicleInspection[] = [
   {
-    id: 'INSP-2026-911A',
-    reservationId: 'RES-2026-P911',
-    vehicleId: 'veh-porsche-911-gt3-rs',
-    vehicleName: 'Porsche 911 GT3 RS',
-    vehiclePlate: 'GT3-911',
+    id: 'INSP-2026-TXL01',
+    reservationId: 'RES-2026-TXL01',
+    vehicleId: 'veh-txl-negra-2022',
+    vehicleName: 'Toyota Prado TXL 4x4 2022',
+    vehiclePlate: 'TXL-022',
     clientName: 'Carlos Mendoza',
     type: 'CHECK_IN',
-    odometer: 14250,
+    odometer: 28450,
     fuelLevel: 100,
     cleanliness: 'IMMACULATE',
     damages: [],
     photos: [
-      'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80',
+      '/vehicles/gala-toyota-prado-txl-plata.jpg',
     ],
     inspectorName: 'Víctor Tamayo (Director General)',
-    notes: 'Vehículo entregado en perfecto estado. Neumáticos Michelin Pilot Sport Cup 2 con 95% de vida útil.',
+    notes: 'Vehículo entregado en perfecto estado. Mantenimiento al día y desinfección VIP completada.',
     createdAt: '2026-03-10T10:00:00Z',
     updatedAt: '2026-03-10T10:00:00Z',
   },

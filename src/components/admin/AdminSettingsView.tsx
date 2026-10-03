@@ -157,7 +157,7 @@ export const AdminSettingsView: React.FC = () => {
   };
 
   const testWhatsAppUrl = getWhatsAppLink({
-    vehicleName: 'Porsche 911 GT3 RS',
+    vehicleName: 'Toyota Prado TXL',
     clientName: 'Víctor Tamayo (Prueba Staff)',
   });
 

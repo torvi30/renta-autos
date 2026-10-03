@@ -17,7 +17,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 
-const STORAGE_KEY = 'PREMIUM_RENTAL_RESERVATIONS_V1';
+const STORAGE_KEY = 'PREMIUM_RENTAL_RESERVATIONS_V2';
 const RESERVATIONS_COLLECTION = 'reservations';
 
 // Formato de fecha YYYY-MM-DD local seguro
@@ -48,37 +48,99 @@ export const getDateAfterDaysString = (days: number): string => {
 };
 
 /**
- * Semillas iniciales para demostrar detección de solapamientos (Regla 14)
+ * Semillas iniciales sincronizadas con la flota activa (Regla 14)
  */
 export const SEED_RESERVATIONS: Reservation[] = [
   {
-    id: 'RES-2026-P911',
-    vehicleId: 'veh-002', // Porsche 911 GT3 RS
-    vehicleName: 'Porsche 911 GT3 RS',
-    vehicleImage: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1200&q=85',
-    vehiclePlate: 'LUX-002',
-    startDate: getDateAfterDaysString(3),
-    endDate: getDateAfterDaysString(6),
-    pickupTime: '11:00',
-    returnTime: '11:00',
+    id: 'RES-2026-TXL01',
+    vehicleId: 'veh-txl-negra-2022',
+    vehicleName: 'Toyota Prado TXL 4x4 2022',
+    vehicleImage: '/vehicles/gala-toyota-prado-txl-plata.jpg',
+    vehiclePlate: 'TXL-022',
+    startDate: getDateAfterDaysString(2),
+    endDate: getDateAfterDaysString(5),
+    pickupTime: '10:00',
+    returnTime: '10:00',
     deliveryLocation: 'SHOWROOM',
     client: {
       fullName: 'Carlos Mendoza',
       email: 'carlos.mendoza@executive.com',
-      phone: '+1 305 444 8899',
-      documentId: 'P-984321',
-      driverLicense: 'DL-FL-4321',
+      phone: '+57 310 444 8899',
+      documentId: 'CC-10984321',
+      driverLicense: 'DL-COL-4321',
       ageConfirmation: true,
     },
     pricing: {
-      dailyRate: 1850,
+      dailyRate: 180,
       days: 3,
-      rentalTotal: 5550,
-      securityDeposit: 3700,
+      rentalTotal: 540,
+      securityDeposit: 300,
       insuranceIncluded: true,
       currency: 'USD',
     },
     status: 'CONFIRMED',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'RES-2026-RUN02',
+    vehicleId: 'veh-runner-blindada-2022',
+    vehicleName: 'Toyota 4Runner Blindada Nivel 3+',
+    vehicleImage: '/vehicles/gala-toyota-4runner-blanca-rines-negros.jpg',
+    vehiclePlate: 'RUN-422',
+    startDate: getDateAfterDaysString(1),
+    endDate: getDateAfterDaysString(4),
+    pickupTime: '11:00',
+    returnTime: '11:00',
+    deliveryLocation: 'AIRPORT',
+    deliveryAddress: 'Aeropuerto Internacional El Dorado (Muelle VIP)',
+    client: {
+      fullName: 'Víctor Tamayo',
+      email: 'victortamayopine@gmail.com',
+      phone: '+57 321 145 5321',
+      documentId: 'CC-71239845',
+      driverLicense: 'DL-COL-8902',
+      ageConfirmation: true,
+    },
+    pricing: {
+      dailyRate: 260,
+      days: 3,
+      rentalTotal: 780,
+      securityDeposit: 500,
+      insuranceIncluded: true,
+      currency: 'USD',
+    },
+    status: 'CONFIRMED',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'RES-2026-FTN03',
+    vehicleId: 'veh-fortuner-sw4-2023',
+    vehicleName: 'Toyota Fortuner SW4 Diamond 4x4',
+    vehicleImage: '/vehicles/toyota-fortuner-sw4-2023.jpg',
+    vehiclePlate: 'FTN-723',
+    startDate: getDateAfterDaysString(-5),
+    endDate: getDateAfterDaysString(-2),
+    pickupTime: '09:00',
+    returnTime: '18:00',
+    deliveryLocation: 'HOTEL_RESIDENCE',
+    deliveryAddress: 'Hotel Four Seasons Casa Medina',
+    client: {
+      fullName: 'Andrés Restrepo',
+      email: 'andres.restrepo@empresa.com',
+      phone: '+57 300 888 1234',
+      documentId: 'CC-80912344',
+      driverLicense: 'DL-COL-7761',
+      ageConfirmation: true,
+    },
+    pricing: {
+      dailyRate: 160,
+      days: 3,
+      rentalTotal: 480,
+      securityDeposit: 300,
+      insuranceIncluded: true,
+      currency: 'USD',
+    },
+    status: 'COMPLETED',
     createdAt: new Date().toISOString(),
   },
 ];
@@ -663,6 +725,31 @@ export const deleteReservation = async (reservationId: string): Promise<boolean>
   }
 
   return true;
+};
+
+/**
+ * Eliminar todas las reservas asociadas a un vehículo eliminado
+ */
+export const deleteReservationsByVehicleId = async (vehicleId: string): Promise<number> => {
+  const currentList = getStoredReservations();
+  const toDelete = currentList.filter((r) => r.vehicleId === vehicleId);
+  const filteredList = currentList.filter((r) => r.vehicleId !== vehicleId);
+  saveReservations(filteredList);
+
+  if (db && isFirebaseConfigured()) {
+    for (const r of toDelete) {
+      try {
+        const docRef = doc(db, RESERVATIONS_COLLECTION, r.id);
+        deleteDoc(docRef).catch((err) => {
+          console.warn('Advertencia al eliminar reserva en Firestore:', err);
+        });
+      } catch (err) {
+        console.warn('Advertencia al preparar deleteDoc en Firestore:', err);
+      }
+    }
+  }
+
+  return toDelete.length;
 };
 
 /**
