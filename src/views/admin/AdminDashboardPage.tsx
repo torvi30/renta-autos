@@ -169,22 +169,17 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
   };
 
   const handleDeleteVehicle = async (vehicleId: string) => {
-    const targetVeh = vehicles.find((v) => v.id === vehicleId);
-    const confirmed = await luxuryAlert.confirm({
-      title: '¿Retirar de la Flota?',
-      message: `¿Estás seguro de que deseas retirar el ${targetVeh?.brand || ''} ${targetVeh?.model || 'vehículo'} de la flota activa? Esta acción lo removerá del showroom y del catálogo.`,
-      vehicle: targetVeh,
-      confirmText: 'Sí, Retirar Vehículo',
-      cancelText: 'Conservar en Flota',
-      isDestructive: true,
-    });
-
-    if (confirmed) {
+    try {
       await deleteVehicle(vehicleId);
       luxuryAlert.success({
         title: 'Vehículo Retirado',
-        message: `El auto ha sido retirado de la flota activa satisfactoriamente.`,
-        timer: 3500,
+        message: 'El superdeportivo ha sido retirado de la flota activa.',
+        timer: 2000,
+      });
+    } catch (err: any) {
+      luxuryAlert.error({
+        title: 'Error al Retirar',
+        message: err?.message || 'No fue posible eliminar el vehículo.',
       });
     }
   };

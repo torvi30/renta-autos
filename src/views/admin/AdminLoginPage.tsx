@@ -12,6 +12,7 @@ import {
   Shield,
   Sparkles,
   User,
+  UserPlus,
   CheckCircle2,
   Copy,
   Check,
@@ -37,7 +38,8 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     user,
     isAuthenticated,
     login,
-    requestRegistration,
+    loginWithGoogle,
+    register,
     verifyRegistration,
     resendRegistration,
     requestReset,
@@ -136,11 +138,39 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     }
   };
 
-  // Manejador de Registro - Paso 1: Solicitar Token OTP al correo
+  // Manejador de Login con Google (1-Click)
+  const handleGoogleSignIn = async () => {
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setIsSubmitting(true);
+
+    try {
+      const response = await loginWithGoogle();
+      if (!response.success) {
+        setErrorMessage(response.error || 'No fue posible iniciar sesión con Google.');
+      } else {
+        setSuccessMessage('¡Acceso concedido con Google! Entrando al Centro de Control...');
+        setTimeout(() => {
+          onLoginSuccess();
+        }, 500);
+      }
+    } catch (error: any) {
+      setErrorMessage(error?.message || 'Error al autenticar con el proveedor de Google.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Manejador de Registro Directo (Crear Cuenta Completa)
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setSuccessMessage(null);
+
+    if (!regName.trim()) {
+      setErrorMessage('Por favor ingresa tu nombre completo.');
+      return;
+    }
 
     if (regPassword !== regConfirmPassword) {
       setErrorMessage('Las contraseñas no coinciden. Verifica la confirmación.');
@@ -155,28 +185,24 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     setIsSubmitting(true);
 
     try {
-      const response = await requestRegistration({
-        name: regName,
-        email: regEmail,
+      const response = await register({
+        name: regName.trim(),
+        email: regEmail.trim(),
         password: regPassword,
         role: 'ADMIN',
         rememberMe,
       });
 
       if (!response.success) {
-        setErrorMessage(response.error || 'No fue posible iniciar el registro corporativo.');
+        setErrorMessage(response.error || 'No fue posible crear la cuenta corporativa.');
       } else {
-        setAuthMode('VERIFY_OTP');
-        setTimerSeconds(600);
-        setOtpDigits(['', '', '', '', '', '']);
-        setSuccessMessage(`Token emitido para ${regEmail}. Por favor confirma el código de 6 dígitos.`);
-        // Auto enfocar primera casilla
+        setSuccessMessage(`¡Cuenta creada con éxito! Bienvenido al Centro de Control.`);
         setTimeout(() => {
-          otpInputRefs.current[0]?.focus();
-        }, 200);
+          onLoginSuccess();
+        }, 600);
       }
-    } catch {
-      setErrorMessage('Error al conectar con el servicio de verificación por correo.');
+    } catch (error: any) {
+      setErrorMessage(error?.message || 'Error al conectar con el servicio de autenticación.');
     } finally {
       setIsSubmitting(false);
     }
@@ -460,7 +486,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
               {authMode === 'VERIFY_OTP'
                 ? 'Confirmar Token OTP'
                 : authMode === 'REGISTER'
-                ? 'Nueva Cuenta Ejecutiva'
+                ? 'Crear Cuenta Ejecutiva'
                 : authMode === 'RESET_PASSWORD'
                 ? 'Restablecer Clave'
                 : 'Centro de Control'}
@@ -469,7 +495,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
               {authMode === 'VERIFY_OTP'
                 ? `Ingresa los 6 dígitos enviados al correo ${regEmail}`
                 : authMode === 'REGISTER'
-                ? 'Crea tu perfil con validación de Token al correo corporativo.'
+                ? 'Crea tu perfil corporativo para acceder de inmediato al Centro de Control.'
                 : authMode === 'RESET_PASSWORD'
                 ? 'Recibe un código de seguridad para restaurar tu acceso.'
                 : 'Ingresa tus credenciales autorizadas de director.'}
@@ -491,228 +517,323 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
             </div>
           )}
 
-          {/* MODO 1: INICIAR SESIÓN (Sin accesos directos inseguros) */}
+          {/* MODO 1: INICIAR SESIÓN */}
           {authMode === 'LOGIN' && (
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="admin-login-email"
-                  className="block text-[11px] font-medium text-silver-300 mb-1 flex items-center gap-1.5"
-                >
-                  <Mail className="w-3.5 h-3.5 text-gold-400" />
-                  Correo Electrónico Corporativo
-                </label>
-                <input
-                  id="admin-login-email"
-                  type="email"
-                  required
-                  autoFocus
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder="victortamayopine@gmail.com"
-                  className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-100 text-xs focus:outline-none focus:border-gold-500 transition-colors"
-                />
+            <div className="space-y-4">
+              {/* Botón oficial de Google Sign-In */}
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={isSubmitting}
+                className="w-full py-3 px-4 rounded-xl bg-carbon-850 hover:bg-carbon-800 active:scale-[0.99] border border-carbon-700 hover:border-gold-500/50 text-silver-100 font-semibold text-xs tracking-wide transition-all flex items-center justify-center gap-3 shadow-sm cursor-pointer disabled:opacity-50 group"
+              >
+                <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.87c2.27-2.09 3.67-5.17 3.67-9.15z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 24c3.24 0 5.97-1.07 7.96-2.91l-3.87-3.05c-1.08.72-2.46 1.16-4.09 1.16-3.14 0-5.8-2.12-6.75-4.97H1.24v3.15C3.26 21.36 7.34 24 12 24z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.25 14.23c-.25-.72-.39-1.5-.39-2.23 0-.73.14-1.51.39-2.23V6.62H1.24C.45 8.19 0 9.97 0 12c0 2.03.45 3.81 1.24 5.38l4.01-3.15z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 4.75c1.76 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.23 0 12 0 7.34 0 3.26 2.64 1.24 6.62l4.01 3.15c.95-2.85 3.61-4.97 6.75-4.97z"
+                  />
+                </svg>
+                <span className="group-hover:text-gold-300 transition-colors">
+                  Continuar con Google
+                </span>
+              </button>
+
+              <div className="relative my-4 flex items-center justify-center">
+                <div className="w-full border-t border-carbon-800" />
+                <span className="absolute bg-carbon-900 px-3 text-[10px] uppercase font-mono tracking-wider text-silver-500">
+                  o con tu correo
+                </span>
               </div>
 
-              <div>
-                <div className="flex justify-between items-center mb-1">
+              <form onSubmit={handleLoginSubmit} className="space-y-4">
+                <div>
                   <label
-                    htmlFor="admin-login-password"
-                    className="block text-[11px] font-medium text-silver-300 flex items-center gap-1.5"
+                    htmlFor="admin-login-email"
+                    className="block text-[11px] font-medium text-silver-300 mb-1 flex items-center gap-1.5"
                   >
-                    <Key className="w-3.5 h-3.5 text-gold-400" />
-                    Contraseña
+                    <Mail className="w-3.5 h-3.5 text-gold-400" />
+                    Correo Electrónico Corporativo
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthMode('RESET_PASSWORD');
-                      setResetStep('REQUEST');
-                      setErrorMessage(null);
-                      setSuccessMessage(null);
-                    }}
-                    className="text-[11px] text-gold-400 hover:text-gold-300 transition-colors"
-                  >
-                    ¿Olvidaste tu contraseña?
-                  </button>
-                </div>
-                <div className="relative">
                   <input
-                    id="admin-login-password"
-                    type={showPassword ? 'text' : 'password'}
+                    id="admin-login-email"
+                    type="email"
                     required
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    className="w-full px-3.5 py-2.5 pr-10 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-100 text-xs focus:outline-none focus:border-gold-500 transition-colors"
+                    autoFocus
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    placeholder="victortamayopine@gmail.com"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-100 text-xs focus:outline-none focus:border-gold-500 transition-colors"
                   />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label
+                      htmlFor="admin-login-password"
+                      className="block text-[11px] font-medium text-silver-300 flex items-center gap-1.5"
+                    >
+                      <Key className="w-3.5 h-3.5 text-gold-400" />
+                      Contraseña
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode('RESET_PASSWORD');
+                        setResetStep('REQUEST');
+                        setErrorMessage(null);
+                        setSuccessMessage(null);
+                      }}
+                      className="text-[11px] text-gold-400 hover:text-gold-300 transition-colors"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <input
+                      id="admin-login-password"
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="w-full px-3.5 py-2.5 pr-10 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-100 text-xs focus:outline-none focus:border-gold-500 transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-silver-400 hover:text-silver-200 transition-colors"
+                      aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs text-silver-400 hover:text-silver-300">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="rounded bg-carbon-800 border-carbon-700 text-gold-500 focus:ring-gold-500"
+                    />
+                    <span>Mantener sesión activa</span>
+                  </label>
+                  <span className="text-[11px] text-silver-500 font-mono">TLS 256-bit</span>
+                </div>
+
+                <div className="pt-2">
                   <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-silver-400 hover:text-silver-200 transition-colors"
-                    aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-3 px-4 rounded-xl bg-gold-500 hover:bg-gold-400 disabled:bg-carbon-800 disabled:text-silver-500 text-carbon-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-glow cursor-pointer"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Verificando Credenciales...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Shield className="w-4 h-4" />
+                        <span>INGRESAR AL CENTRO DE CONTROL</span>
+                      </>
+                    )}
                   </button>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between pt-1">
-                <label className="flex items-center gap-2 cursor-pointer text-xs text-silver-400 hover:text-silver-300">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="rounded bg-carbon-800 border-carbon-700 text-gold-500 focus:ring-gold-500"
-                  />
-                  <span>Mantener sesión activa</span>
-                </label>
-                <span className="text-[11px] text-silver-500 font-mono">TLS 256-bit</span>
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-3 px-4 rounded-xl bg-gold-500 hover:bg-gold-400 disabled:bg-carbon-800 disabled:text-silver-500 text-carbon-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-glow cursor-pointer"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Verificando Credenciales...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Shield className="w-4 h-4" />
-                      <span>INGRESAR AL CENTRO DE CONTROL</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* Guía sutil para acceso de dirección */}
-              <div className="pt-3 border-t border-carbon-800/80 text-center">
-                <p className="text-[11px] text-silver-500">
-                  ¿Aún no tienes acceso?{' '}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthMode('REGISTER');
-                      setErrorMessage(null);
-                      setSuccessMessage(null);
-                    }}
-                    className="text-gold-400 hover:underline font-semibold"
-                  >
-                    Crea tu cuenta con confirmación de Token
-                  </button>
-                </p>
-              </div>
-            </form>
+                {/* Guía sutil para acceso de dirección */}
+                <div className="pt-3 border-t border-carbon-800/80 text-center">
+                  <p className="text-[11px] text-silver-500">
+                    ¿Aún no tienes acceso?{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode('REGISTER');
+                        setErrorMessage(null);
+                        setSuccessMessage(null);
+                      }}
+                      className="text-gold-400 hover:underline font-semibold"
+                    >
+                      Crea tu cuenta ejecutiva aquí
+                    </button>
+                  </p>
+                </div>
+              </form>
+            </div>
           )}
 
-          {/* MODO 2: REGISTRO - PASO 1 (Datos Básicos y Envío de Token) */}
+          {/* MODO 2: REGISTRO COMPLETO (Directo + Google) */}
           {authMode === 'REGISTER' && (
-            <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
-              <div>
-                <label className="block text-[11px] font-medium text-silver-300 mb-1 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-gold-400" />
-                  Nombre Completo del Director / Administrador
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={regName}
-                  onChange={(e) => setRegName(e.target.value)}
-                  placeholder="Víctor Tamayo"
-                  className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-100 text-xs focus:outline-none focus:border-gold-500 transition-colors"
-                />
+            <div className="space-y-4">
+              {/* Botón oficial de Google Sign-In para Registrarse */}
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={isSubmitting}
+                className="w-full py-3 px-4 rounded-xl bg-carbon-850 hover:bg-carbon-800 active:scale-[0.99] border border-carbon-700 hover:border-gold-500/50 text-silver-100 font-semibold text-xs tracking-wide transition-all flex items-center justify-center gap-3 shadow-sm cursor-pointer disabled:opacity-50 group"
+              >
+                <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.87c2.27-2.09 3.67-5.17 3.67-9.15z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 24c3.24 0 5.97-1.07 7.96-2.91l-3.87-3.05c-1.08.72-2.46 1.16-4.09 1.16-3.14 0-5.8-2.12-6.75-4.97H1.24v3.15C3.26 21.36 7.34 24 12 24z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.25 14.23c-.25-.72-.39-1.5-.39-2.23 0-.73.14-1.51.39-2.23V6.62H1.24C.45 8.19 0 9.97 0 12c0 2.03.45 3.81 1.24 5.38l4.01-3.15z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 4.75c1.76 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.23 0 12 0 7.34 0 3.26 2.64 1.24 6.62l4.01 3.15c.95-2.85 3.61-4.97 6.75-4.97z"
+                  />
+                </svg>
+                <span className="group-hover:text-gold-300 transition-colors">
+                  Registrarme con Google
+                </span>
+              </button>
+
+              <div className="relative my-4 flex items-center justify-center">
+                <div className="w-full border-t border-carbon-800" />
+                <span className="absolute bg-carbon-900 px-3 text-[10px] uppercase font-mono tracking-wider text-silver-500">
+                  o completa el formulario
+                </span>
               </div>
 
-              <div>
-                <label className="block text-[11px] font-medium text-silver-300 mb-1 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-gold-400" />
-                  Correo Electrónico para Verificación
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={regEmail}
-                  onChange={(e) => setRegEmail(e.target.value)}
-                  placeholder="victor@luxurycars.com"
-                  className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-100 text-xs focus:outline-none focus:border-gold-500 transition-colors"
-                />
-              </div>
+              <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
+                <div>
+                  <label className="block text-[11px] font-medium text-silver-300 mb-1 flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-gold-400" />
+                    Nombre Completo del Director / Administrador
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={regName}
+                    onChange={(e) => setRegName(e.target.value)}
+                    placeholder="Víctor Tamayo"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-100 text-xs focus:outline-none focus:border-gold-500 transition-colors"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-[11px] font-medium text-silver-300 mb-1 flex items-center gap-1.5">
-                  <Key className="w-3.5 h-3.5 text-gold-400" />
-                  Contraseña Corporativa
-                </label>
-                <div className="relative">
+                <div>
+                  <label className="block text-[11px] font-medium text-silver-300 mb-1 flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-gold-400" />
+                    Correo Electrónico Corporativo
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    placeholder="victor@luxurycars.com"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-100 text-xs focus:outline-none focus:border-gold-500 transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-medium text-silver-300 mb-1 flex items-center gap-1.5">
+                    <Key className="w-3.5 h-3.5 text-gold-400" />
+                    Contraseña Corporativa
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showRegPassword ? 'text' : 'password'}
+                      required
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      placeholder="Mínimo 6 caracteres"
+                      className="w-full px-3.5 py-2.5 pr-10 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-100 text-xs focus:outline-none focus:border-gold-500 transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowRegPassword(!showRegPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-silver-400 hover:text-silver-200 transition-colors"
+                    >
+                      {showRegPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {/* Indicador visual de seguridad de contraseña */}
+                  {regPassword && (
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <div className="flex gap-1 flex-1 h-1 bg-carbon-800 rounded-full overflow-hidden">
+                        <div className={`h-full ${regPassStrength.color} ${regPassStrength.score >= 1 ? 'w-1/3' : 'w-0'}`} />
+                        <div className={`h-full ${regPassStrength.color} ${regPassStrength.score >= 2 ? 'w-1/3' : 'w-0'}`} />
+                        <div className={`h-full ${regPassStrength.color} ${regPassStrength.score >= 3 ? 'w-1/3' : 'w-0'}`} />
+                      </div>
+                      <span className="text-[10px] text-silver-400">{regPassStrength.text}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-medium text-silver-300 mb-1 flex items-center gap-1.5">
+                    <Key className="w-3.5 h-3.5 text-gold-400" />
+                    Confirmar Contraseña
+                  </label>
                   <input
                     type={showRegPassword ? 'text' : 'password'}
                     required
-                    value={regPassword}
-                    onChange={(e) => setRegPassword(e.target.value)}
-                    placeholder="Mínimo 6 caracteres"
-                    className="w-full px-3.5 py-2.5 pr-10 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-100 text-xs focus:outline-none focus:border-gold-500 transition-colors"
+                    value={regConfirmPassword}
+                    onChange={(e) => setRegConfirmPassword(e.target.value)}
+                    placeholder="Repite la contraseña"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-100 text-xs focus:outline-none focus:border-gold-500 transition-colors"
                   />
+                </div>
+
+                <div className="pt-2">
                   <button
-                    type="button"
-                    onClick={() => setShowRegPassword(!showRegPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-silver-400 hover:text-silver-200 transition-colors"
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-3 px-4 rounded-xl bg-gold-500 hover:bg-gold-400 disabled:bg-carbon-800 disabled:text-silver-500 text-carbon-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-glow cursor-pointer"
                   >
-                    {showRegPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Creando Cuenta...</span>
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-4 h-4" />
+                        <span>CREAR CUENTA EJECUTIVA</span>
+                      </>
+                    )}
                   </button>
                 </div>
-                {/* Indicador visual de seguridad de contraseña */}
-                {regPassword && (
-                  <div className="mt-1.5 flex items-center gap-2">
-                    <div className="flex gap-1 flex-1 h-1 bg-carbon-800 rounded-full overflow-hidden">
-                      <div className={`h-full ${regPassStrength.color} ${regPassStrength.score >= 1 ? 'w-1/3' : 'w-0'}`} />
-                      <div className={`h-full ${regPassStrength.color} ${regPassStrength.score >= 2 ? 'w-1/3' : 'w-0'}`} />
-                      <div className={`h-full ${regPassStrength.color} ${regPassStrength.score >= 3 ? 'w-1/3' : 'w-0'}`} />
-                    </div>
-                    <span className="text-[10px] text-silver-400">{regPassStrength.text}</span>
-                  </div>
-                )}
-              </div>
 
-              <div>
-                <label className="block text-[11px] font-medium text-silver-300 mb-1 flex items-center gap-1.5">
-                  <Key className="w-3.5 h-3.5 text-gold-400" />
-                  Confirmar Contraseña
-                </label>
-                <input
-                  type={showRegPassword ? 'text' : 'password'}
-                  required
-                  value={regConfirmPassword}
-                  onChange={(e) => setRegConfirmPassword(e.target.value)}
-                  placeholder="Repite la contraseña"
-                  className="w-full px-3.5 py-2.5 rounded-lg bg-carbon-850 border border-carbon-700 text-silver-100 text-xs focus:outline-none focus:border-gold-500 transition-colors"
-                />
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-3 px-4 rounded-xl bg-gold-500 hover:bg-gold-400 disabled:bg-carbon-800 disabled:text-silver-500 text-carbon-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-glow cursor-pointer"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Generando Token Cifrado...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      <span>SOLICITAR TOKEN DE VERIFICACIÓN</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
+                <div className="pt-3 border-t border-carbon-800/80 text-center">
+                  <p className="text-[11px] text-silver-500">
+                    ¿Ya tienes una cuenta registrada?{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode('LOGIN');
+                        setErrorMessage(null);
+                        setSuccessMessage(null);
+                      }}
+                      className="text-gold-400 hover:underline font-semibold"
+                    >
+                      Iniciar Sesión
+                    </button>
+                  </p>
+                </div>
+              </form>
+            </div>
           )}
 
           {/* MODO 3: VALIDAR TOKEN OTP (6 Casillas Segmentadas) */}

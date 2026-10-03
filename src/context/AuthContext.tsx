@@ -13,6 +13,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<AuthResponse>;
+  loginWithGoogle: () => Promise<AuthResponse>;
+  register: (credentials: RegisterCredentials) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   requestRegistration: (credentials: RegisterCredentials) => Promise<TokenResponse>;
   verifyRegistration: (email: string, token: string) => Promise<AuthResponse>;
@@ -41,6 +43,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const response = await authService.login(credentials);
+      if (response.success && response.user) {
+        setUser(response.user);
+      }
+      return response;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLoginWithGoogle = async (): Promise<AuthResponse> => {
+    setIsLoading(true);
+    try {
+      const response = await authService.loginWithGoogle();
+      if (response.success && response.user) {
+        setUser(response.user);
+      }
+      return response;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRegister = async (credentials: RegisterCredentials): Promise<AuthResponse> => {
+    setIsLoading(true);
+    try {
+      const response = await authService.register(credentials);
       if (response.success && response.user) {
         setUser(response.user);
       }
@@ -103,6 +131,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAuthenticated: !!user,
     isLoading,
     login: handleLogin,
+    loginWithGoogle: handleLoginWithGoogle,
+    register: handleRegister,
     logout: handleLogout,
     requestRegistration: handleRequestRegistration,
     verifyRegistration: handleVerifyRegistration,

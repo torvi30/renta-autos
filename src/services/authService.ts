@@ -8,6 +8,8 @@ import {
   onAuthStateChanged as fbOnAuthStateChanged,
   User as FirebaseUser,
   updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
@@ -252,9 +254,148 @@ export const translateFirebaseAuthError = (errorCode: string): string => {
       return 'Demasiados intentos erróneos. Cuenta bloqueada temporalmente por seguridad.';
     case 'auth/network-request-failed':
       return 'Error de conexión de red al conectar con los servidores de Firebase.';
+    case 'auth/popup-closed-by-user':
+    case 'auth/cancelled-popup-request':
+      return 'La ventana de Google fue cerrada antes de completar el acceso.';
+    case 'auth/popup-blocked':
+      return 'El navegador bloqueó la ventana emergente de Google. Habilita las ventanas emergentes para continuar.';
     default:
       return 'Error de autenticación con el servidor de Firebase.';
   }
+};
+
+/**
+ * INICIAR SESIÓN O REGISTRO CON GOOGLE (Firebase GoogleAuthProvider)
+ */
+export const loginWithGoogle = async (): Promise<AuthResponse> => {
+  if (auth && isFirebaseConfigured()) {
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const userCredential = await signInWithPopup(auth, provider);
+      const fbUser = userCredential.user;
+      const authenticatedUser = await syncFirestoreUser(
+        fbUser,
+        fbUser.displayName || 'Director General',
+        'ADMIN'
+      );
+      persistSession(authenticatedUser, true);
+      notifyListeners(authenticatedUser);
+      return { success: true, user: authenticatedUser };
+    } catch (err: any) {
+      const errorCode = err?.code || '';
+      if (errorCode === 'auth/popup-closed-by-user' || errorCode === 'auth/cancelled-popup-request') {
+        return { success: false, error: 'Inicio de sesión con Google cancelado.' };
+      }
+      return {
+        success: false,
+        error: translateFirebaseAuthError(errorCode) || 'Error al iniciar sesión con Google.',
+      };
+    }
+  }
+
+  // Fallback demo local si Firebase está offline
+  const demoGoogleUser: AuthUser = {
+    id: 'usr-google-demo',
+    email: 'victortamayopine@gmail.com',
+    name: 'Víctor Tamayo (Google)',
+    role: 'ADMIN',
+    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+    lastLogin: new Date().toISOString(),
+  };
+  persistSession(demoGoogleUser, true);
+  notifyListeners(demoGoogleUser);
+  return { success: true, user: demoGoogleUser };
+};
+
+/**
+ * REGISTRO DIRECTO DE CUENTA (Inmediato, sin bloqueos de OTP simulados)
+ */
+export const register = async (credentials: RegisterCredentials): Promise<AuthResponse> => {
+  const cleanEmail = credentials.email.trim().toLowerCase();
+  const cleanName = credentials.name.trim();
+  const cleanPassword = credentials.password.trim();
+
+  if (!cleanName || cleanName.length < 3) {
+    return {
+      success: false,
+      error: 'Por favor ingresa tu nombre completo (mínimo 3 caracteres).',
+    };
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(cleanEmail)) {
+    return {
+      success: false,
+      error: 'El formato del correo electrónico corporativo no es válido.',
+    };
+  }
+
+  if (cleanPassword.length < 6) {
+    return {
+      success: false,
+      error: 'La contraseña debe tener al menos 6 caracteres por seguridad ejecutiva.',
+    };
+  }
+
+  // 1. Firebase Auth si está configurado
+  if (auth && isFirebaseConfigured()) {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, cleanPassword);
+      if (userCredential.user) {
+        await updateProfile(userCredential.user, { displayName: cleanName });
+      }
+      const authenticatedUser = await syncFirestoreUser(userCredential.user, cleanName, credentials.role || 'ADMIN');
+      saveRegisteredUser(authenticatedUser, cleanPassword);
+      persistSession(authenticatedUser, credentials.rememberMe ?? true);
+      notifyListeners(authenticatedUser);
+      return { success: true, user: authenticatedUser };
+    } catch (err: any) {
+      const errorCode = err?.code || '';
+      if (errorCode === 'auth/email-already-in-use') {
+        // Si ya está registrado con esta contraseña, iniciar sesión directamente
+        try {
+          const loginAttempt = await signInWithEmailAndPassword(auth, cleanEmail, cleanPassword);
+          const authenticatedUser = await syncFirestoreUser(loginAttempt.user, cleanName, credentials.role || 'ADMIN');
+          persistSession(authenticatedUser, credentials.rememberMe ?? true);
+          notifyListeners(authenticatedUser);
+          return { success: true, user: authenticatedUser };
+        } catch {
+          return {
+            success: false,
+            error: 'Este correo ya se encuentra registrado. Por favor inicia sesión con tu contraseña.',
+          };
+        }
+      }
+      return {
+        success: false,
+        error: translateFirebaseAuthError(errorCode) || 'Error al registrar la cuenta en Firebase.',
+      };
+    }
+  }
+
+  // 2. Fallback modo local/demo
+  const registered = getRegisteredUsers();
+  if (registered[cleanEmail] || DEFAULT_SYSTEM_ACCOUNTS[cleanEmail]) {
+    return {
+      success: false,
+      error: 'Este correo ya cuenta con una cuenta registrada. Por favor inicia sesión.',
+    };
+  }
+
+  const newUser: AuthUser = {
+    id: `usr-reg-${Date.now().toString(36)}`,
+    email: cleanEmail,
+    name: cleanName,
+    role: credentials.role || 'ADMIN',
+    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+    lastLogin: new Date().toISOString(),
+  };
+
+  saveRegisteredUser(newUser, cleanPassword);
+  persistSession(newUser, credentials.rememberMe ?? true);
+  notifyListeners(newUser);
+  return { success: true, user: newUser };
 };
 
 /**
