@@ -113,7 +113,11 @@ const AppContent: React.FC = () => {
 
   const currentVehicleForDetail = useMemo(() => {
     if (!currentSlug) return null;
-    return vehicles.find((v) => v.slug === currentSlug) || null;
+    return (
+      vehicles.find((v) => v.slug === currentSlug) ||
+      vehicles.find((v) => v.id === currentSlug) ||
+      null
+    );
   }, [vehicles, currentSlug]);
 
   // Sincronización con el historial del navegador (Back / Forward)
@@ -142,9 +146,17 @@ const AppContent: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  const navigateToVehicle = useCallback((slug: string) => {
-    setRouteState({ route: 'vehicle_detail', slug });
-    const targetPath = `/vehicles/${slug}`;
+  const navigateToVehicle = useCallback((slugOrId?: string) => {
+    if (!slugOrId) {
+      setRouteState({ route: 'catalog', slug: null });
+      if (window.location.pathname !== '/vehicles') {
+        window.history.pushState({}, '', '/vehicles');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    setRouteState({ route: 'vehicle_detail', slug: slugOrId });
+    const targetPath = `/vehicles/${slugOrId}`;
     if (window.location.pathname !== targetPath) {
       window.history.pushState({}, '', targetPath);
     }
@@ -176,7 +188,7 @@ const AppContent: React.FC = () => {
   }, [isAuthenticated, navigateToAdminDashboard, navigateToAdminLogin]);
 
   const handleOpenVehicleModal = (vehicle: Vehicle) => {
-    navigateToVehicle(vehicle.slug);
+    navigateToVehicle(vehicle.slug || vehicle.id);
   };
 
   const handleCloseVehicleModal = () => {

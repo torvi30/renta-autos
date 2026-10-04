@@ -274,7 +274,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {/* Badge de estado en esquina superior derecha */}
             <div className="absolute top-4 right-4 z-30 hidden sm:flex items-center gap-2">
               <span className="px-3 py-1 rounded-full bg-carbon-950/80 border border-gold-500/30 text-gold-400 text-[10px] font-mono font-bold tracking-widest uppercase backdrop-blur-md shadow-lg">
-                SHOWROOM VIP • {activeVehicle.category.replace('_', ' ')}
+                SHOWROOM VIP • {(activeVehicle.category || 'SUV_LUJO').replace('_', ' ')}
               </span>
             </div>
 

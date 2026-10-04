@@ -208,7 +208,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
           </div>
 
           {/* Características destacadas */}
-          {vehicle.features.length > 0 && (
+          {vehicle.features && Array.isArray(vehicle.features) && vehicle.features.length > 0 && (
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-silver-400 mb-3">
                 {t.detail.equipmentTitle}

@@ -8,7 +8,8 @@ export const formatCurrency = (amount: number, currency: string = 'USD'): string
   }).format(amount);
 };
 
-export const getCategoryLabel = (category: VehicleCategory): string => {
+export const getCategoryLabel = (category?: VehicleCategory | string): string => {
+  if (!category) return 'SUV de Lujo';
   switch (category) {
     case 'DEPORTIVO':
       return 'Deportivo';
@@ -21,11 +22,11 @@ export const getCategoryLabel = (category: VehicleCategory): string => {
     case 'CONVERTIBLE':
       return 'Convertible';
     default:
-      return category;
+      return String(category).replace('_', ' ');
   }
 };
 
-export const getStatusConfig = (status: VehicleStatus) => {
+export const getStatusConfig = (status?: VehicleStatus | string) => {
   switch (status) {
     case 'AVAILABLE':
       return {
@@ -54,6 +55,13 @@ export const getStatusConfig = (status: VehicleStatus) => {
         dotClass: 'bg-gray-500',
         badgeClass: 'text-gray-400 bg-gray-900/60 border-gray-700/40',
         icon: '⚫',
+      };
+    default:
+      return {
+        label: 'Disponible',
+        dotClass: 'bg-emerald-500',
+        badgeClass: 'text-emerald-400 bg-emerald-950/40 border-emerald-800/40',
+        icon: '🟢',
       };
   }
 };

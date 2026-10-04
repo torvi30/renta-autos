@@ -86,7 +86,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
       ...exteriorImages,
       ...interiorImages,
       ...detailImages,
-    ];
+    ].filter(Boolean);
     // Eliminar duplicados y limitar estrictamente a 12 fotos
     return Array.from(new Set(combined)).slice(0, 12);
   }, [vehicle, exteriorImages, interiorImages, detailImages]);
@@ -317,7 +317,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
               <div>
                 <div className="text-xs text-silver-400 uppercase tracking-wider">{language === 'EN' ? 'Configuration' : 'Configuración'}</div>
                 <div className="text-lg font-bold text-silver-100 font-mono">
-                  {vehicle.seats} {language === 'EN' ? 'Seats' : 'Plazas'} · {vehicle.specs.doors || 2}{language === 'EN' ? 'D' : 'P'}
+                  {vehicle.seats || 5} {language === 'EN' ? 'Seats' : 'Plazas'} · {vehicle.specs?.doors || 4}{language === 'EN' ? 'D' : 'P'}
                 </div>
               </div>
             </div>
@@ -456,7 +456,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
             </div>
 
             {/* Equipamiento Exclusivo y Características VIP */}
-            {vehicle.features && vehicle.features.length > 0 && (
+            {vehicle.features && Array.isArray(vehicle.features) && vehicle.features.length > 0 && (
               <div>
                 <h3 className="text-xl font-bold uppercase tracking-wider text-silver-100 font-display mb-6">
                   {t.detail.equipmentTitle}
