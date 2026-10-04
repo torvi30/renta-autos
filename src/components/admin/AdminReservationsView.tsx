@@ -50,7 +50,10 @@ export const AdminReservationsView: React.FC<AdminReservationsViewProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
-  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) return 'cards';
+    return 'table';
+  });
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);

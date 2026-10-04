@@ -73,8 +73,8 @@ export const WhatsAppConcierge: React.FC<WhatsAppConciergeProps> = ({
 
   return (
     <>
-      {/* Botón flotante discreto en esquina inferior derecha */}
-      <div className="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-40">
+      {/* Botón flotante discreto en esquina inferior derecha (elevado en móvil para no tapar barra de acción) */}
+      <div className="fixed bottom-20 sm:bottom-20 lg:bottom-6 right-4 sm:right-6 z-40">
         <button
           onClick={() => setInternalIsOpen(true)}
           className="flex items-center justify-center gap-2.5 w-12 h-12 sm:w-auto sm:h-auto sm:px-4.5 sm:py-3 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-xs tracking-wider uppercase shadow-[0_8px_30px_rgba(16,185,129,0.35)] transition-all duration-300 hover:scale-105 active:scale-95 border border-emerald-300/40 cursor-pointer"

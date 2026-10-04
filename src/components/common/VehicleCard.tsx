@@ -116,21 +116,29 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
             <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-carbon-850/60 border border-carbon-800/40">
               <Settings2 className="w-3.5 h-3.5 text-gold-400" />
               <span className="text-[11px] text-silver-200 capitalize">
-                {vehicle.transmission === 'AUTOMATICA' ? 'Automática' : 'Manual'}
+                {vehicle.transmission === 'AUTOMATICA' ? (language === 'EN' ? 'Automatic' : 'Automática') : 'Manual'}
               </span>
             </div>
 
             <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-carbon-850/60 border border-carbon-800/40">
               <Fuel className="w-3.5 h-3.5 text-gold-400" />
               <span className="text-[11px] text-silver-200 capitalize">
-                {(vehicle.fuel || 'Gasolina').toLowerCase()}
+                {vehicle.fuel === 'GASOLINA'
+                  ? (language === 'EN' ? 'Gasoline' : 'Gasolina')
+                  : vehicle.fuel === 'DIESEL'
+                  ? 'Diésel'
+                  : vehicle.fuel === 'HIBRIDO'
+                  ? (language === 'EN' ? 'Hybrid' : 'Híbrido')
+                  : vehicle.fuel === 'ELECTRICO'
+                  ? (language === 'EN' ? 'Electric' : 'Eléctrico')
+                  : (vehicle.fuel || 'Gasolina').toLowerCase()}
               </span>
             </div>
 
             <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-carbon-850/60 border border-carbon-800/40">
               <Users className="w-3.5 h-3.5 text-gold-400" />
               <span className="text-[11px] text-silver-200">
-                {vehicle.seats || 5} Plazas
+                {vehicle.seats || 5} {language === 'EN' ? 'Seats' : 'Plazas'}
               </span>
             </div>
           </div>

@@ -467,7 +467,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {isMobileMenuOpen && (
         <div
           ref={mobileMenuRef}
-          className="relative z-40 lg:hidden bg-carbon-950/98 border-b border-carbon-800 px-6 py-6 space-y-5 shadow-2xl animate-fade-in backdrop-blur-2xl"
+          className="relative z-40 lg:hidden bg-carbon-950/98 border-b border-carbon-800 px-6 py-6 space-y-5 shadow-2xl animate-fade-in backdrop-blur-2xl max-h-[calc(100dvh-80px)] overflow-y-auto overscroll-contain"
         >
           
           {/* Fila de Utilidades en Móvil: Moneda + Idioma */}

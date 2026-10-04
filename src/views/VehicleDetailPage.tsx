@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Vehicle } from '../types/vehicle';
 import { VehicleShowcase } from '../components/showcase/VehicleShowcase';
+import { VehicleTurntable360 } from '../components/showcase/VehicleTurntable360';
 import { VehicleLightbox } from '../components/showcase/VehicleLightbox';
 import { VehicleCard } from '../components/common/VehicleCard';
 import { StatusBadge } from '../components/common/Badge';
@@ -52,6 +53,7 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
   const [activeGalleryTab, setActiveGalleryTab] = useState<'ALL' | 'EXTERIOR' | 'INTERIOR' | 'DETAILS'>('ALL');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [showcaseMode, setShowcaseMode] = useState<'video' | 'turntable'>('video');
 
   // Selector de fechas para la cotización interactiva
   const [startDate, setStartDate] = useState(() => {
@@ -257,18 +259,60 @@ export const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({
           </div>
         </div>
 
+        {/* Selector de Modo Showcase: Video Cinemático vs Giro 360° */}
+        <div className="mt-8 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-gold-400">
+              {language === 'EN' ? 'Showroom Experience:' : 'Experiencia Showroom:'}
+            </span>
+          </div>
+
+          <div className="flex items-center p-1 rounded-2xl bg-carbon-900 border border-carbon-800 shadow-inner">
+            <button
+              onClick={() => setShowcaseMode('video')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                showcaseMode === 'video'
+                  ? 'bg-gold-500 text-carbon-950 shadow-md shadow-gold-500/10'
+                  : 'text-silver-400 hover:text-white'
+              }`}
+            >
+              <span>🎬 {language === 'EN' ? 'Cinema Showcase' : 'Showroom Video'}</span>
+            </button>
+
+            <button
+              onClick={() => setShowcaseMode('turntable')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                showcaseMode === 'turntable'
+                  ? 'bg-gold-500 text-carbon-950 shadow-md shadow-gold-500/10'
+                  : 'text-silver-400 hover:text-white'
+              }`}
+            >
+              <span>🔄 {language === 'EN' ? '360° Turntable' : 'Giro 360° Interactivo'}</span>
+              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-mono bg-emerald-400/20 text-emerald-400 border border-emerald-400/30">
+                PRO
+              </span>
+            </button>
+          </div>
+        </div>
+
         {/* Bloque Superior: Showcase Cinemático Protagonista (Regla 7, 9) */}
-        <div className="mt-8 rounded-3xl overflow-hidden border border-carbon-800/80 shadow-showroom bg-carbon-950 relative">
-          <VehicleShowcase
-            videoUrl={vehicle.videoUrl}
-            imageUrl={vehicle.mainImage}
-            altText={`${vehicle.brand} ${vehicle.model}`}
-            aspectRatio="16/9"
-            autoPlay={true}
-            showControls={true}
-            priority={true}
-            fitMode="contain"
-          />
+        <div className="mt-4 rounded-3xl overflow-hidden border border-carbon-800/80 shadow-showroom bg-carbon-950 relative">
+          {showcaseMode === 'video' ? (
+            <VehicleShowcase
+              videoUrl={vehicle.videoUrl}
+              imageUrl={vehicle.mainImage}
+              altText={`${vehicle.brand} ${vehicle.model}`}
+              aspectRatio="16/9"
+              autoPlay={true}
+              showControls={true}
+              priority={true}
+              fitMode="contain"
+            />
+          ) : (
+            <VehicleTurntable360
+              vehicle={vehicle}
+            />
+          )}
         </div>
 
         {/* Métricas Destacadas de Rendimiento (Barra de Desempeño) */}

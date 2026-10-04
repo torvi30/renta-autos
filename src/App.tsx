@@ -13,8 +13,7 @@ import { ExperiencePillars } from './components/landing/ExperiencePillars';
 import { BookingSteps } from './components/landing/BookingSteps';
 import { FaqSection } from './components/landing/FaqSection';
 import { WhatsAppConcierge } from './components/landing/WhatsAppConcierge';
-import { VehicleModal } from './components/showcase/VehicleModal';
-import { QuickReservationModal } from './components/landing/QuickReservationModal';
+import { BookingFlowModal } from './components/booking/BookingFlowModal';
 import { ProtectedRoute } from './components/admin/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/useAuth';
@@ -91,7 +90,6 @@ const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [vehicles, setVehicles] = useState<Vehicle[]>(getLocalVehicles);
   const [routeState, setRouteState] = useState<RouteState>(parseRouteFromLocation);
-  const [selectedVehicleForModal, setSelectedVehicleForModal] = useState<Vehicle | null>(null);
   const [selectedVehicleForBooking, setSelectedVehicleForBooking] = useState<Vehicle | null>(null);
   const [bookingDates, setBookingDates] = useState<{ startDate?: string; endDate?: string }>({});
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -191,10 +189,6 @@ const AppContent: React.FC = () => {
     navigateToVehicle(vehicle.slug || vehicle.id);
   };
 
-  const handleCloseVehicleModal = () => {
-    setSelectedVehicleForModal(null);
-  };
-
   const handleOpenBooking = (vehicle?: Vehicle, startDate?: string, endDate?: string) => {
     if (vehicle) {
       setSelectedVehicleForBooking(vehicle);
@@ -202,7 +196,6 @@ const AppContent: React.FC = () => {
       setSelectedVehicleForBooking(vehicles[0]);
     }
     setBookingDates({ startDate, endDate });
-    setSelectedVehicleForModal(null);
     setIsBookingModalOpen(true);
   };
 
@@ -328,15 +321,8 @@ const AppContent: React.FC = () => {
       {/* Pie de Página con acceso a Portal Corporativo */}
       <Footer onNavigateToAdmin={handleNavigateToAdmin} />
 
-      {/* Modal de Detalle con Video y 12 fotos (Fallback/modal directo) */}
-      <VehicleModal
-        vehicle={selectedVehicleForModal}
-        onClose={handleCloseVehicleModal}
-        onBook={handleOpenBooking}
-      />
-
       {/* Modal de Solicitud de Reserva (Fase 4: BookingFlowModal) */}
-      <QuickReservationModal
+      <BookingFlowModal
         vehicle={selectedVehicleForBooking}
         vehicles={vehicles}
         isOpen={isBookingModalOpen}
