@@ -180,9 +180,16 @@ export const uploadVehicleVideo = async (
   vehicleId: string,
   file: File
 ): Promise<UploadResult> => {
-  if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
+  const isVideoFormat = 
+    ALLOWED_VIDEO_TYPES.includes(file.type) || 
+    file.name.toLowerCase().endsWith('.mp4') || 
+    file.name.toLowerCase().endsWith('.webm') || 
+    file.name.toLowerCase().endsWith('.mov') ||
+    file.name.toLowerCase().endsWith('.m4v');
+
+  if (!isVideoFormat) {
     throw new Error(
-      `Formato de video no soportado (${file.type}). Por favor utiliza formato MP4 o WebM.`
+      `Formato de video no soportado (${file.type || 'desconocido'}). Por favor utiliza formato MP4, WebM o MOV.`
     );
   }
 

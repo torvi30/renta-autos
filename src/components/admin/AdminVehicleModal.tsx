@@ -1847,7 +1847,7 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
                           Video Promocional en Loop Silencioso (Reglas 7 & 9)
                         </label>
                         <span className="text-[10px] sm:text-[11px] text-silver-400">
-                          Recomendado máx 15 segundos en formato MP4 o WebM para el showroom.
+                          Recomendado clip de 15 a 30 segundos (máx 50MB) en formato MP4, WebM o MOV (iPhone/Android).
                         </span>
                       </div>
 
@@ -1873,10 +1873,10 @@ export const AdminVehicleModal: React.FC<AdminVehicleModalProps> = ({
 
                       <label className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-carbon-800 hover:bg-carbon-750 text-silver-200 text-xs font-bold cursor-pointer border border-carbon-700 transition-colors whitespace-nowrap shadow-sm active:scale-95">
                         <Video className="w-4 h-4 text-gold-400 flex-shrink-0" />
-                        <span>{isUploadingVideo ? 'Subiendo...' : 'Subir MP4 / WebM'}</span>
+                        <span>{isUploadingVideo ? 'Subiendo...' : 'Subir Video (MP4 / MOV)'}</span>
                         <input
                           type="file"
-                          accept="video/mp4,video/webm"
+                          accept="video/mp4,video/webm,video/quicktime,.mov,.m4v"
                           className="hidden"
                           onChange={handleUploadVideo}
                         />
